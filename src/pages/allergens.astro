@@ -1,0 +1,110 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const allergens = [
+  { name: "Celery", icon: "🥬" },
+  { name: "Cereals containing gluten", icon: "🌾" },
+  { name: "Crustaceans", icon: "🦐" },
+  { name: "Eggs", icon: "🥚" },
+  { name: "Fish", icon: "🐟" },
+  { name: "Lupin", icon: "🌿" },
+  { name: "Milk", icon: "🥛" },
+  { name: "Molluscs", icon: "🐚" },
+  { name: "Mustard", icon: "🟡" },
+  { name: "Nuts", icon: "🥜" },
+  { name: "Peanuts", icon: "🥜" },
+  { name: "Sesame seeds", icon: "🌰" },
+  { name: "Soybeans", icon: "🫘" },
+  { name: "Sulphur dioxide & sulphites", icon: "⚗️" },
+];
+---
+
+<Layout title="Allergens | The Açai Club" description="Allergen information for The Açai Club. Find out about the 14 major allergens & how to get product-specific information.">
+
+  <!-- Hero -->
+  <section class="pt-28 pb-16 bg-dark">
+    <div class="max-w-[1400px] mx-auto px-8 text-center">
+      <h1 class="font-heading text-5xl sm:text-6xl font-black uppercase tracking-tight text-light leading-tight">
+        Allergen<br /><span class="text-charcoal">Information</span>
+      </h1>
+      <p class="mt-4 text-grey text-lg max-w-xl mx-auto">
+        Your health is our priority. Here's everything you need to know about allergens at The Açai Club.
+      </p>
+    </div>
+  </section>
+
+  <!-- Warning banner -->
+  <section class="bg-beige/10 border-y border-beige/20 py-8">
+    <div class="max-w-3xl mx-auto px-8 text-center">
+      <p class="text-beige font-heading font-semibold uppercase tracking-wider text-sm mb-2">Important Notice</p>
+      <p class="text-grey text-base leading-relaxed">
+        Our products are prepared in an <strong class="text-light">open kitchen</strong> where all 14 major allergens are handled. While our team takes every precaution to keep ingredients separate, we <strong class="text-light">cannot guarantee</strong> that any product is free from allergens due to shared equipment & preparation areas.
+      </p>
+      <p class="mt-4 text-grey text-base">
+        If you have a serious allergy or intolerance, please contact your nearest store <strong class="text-light">before placing your order</strong>.
+      </p>
+    </div>
+  </section>
+
+  <!-- 14 major allergens -->
+  <section class="bg-dark-surface py-20">
+    <div class="max-w-[1400px] mx-auto px-8">
+      <h2 class="font-heading text-2xl font-bold uppercase tracking-tight text-light mb-10 text-center">
+        The 14 Major Allergens
+      </h2>
+      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
+        {allergens.map((a) => (
+          <div class="bg-dark-card rounded-xl p-4 text-center border border-dark-border">
+            <div class="text-2xl mb-2">{a.icon}</div>
+            <p class="text-grey text-xs font-heading font-semibold uppercase tracking-wider leading-tight">{a.name}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Get allergen info per product -->
+  <section class="bg-dark py-20">
+    <div class="max-w-3xl mx-auto px-8 text-center">
+      <h2 class="font-heading text-3xl font-black uppercase tracking-tight text-light mb-4">
+        Product-specific allergen info
+      </h2>
+      <p class="text-grey text-base leading-relaxed mb-8">
+        Full allergen information for each menu item is available in our ordering system. Select your store, choose a product, & scroll to the bottom of the product page to view its full allergen & nutritional information.
+      </p>
+      <a
+        href="https://order.theacaiclub.com"
+        class="inline-flex px-10 py-4 bg-light text-dark font-heading font-bold uppercase tracking-wider text-sm rounded-full hover:bg-light-muted transition-colors"
+      >
+        View Menu & Allergens
+      </a>
+    </div>
+  </section>
+
+  <!-- Contact stores -->
+  <section class="bg-dark-surface border-t border-dark-border py-16">
+    <div class="max-w-[1400px] mx-auto px-8">
+      <h2 class="font-heading text-xl font-bold uppercase tracking-tight text-light mb-8 text-center">
+        Contact a store directly
+      </h2>
+      <div class="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+        <div class="bg-dark-card rounded-xl p-6 border border-dark-border text-center">
+          <h3 class="font-heading font-semibold text-light text-sm uppercase tracking-wider mb-1">Reading</h3>
+          <p class="text-grey text-xs mb-3">85 Kings Road, RG1 3DD</p>
+          <a href="tel:01182288750" class="text-beige text-sm hover:text-light transition-colors">0118 228 8750</a>
+        </div>
+        <div class="bg-dark-card rounded-xl p-6 border border-dark-border text-center">
+          <h3 class="font-heading font-semibold text-light text-sm uppercase tracking-wider mb-1">Beaconsfield</h3>
+          <p class="text-grey text-xs mb-3">22 Gregories Road, HP9 1HQ</p>
+          <a href="tel:01494370876" class="text-beige text-sm hover:text-light transition-colors">01494 370876</a>
+        </div>
+        <div class="bg-dark-card rounded-xl p-6 border border-dark-border text-center">
+          <h3 class="font-heading font-semibold text-light text-sm uppercase tracking-wider mb-1">Datchet</h3>
+          <p class="text-grey text-xs mb-3">10 High Street, SL3 9EA</p>
+          <a href="tel:01753297015" class="text-beige text-sm hover:text-light transition-colors">01753 297015</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</Layout>

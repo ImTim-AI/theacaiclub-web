@@ -1,0 +1,62 @@
+---
+interface Props {
+  class?: string;
+}
+const { class: className = "" } = Astro.props;
+---
+
+<svg
+  class={className}
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 200 190"
+  fill="currentColor"
+  aria-label="The Açaí Club"
+  role="img"
+>
+  <!-- THE -->
+  <text
+    x="100"
+    y="30"
+    text-anchor="middle"
+    font-family="Gotham, Montserrat, 'Helvetica Neue', Arial, sans-serif"
+    font-size="13"
+    font-weight="400"
+    letter-spacing="6"
+  >THE</text>
+
+  <!-- AÇAÍ -->
+  <text
+    x="100"
+    y="90"
+    text-anchor="middle"
+    font-family="Gotham, Montserrat, 'Helvetica Neue', Arial, sans-serif"
+    font-size="54"
+    font-weight="700"
+    letter-spacing="2"
+  >AÇA&#205;</text>
+
+  <!-- CLUB -->
+  <text
+    x="100"
+    y="132"
+    text-anchor="middle"
+    font-family="Gotham, Montserrat, 'Helvetica Neue', Arial, sans-serif"
+    font-size="38"
+    font-weight="300"
+    letter-spacing="10"
+  >CLUB</text>
+
+  <!-- Divider -->
+  <line x1="28" y1="148" x2="172" y2="148" stroke="currentColor" stroke-width="0.75" />
+
+  <!-- Tagline -->
+  <text
+    x="100"
+    y="168"
+    text-anchor="middle"
+    font-family="Gotham, Montserrat, 'Helvetica Neue', Arial, sans-serif"
+    font-size="8.5"
+    font-weight="400"
+    letter-spacing="2.5"
+  >LIFESTYLE &amp; WELLNESS CARE</text>
+</svg>

@@ -1,0 +1,131 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const categories = [
+  {
+    name: "Açai Bowls",
+    emoji: "🍇",
+    gradient: "from-açai via-açai-light to-pink",
+    items: [
+      { name: "Classic Açai", price: "£8.50", desc: "Pure açai, granola, banana, honey, blueberries", tags: ["Bestseller"] },
+      { name: "Tropical Sunrise", price: "£9.50", desc: "Açai, mango, passionfruit, coconut flakes, agave", tags: [] },
+      { name: "Berry Blast", price: "£9.50", desc: "Açai, mixed berries, strawberry, chia seeds, almond butter", tags: ["New"] },
+      { name: "PB Power", price: "£9.95", desc: "Açai, peanut butter, banana, granola, cacao nibs", tags: ["High Protein"] },
+      { name: "Green Machine", price: "£9.50", desc: "Açai, spinach, kiwi, hemp seeds, coconut, lime", tags: [] },
+      { name: "Cacao Dream", price: "£9.95", desc: "Açai, raw cacao, hazelnut butter, banana, granola", tags: [] },
+    ],
+  },
+  {
+    name: "Smoothies",
+    emoji: "🥤",
+    gradient: "from-tropical via-amber-500 to-pink",
+    items: [
+      { name: "Mango Tango", price: "£6.50", desc: "Mango, banana, orange juice, coconut milk", tags: [] },
+      { name: "Berry Bliss", price: "£6.50", desc: "Strawberry, blueberry, raspberry, apple juice", tags: ["Bestseller"] },
+      { name: "Green Goddess", price: "£7.00", desc: "Spinach, banana, pineapple, ginger, coconut water", tags: [] },
+      { name: "Protein Shake", price: "£7.50", desc: "Banana, peanut butter, oat milk, whey protein, cacao", tags: ["High Protein"] },
+      { name: "Tropical Storm", price: "£6.50", desc: "Pineapple, passionfruit, mango, lime, coconut water", tags: [] },
+    ],
+  },
+  {
+    name: "Drinks",
+    emoji: "☕",
+    gradient: "from-charcoal via-dark to-dark-card",
+    items: [
+      { name: "Cold Brew", price: "£4.00", desc: "Slow-steeped for 18 hours, served over ice", tags: [] },
+      { name: "Matcha Latte", price: "£4.50", desc: "Ceremonial grade matcha, oat milk", tags: ["Popular"] },
+      { name: "Turmeric Latte", price: "£4.50", desc: "Golden turmeric, ginger, oat milk, black pepper", tags: [] },
+      { name: "Fresh OJ", price: "£4.00", desc: "Freshly squeezed oranges", tags: [] },
+      { name: "Ginger Shot", price: "£3.00", desc: "Fresh ginger, lemon, cayenne", tags: [] },
+    ],
+  },
+  {
+    name: "Snacks",
+    emoji: "🥜",
+    gradient: "from-berry via-pink to-pink-light",
+    items: [
+      { name: "Granola Bar", price: "£3.00", desc: "House-made oat, honey, almond & dark chocolate bar", tags: [] },
+      { name: "Energy Balls", price: "£2.50", desc: "Dates, cashew, cacao, coconut — 3 pack", tags: ["Vegan"] },
+      { name: "Protein Muffin", price: "£3.50", desc: "Banana, blueberry, whey protein, oats", tags: ["High Protein"] },
+    ],
+  },
+];
+---
+
+<Layout title="Menu | The Açai Club" description="Browse our full menu of fresh açai bowls, smoothies, drinks, & snacks.">
+
+  <!-- Hero -->
+  <section class="pt-28 pb-16 bg-dark">
+    <div class="max-w-[1400px] mx-auto px-8 text-center">
+      <h1 class="font-heading text-5xl sm:text-6xl lg:text-7xl font-black uppercase tracking-tight text-light">
+        The Menu
+      </h1>
+      <p class="mt-4 text-grey text-lg">
+        Everything made fresh, every day. Real ingredients, no shortcuts.
+      </p>
+    </div>
+  </section>
+
+  <!-- Category nav -->
+  <section class="sticky top-[60px] z-40 bg-dark-surface/95 backdrop-blur-md border-b border-dark-border">
+    <div class="max-w-[1400px] mx-auto px-8">
+      <div class="flex gap-8 overflow-x-auto py-4 scrollbar-hide">
+        {categories.map((cat) => (
+          <a href={`#${cat.name.toLowerCase().replace(/\s+/g, '-')}`} class="font-heading text-sm font-semibold uppercase tracking-wider text-grey hover:text-beige transition-colors whitespace-nowrap">
+            {cat.emoji} {cat.name}
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Menu items -->
+  {categories.map((category, idx) => (
+    <section id={category.name.toLowerCase().replace(/\s+/g, '-')} class={idx % 2 === 0 ? "bg-dark py-20" : "bg-dark-surface py-20"}>
+      <div class="max-w-[1400px] mx-auto px-8">
+        <div class="flex items-center gap-4 mb-12">
+          <div class={`w-14 h-14 rounded-xl bg-gradient-to-br ${category.gradient} flex items-center justify-center text-2xl shadow-md`}>
+            {category.emoji}
+          </div>
+          <h2 class="font-heading text-3xl sm:text-4xl font-bold uppercase tracking-tight text-light">
+            {category.name}
+          </h2>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {category.items.map((item) => (
+            <div class="bg-dark-card rounded-xl p-6 border border-dark-border hover:border-beige/30 transition-colors">
+              <div class="flex items-start justify-between mb-2">
+                <h3 class="font-heading font-normal text-light text-lg">{item.name}</h3>
+                <span class="font-heading font-normal text-beige text-lg shrink-0 ml-4">{item.price}</span>
+              </div>
+              <p class="text-grey text-sm leading-relaxed">{item.desc}</p>
+              {item.tags.length > 0 && (
+                <div class="mt-3 flex gap-2">
+                  {item.tags.map((tag) => (
+                    <span class="px-3 py-1 bg-dark-surface text-beige text-xs font-heading font-semibold uppercase tracking-wider rounded-full border border-dark-border">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  ))}
+
+  <!-- Nutrition note -->
+  <section id="nutrition" class="py-20 bg-dark-surface border-t border-dark-border">
+    <div class="max-w-3xl mx-auto px-8 text-center">
+      <h2 class="font-heading text-2xl font-bold uppercase tracking-tight text-light mb-4">
+        Nutrition & Allergens
+      </h2>
+      <p class="text-grey leading-relaxed">
+        All our bowls and smoothies are made with real, whole ingredients. Allergen information is available in-store and on the app. Many items can be made vegan or dairy-free — just ask.
+      </p>
+    </div>
+  </section>
+
+</Layout>

@@ -1,0 +1,246 @@
+{
+  "story": {
+    "name": "HomePage",
+    "created_at": "2025-06-27T08:37:28.870Z",
+    "published_at": "2026-02-18T10:31:11.033Z",
+    "updated_at": "2026-02-18T10:31:11.045Z",
+    "id": 62766484984338,
+    "uuid": "ef29fc7c-95ec-45b0-85a2-9b7a0f65cf88",
+    "content": {
+      "_uid": "041f7968-4ace-4d33-b489-a2a428ea0174",
+      "body": [
+        {
+          "_uid": "d4810f51-d529-4f6f-a282-fac3bc2ac923",
+          "title": "Welcome to Joe & the Juice",
+          "alignment": "left",
+          "component": "layoutHeroImage",
+          "description": "Find a store near you",
+          "featureBlock": [
+            {
+              "_uid": "cc4c86c3-9e72-4cd1-abe7-f823f7ce6d43",
+              "component": "featureDeliverySearch",
+              "inputLabel": "Ready to bring JOE home?",
+              "buttonCTAlabel": "Search",
+              "inputPlaceholder": "Find your address",
+              "buttonLoadingText": "Checking...",
+              "buttonTakeAwayLabel": "Take away",
+              "_editable": "<!--#storyblok#{\"name\": \"featureDeliverySearch\", \"space\": \"327382\", \"uid\": \"cc4c86c3-9e72-4cd1-abe7-f823f7ce6d43\", \"id\": \"62766484984338\"}-->"
+            }
+          ],
+          "backgroundImage": {
+            "id": 130409439071235,
+            "alt": "",
+            "name": "",
+            "focus": "",
+            "title": "",
+            "source": "",
+            "filename": "https://a.storyblok.com/f/327382/1920x1920/25055364d4/jss26-jay-shetty-functional-smoothies-crm-landingpage.png",
+            "copyright": "",
+            "fieldtype": "asset",
+            "meta_data": {},
+            "is_external_url": false
+          },
+          "campaignButtonUrl": {
+            "id": "",
+            "url": "https://joeandthejuice.app.link/3CzJmBZPQVb",
+            "linktype": "url",
+            "fieldtype": "multilink",
+            "cached_url": "https://joeandthejuice.app.link/3CzJmBZPQVb"
+          },
+          "campaignButtonLabel": "Get the app",
+          "_editable": "<!--#storyblok#{\"name\": \"layoutHeroImage\", \"space\": \"327382\", \"uid\": \"d4810f51-d529-4f6f-a282-fac3bc2ac923\", \"id\": \"62766484984338\"}-->"
+        },
+        {
+          "_uid": "f35e5c1c-83cb-42c0-8946-7f7600f87084",
+          "theme": "dark",
+          "title": "Order ahead, skip the line and get free sh*t with the Joe App!",
+          "ctaLink": {
+            "id": "",
+            "url": "https://apps.apple.com/dk/app/joe-the-juice/id1347116229",
+            "linktype": "url",
+            "fieldtype": "multilink",
+            "cached_url": "https://apps.apple.com/dk/app/joe-the-juice/id1347116229"
+          },
+          "ctaText": "DOWNLOAD NOW",
+          "component": "layoutAppAd",
+          "ctaVariant": "button",
+          "description": "The Joe Loyalty App is not just an ordering app, you\u2019ll be able to earn points with every order, level up through tiers and complete fun, rewarding challenges along the way.",
+          "mobileVideo": false,
+          "mediaAltText": "Promo video for Joe and the juice app",
+          "vimeoVideoId": "",
+          "titlePinkText": "Joe App!",
+          "reversedPlacement": false,
+          "_editable": "<!--#storyblok#{\"name\": \"layoutAppAd\", \"space\": \"327382\", \"uid\": \"f35e5c1c-83cb-42c0-8946-7f7600f87084\", \"id\": \"62766484984338\"}-->"
+        },
+        {
+          "_uid": "675ab1e7-3cea-4807-8cfb-30ffd402518d",
+          "Items": [
+            {
+              "_uid": "ea29f0e5-7f8e-4916-9e28-8da82dfd5089",
+              "image": {
+                "id": 62780402879723,
+                "alt": "",
+                "name": "",
+                "focus": "",
+                "title": "",
+                "source": "",
+                "filename": "https://a.storyblok.com/f/327382/600x600/d3496ab1b4/cup_of_joe-x2.jpg",
+                "copyright": "",
+                "fieldtype": "asset",
+                "meta_data": {},
+                "is_external_url": false
+              },
+              "title": "Americano",
+              "ProductID": "665",
+              "component": "layoutProdut",
+              "_editable": "<!--#storyblok#{\"name\": \"layoutProdut\", \"space\": \"327382\", \"uid\": \"ea29f0e5-7f8e-4916-9e28-8da82dfd5089\", \"id\": \"62766484984338\"}-->"
+            },
+            {
+              "_uid": "4eccbf80-7e2c-4612-ac92-ba745ac8f2e7",
+              "image": {
+                "id": 64175849474705,
+                "alt": "",
+                "name": "",
+                "focus": "",
+                "title": "",
+                "source": "",
+                "filename": "https://a.storyblok.com/f/327382/600x600/2049f0b84a/power_shake-x2.jpg",
+                "copyright": "",
+                "fieldtype": "asset",
+                "meta_data": {},
+                "is_external_url": false
+              },
+              "title": "Power shake",
+              "ProductID": "180",
+              "component": "layoutProdut",
+              "_editable": "<!--#storyblok#{\"name\": \"layoutProdut\", \"space\": \"327382\", \"uid\": \"4eccbf80-7e2c-4612-ac92-ba745ac8f2e7\", \"id\": \"62766484984338\"}-->"
+            },
+            {
+              "_uid": "dcdde1e8-649c-4e26-83f0-6697addc6e56",
+              "image": {
+                "id": 64175849478802,
+                "alt": "",
+                "name": "",
+                "focus": "",
+                "title": "",
+                "source": "",
+                "filename": "https://a.storyblok.com/f/327382/600x600/3f210bae19/avocado-x2.jpg",
+                "copyright": "",
+                "fieldtype": "asset",
+                "meta_data": {},
+                "is_external_url": false
+              },
+              "title": "Avocado sandwich",
+              "ProductID": "195",
+              "component": "layoutProdut",
+              "_editable": "<!--#storyblok#{\"name\": \"layoutProdut\", \"space\": \"327382\", \"uid\": \"dcdde1e8-649c-4e26-83f0-6697addc6e56\", \"id\": \"62766484984338\"}-->"
+            },
+            {
+              "_uid": "18680274-ea4a-47fe-b528-128d99eb92a0",
+              "image": {
+                "id": 64175849450127,
+                "alt": "",
+                "name": "",
+                "focus": "",
+                "title": "",
+                "source": "",
+                "filename": "https://a.storyblok.com/f/327382/600x600/84c701b33b/prince_of_green-x2.jpg",
+                "copyright": "",
+                "fieldtype": "asset",
+                "meta_data": {},
+                "is_external_url": false
+              },
+              "title": "Prince of green",
+              "ProductID": "172",
+              "component": "layoutProdut",
+              "_editable": "<!--#storyblok#{\"name\": \"layoutProdut\", \"space\": \"327382\", \"uid\": \"18680274-ea4a-47fe-b528-128d99eb92a0\", \"id\": \"62766484984338\"}-->"
+            },
+            {
+              "_uid": "c4c17f99-9f03-49e6-89f8-1e992eb705e9",
+              "image": {
+                "id": 64175849470608,
+                "alt": "",
+                "name": "",
+                "focus": "",
+                "title": "",
+                "source": "",
+                "filename": "https://a.storyblok.com/f/327382/612x612/83f6f27a57/group_178.png",
+                "copyright": "",
+                "fieldtype": "asset",
+                "meta_data": {},
+                "is_external_url": false
+              },
+              "title": "Acai Bowl",
+              "ProductID": "514",
+              "component": "layoutProdut",
+              "_editable": "<!--#storyblok#{\"name\": \"layoutProdut\", \"space\": \"327382\", \"uid\": \"c4c17f99-9f03-49e6-89f8-1e992eb705e9\", \"id\": \"62766484984338\"}-->"
+            },
+            {
+              "_uid": "35c18f12-bcf1-4ab2-936f-14b3b52945a1",
+              "image": {
+                "id": 64175849437838,
+                "alt": "",
+                "name": "",
+                "focus": "",
+                "title": "",
+                "source": "",
+                "filename": "https://a.storyblok.com/f/327382/612x612/81ffd466ad/tunacado2.jpg",
+                "copyright": "",
+                "fieldtype": "asset",
+                "meta_data": {},
+                "is_external_url": false
+              },
+              "title": "Tunacado Sandwich",
+              "ProductID": "199",
+              "component": "layoutProdut",
+              "_editable": "<!--#storyblok#{\"name\": \"layoutProdut\", \"space\": \"327382\", \"uid\": \"35c18f12-bcf1-4ab2-936f-14b3b52945a1\", \"id\": \"62766484984338\"}-->"
+            }
+          ],
+          "title": "Most popular products",
+          "component": "layoutMostPopular",
+          "_editable": "<!--#storyblok#{\"name\": \"layoutMostPopular\", \"space\": \"327382\", \"uid\": \"675ab1e7-3cea-4807-8cfb-30ffd402518d\", \"id\": \"62766484984338\"}-->"
+        },
+        {
+          "_uid": "e80f4750-6ac1-41d6-adb8-c1b92b1598fc",
+          "title": "Find store",
+          "component": "layoutFindStore",
+          "placeholderImage": {
+            "id": 62780833529090,
+            "alt": "",
+            "name": "",
+            "focus": "",
+            "title": "",
+            "source": "",
+            "filename": "https://a.storyblok.com/f/327382/400x350/e062d5aabd/rectangle_1720.png",
+            "copyright": "",
+            "fieldtype": "asset",
+            "meta_data": {},
+            "is_external_url": false
+          },
+          "_editable": "<!--#storyblok#{\"name\": \"layoutFindStore\", \"space\": \"327382\", \"uid\": \"e80f4750-6ac1-41d6-adb8-c1b92b1598fc\", \"id\": \"62766484984338\"}-->"
+        }
+      ],
+      "component": "page",
+      "_editable": "<!--#storyblok#{\"name\": \"page\", \"space\": \"327382\", \"uid\": \"041f7968-4ace-4d33-b489-a2a428ea0174\", \"id\": \"62766484984338\"}-->"
+    },
+    "slug": "homepage",
+    "full_slug": "custompages/homepage",
+    "sort_by_date": null,
+    "position": 0,
+    "tag_list": [],
+    "is_startpage": false,
+    "parent_id": 62766427295409,
+    "meta_data": null,
+    "group_id": "69b826c4-0cff-49d6-b225-a9dfa3f4f721",
+    "first_published_at": "2025-06-27T08:41:42.202Z",
+    "release_id": null,
+    "lang": "default",
+    "path": null,
+    "alternates": [],
+    "default_full_slug": null,
+    "translated_slugs": null
+  },
+  "cv": 1771410671,
+  "rels": [],
+  "links": []
+}

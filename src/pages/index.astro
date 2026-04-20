@@ -1,0 +1,273 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="The Açai Club | Fresh Açai Bowls & Smoothies">
+
+  <!-- HERO — full bleed product photo bg like Joe -->
+  <section class="relative min-h-screen flex items-center justify-center overflow-hidden -mt-[60px]">
+    <!-- Background image -->
+    <img
+      src="/images/ig-bowls-1.jpg"
+      alt=""
+      class="absolute inset-0 w-full h-full object-cover object-center"
+    />
+    <!-- Dark overlay — gradient to dark-surface so hero blends into next section -->
+    <div class="absolute inset-0" style="background: linear-gradient(rgba(26,26,26,0.65) 75%, #222222 100%);"></div>
+    <!-- Large faded background text like Joe's "FUEL YOUR PURPOSE" -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
+      <span class="font-heading font-medium text-[14vw] sm:text-[16vw] uppercase leading-none text-light/[0.04] whitespace-nowrap">
+        FEEL GOOD
+      </span>
+    </div>
+
+    <div class="relative z-10 text-center px-6 max-w-3xl">
+      <h1 class="font-heading text-[32px] sm:text-[40px] lg:text-[48px] font-bold uppercase [letter-spacing:-0.5px] text-light leading-[1.1]">
+        The Açai Club
+      </h1>
+      <p class="mt-5 text-light text-[15px]">
+        Lifestyle & Wellness
+      </p>
+      <div class="mt-10 flex flex-col items-center gap-4">
+        <a href="https://order.theacaiclub.com" class="px-10 py-4 bg-light text-dark font-heading font-semibold uppercase [letter-spacing:-0.25px] text-[16px] rounded-full hover:bg-light-muted transition-colors">
+          Order Now
+        </a>
+        <a href="/app" class="px-10 py-4 bg-dark-card text-light font-heading font-semibold uppercase [letter-spacing:-0.25px] text-[16px] rounded-full border border-dark-border hover:bg-dark-surface transition-colors">
+          Get the App
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- APP PROMO — dark section, left-aligned text, pink accent like Joe -->
+  <section class="bg-dark-surface py-24 sm:py-32">
+    <div class="max-w-[1400px] mx-auto px-8">
+      <div class="max-w-2xl">
+        <h2 class="font-heading text-[28px] sm:text-[35px] font-bold [letter-spacing:-0.21px] leading-[1.2] text-light">
+          Skip the queue, earn rewards & fuel your day with <span class="text-beige">the Club's app.</span>
+        </h2>
+        <p class="mt-6 text-grey text-[14px] leading-relaxed max-w-lg">
+          Order ahead, collect berries on every bowl & earn cups on every drink — all from one app.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- MOST POPULAR — image-dominant cards like Joe -->
+  <section class="bg-dark-surface pb-24">
+    <div class="max-w-[1400px] mx-auto px-8">
+      <h2 class="font-heading text-[28px] sm:text-[35px] font-bold [letter-spacing:-0.21px] text-light text-center mb-12">
+        The Club's Favourites
+      </h2>
+    </div>
+
+    <div class="max-w-[1400px] mx-auto relative">
+        <!-- Carousel -->
+        <div class="overflow-x-auto scrollbar-hide snap-x snap-mandatory scroll-pl-6 sm:scroll-pl-8 scroll-pr-6 sm:scroll-pr-8 pb-4" id="product-carousel">
+          <div class="flex gap-4 px-6 sm:px-8 w-max">
+          <!-- Card 1 -->
+          <a href="https://order.theacaiclub.com" class="snap-start shrink-0 w-[280px] sm:w-[320px] rounded-xl overflow-hidden block group">
+            <div class="aspect-square relative overflow-hidden">
+              <img src="/images/ig-fav-1.jpg" alt="Açai bowls with berries and smoothie" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              <div class="absolute bottom-4 left-4 right-4">
+                <span class="block w-full py-3 bg-dark/90 text-light font-heading font-bold uppercase text-[13px] tracking-wider rounded-full text-center backdrop-blur-sm">
+                  Order Now
+                </span>
+              </div>
+            </div>
+          </a>
+
+          <!-- Card 2 -->
+          <a href="https://order.theacaiclub.com" class="snap-start shrink-0 w-[280px] sm:w-[320px] rounded-xl overflow-hidden block group">
+            <div class="aspect-square relative overflow-hidden">
+              <img src="/images/ig-fav-2.jpg" alt="Açai bowl with fresh toppings" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              <div class="absolute bottom-4 left-4 right-4">
+                <span class="block w-full py-3 bg-dark/90 text-light font-heading font-bold uppercase text-[13px] tracking-wider rounded-full text-center backdrop-blur-sm">
+                  Order Now
+                </span>
+              </div>
+            </div>
+          </a>
+
+          <!-- Card 3 -->
+          <a href="https://order.theacaiclub.com" class="snap-start shrink-0 w-[280px] sm:w-[320px] rounded-xl overflow-hidden block group">
+            <div class="aspect-square relative overflow-hidden">
+              <img src="/images/ig-fav-3.jpg" alt="Açai bowls with granola and berries" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              <div class="absolute bottom-4 left-4 right-4">
+                <span class="block w-full py-3 bg-dark/90 text-light font-heading font-bold uppercase text-[13px] tracking-wider rounded-full text-center backdrop-blur-sm">
+                  Order Now
+                </span>
+              </div>
+            </div>
+          </a>
+
+          <!-- Card 4 -->
+          <a href="https://order.theacaiclub.com" class="snap-start shrink-0 w-[280px] sm:w-[320px] rounded-xl overflow-hidden block group">
+            <div class="aspect-square relative overflow-hidden">
+              <img src="/images/ig-fav-4.jpg" alt="Açai bowls with strawberries and banana" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              <div class="absolute bottom-4 left-4 right-4">
+                <span class="block w-full py-3 bg-dark/90 text-light font-heading font-bold uppercase text-[13px] tracking-wider rounded-full text-center backdrop-blur-sm">
+                  Order Now
+                </span>
+              </div>
+            </div>
+          </a>
+
+          <!-- Card 5 -->
+          <a href="https://order.theacaiclub.com" class="snap-start shrink-0 w-[280px] sm:w-[320px] rounded-xl overflow-hidden block group">
+            <div class="aspect-square relative overflow-hidden">
+              <img src="/images/ig-matcha.jpg" alt="Matcha drink" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              <div class="absolute bottom-4 left-4 right-4">
+                <span class="block w-full py-3 bg-dark/90 text-light font-heading font-bold uppercase text-[13px] tracking-wider rounded-full text-center backdrop-blur-sm">
+                  Order Now
+                </span>
+              </div>
+            </div>
+          </a>
+
+          </div>
+        </div>
+
+        <!-- Carousel arrows -->
+        <button id="carousel-prev" class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 w-12 h-12 rounded-full bg-dark text-light flex items-center justify-center hover:bg-dark-card transition-colors shadow-lg z-10 hidden sm:flex">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <button id="carousel-next" class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 w-12 h-12 rounded-full bg-dark text-light flex items-center justify-center hover:bg-dark-card transition-colors shadow-lg z-10 hidden sm:flex">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+    </div>
+    <div class="max-w-[1400px] mx-auto px-8">
+      <div class="text-center mt-12">
+        <a href="https://order.theacaiclub.com" class="inline-flex px-12 py-4 bg-dark text-light font-heading font-bold uppercase tracking-wider text-[13px] rounded-full border border-dark-border hover:bg-dark-card transition-colors">
+          Full Menu
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FIND A STORE — light section like Joe, pink accent text -->
+  <section class="bg-light-muted py-24 sm:py-32">
+    <div class="max-w-[1400px] mx-auto px-8 text-center">
+      <h2 class="font-heading text-[28px] sm:text-[35px] font-black uppercase [letter-spacing:-0.21px] text-dark leading-[1.05]">
+        Come find us
+      </h2>
+    </div>
+
+      <!-- Store cards carousel -->
+    <div class="max-w-[1400px] mx-auto mt-16">
+      <div class="overflow-x-auto scrollbar-hide snap-x snap-mandatory scroll-pl-6 scroll-pr-6 pb-4 sm:overflow-visible sm:snap-none sm:scroll-pl-0 sm:scroll-pr-0 sm:pb-0">
+        <div class="flex gap-5 px-6 w-max sm:w-auto sm:px-8 sm:grid sm:grid-cols-3 sm:gap-6">
+        <a href="https://order.theacaiclub.com/RestaurantSelection/1" class="snap-start shrink-0 w-[300px] sm:w-auto group block rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden text-left">
+          <div class="aspect-[16/10] overflow-hidden">
+            <img src="/images/ig-reading.jpg" alt="The Açai Club Reading" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          </div>
+          <div class="p-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-heading font-normal text-dark text-[15px]">Reading</h3>
+              <svg class="w-4 h-4 text-charcoal/30 shrink-0 group-hover:text-dark transition-colors" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </div>
+            <p class="text-charcoal text-[13px] mt-1">85 Kings Road, RG1 3DD</p>
+            <p class="text-[12px] mt-2 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+              <span class="text-charcoal">Open · 08:00–19:00</span>
+            </p>
+          </div>
+        </a>
+
+        <a href="https://order.theacaiclub.com/RestaurantSelection/3" class="snap-start shrink-0 w-[300px] sm:w-auto group block rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden text-left">
+          <div class="aspect-[16/10] overflow-hidden">
+            <img src="/images/ig-beaconsfield.jpg" alt="The Açai Club Beaconsfield" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          </div>
+          <div class="p-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-heading font-normal text-dark text-[15px]">Beaconsfield</h3>
+              <svg class="w-4 h-4 text-charcoal/30 shrink-0 group-hover:text-dark transition-colors" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </div>
+            <p class="text-charcoal text-[13px] mt-1">22 Gregories Road, HP9 1HQ</p>
+            <p class="text-[12px] mt-2 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+              <span class="text-charcoal">Open · 08:00–19:00</span>
+            </p>
+          </div>
+        </a>
+
+        <a href="https://order.theacaiclub.com/RestaurantSelection/4" class="snap-start shrink-0 w-[300px] sm:w-auto group block rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden text-left mr-6 sm:mr-0">
+          <div class="aspect-[16/10] overflow-hidden">
+            <img src="/images/ig-datchet.jpg" alt="The Açai Club Datchet" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          </div>
+          <div class="p-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-heading font-normal text-dark text-[15px]">Datchet</h3>
+              <svg class="w-4 h-4 text-charcoal/30 shrink-0 group-hover:text-dark transition-colors" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+            </div>
+            <p class="text-charcoal text-[13px] mt-1">10 High Street, SL3 9EA</p>
+            <p class="text-[12px] mt-2 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+              <span class="text-charcoal">Open · 08:00–19:00</span>
+            </p>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- RUN CLUB — dark section -->
+  <section class="bg-dark py-24 sm:py-32 overflow-hidden">
+    <div class="max-w-[1400px] mx-auto px-8">
+      <div class="flex items-center justify-between">
+        <div class="max-w-xl">
+          <p class="font-heading text-[12px] uppercase tracking-[0.2em] text-beige mb-4">Every Sunday at 8am</p>
+          <h2 class="font-heading text-[28px] sm:text-[35px] font-black uppercase [letter-spacing:-0.21px] text-light leading-[1.05]">
+            Run Club
+          </h2>
+          <p class="mt-6 text-grey text-[14px] leading-relaxed">
+            Lace up, show up, & earn a free berry after. Our weekly Run Club brings the community together every Sunday morning. All levels welcome.
+          </p>
+          <div class="mt-10 grid grid-cols-3 gap-8 max-w-md">
+            <div>
+              <div class="text-2xl sm:text-3xl font-heading font-normal text-light">8:00</div>
+              <p class="text-grey mt-1 uppercase text-[11px] tracking-wider">AM Start</p>
+            </div>
+            <div>
+              <div class="text-2xl sm:text-3xl font-heading font-normal text-light">5mi</div>
+              <p class="text-grey mt-1 uppercase text-[11px] tracking-wider">Every Level</p>
+            </div>
+            <div>
+              <div class="text-2xl sm:text-3xl font-heading font-normal text-light">Free</div>
+              <p class="text-grey mt-1 uppercase text-[11px] tracking-wider">Berry After</p>
+            </div>
+          </div>
+          <div class="mt-10">
+            <a href="/about#run-club" class="inline-flex px-12 py-4 bg-light text-dark font-heading font-bold uppercase tracking-wider text-[13px] rounded-full hover:bg-light-muted transition-colors">
+              Join Run Club
+            </a>
+          </div>
+        </div>
+        <!-- Decorative large text on right -->
+        <div class="hidden lg:flex items-center justify-end pointer-events-none select-none">
+          <span class="font-heading font-medium text-[180px] xl:text-[220px] uppercase leading-none text-light/[0.04] whitespace-nowrap -mr-8">
+            RUN
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+</Layout>
+
+<script>
+  // Product carousel navigation
+  const carousel = document.getElementById("product-carousel");
+  const prevBtn = document.getElementById("carousel-prev");
+  const nextBtn = document.getElementById("carousel-next");
+
+  if (carousel && prevBtn && nextBtn) {
+    const scrollAmount = 360;
+    prevBtn.addEventListener("click", () => carousel.scrollBy({ left: -scrollAmount, behavior: "smooth" }));
+    nextBtn.addEventListener("click", () => carousel.scrollBy({ left: scrollAmount, behavior: "smooth" }));
+  }
+</script>

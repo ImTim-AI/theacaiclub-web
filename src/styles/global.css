@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@theme {
+  /* Core palette — dark-dominant like Joe & The Juice */
+  --color-dark: #1a1a1a;
+  --color-dark-card: #2a2a2a;
+  --color-dark-surface: #222222;
+  --color-dark-border: #333333;
+  --color-light: #ffffff;
+  --color-light-muted: #f5f5f5;
+  --color-grey: #999999;
+
+  /* Brand accent — acai pink (like Joe's pink) */
+  --color-pink: #E8B4B8;
+  --color-pink-light: #f0cdd0;
+
+  /* Keep brand earth tones for subtle use */
+  --color-charcoal: #4F4F4D;
+  --color-beige: #D9D0C8;
+  --color-cream: #EDE8E4;
+
+  /* Product accent colors */
+  --color-acai: #5B2C6F;
+  --color-acai-light: #7D3C98;
+  --color-berry: #C0392B;
+  --color-tropical: #E67E22;
+
+  --font-heading: "Gotham", "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-light);
+  background-color: var(--color-dark);
+}
+
+/* Scrollbar hide for carousels */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

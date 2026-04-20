@@ -1,0 +1,284 @@
+{
+  "title": "Joe & the Juice",
+  "nav": [],
+  "hero": {},
+  "sections": [
+    {
+      "index": 0,
+      "heading": "WELCOME TO JOE & THE JUICE",
+      "full_text": "WELCOME TO JOE & THE JUICE Find a store near you SEE THE MENU GET THE APP"
+    },
+    {
+      "index": 1,
+      "heading": "Order ahead, skip the line and get free sh*t with the Joe App!",
+      "full_text": "Order ahead, skip the line and get free sh*t with the Joe App!The Joe Loyalty App is not just an ordering app, you\u2019ll be able to earn points with every order, level up through tiers and complete fun, rewarding challenges along the way."
+    },
+    {
+      "index": 2,
+      "heading": "Most popular products",
+      "full_text": "Most popular products ADD TO BASKET ADD TO BASKET ADD TO BASKET ADD TO BASKET ADD TO BASKET ADD TO BASKET FULL MENU"
+    },
+    {
+      "index": 3,
+      "heading": "FIND A JOE & THE JUICE NEAR YOU",
+      "full_text": "FIND A JOE & THE JUICE NEAR YOU OPEN IN THE STORE LOCATOR 1 St Peters Street [St Albans] 1 St Peter's Street, St Albans Open \u2022 08:00-19:00 Watford Atria The Harlequin Centre, Watford Open \u2022 09:00-18:00 27 Muswell Hill Broadway [London] 27 Muswell Hill Broadway, London Open \u2022 08:00-20:00 63 Hampstead High Street [Hampstead] 63 Hampstead High Street, London Open \u2022 08:00-19:00 205 Haverstock Hill [Belsize Park] 205-207 Haverstock Hill, Belsize Park, London NW3 4QG, Storbritannien, London Open \u2022 07:00-19:00 68 Salusbury Road [Queens Park] 68 Salusbury Road, London Open \u2022 07:00-20:00 142 Regents Park Road [Primrose Hill] 142 Regent's Park Road, London Open \u2022 07:00-20:00 184 Portobello Road [Notting Hill] 184 Portobello Road, London Open \u2022 07:00-20:00 Coal Drops Yard [Kings Cross] Unit 1198, Coal Drops Yard, London N1C 4DQ, London Open \u2022 07:30-21:00"
+    },
+    {
+      "index": 4,
+      "heading": "FIND A JOE & THE JUICE NEAR YOU",
+      "full_text": "FIND A JOE & THE JUICE NEAR YOU OPEN IN THE STORE LOCATOR 1 St Peters Street [St Albans] 1 St Peter's Street, St Albans Open \u2022 08:00-19:00 Watford Atria The Harlequin Centre, Watford Open \u2022 09:00-18:00 27 Muswell Hill Broadway [London] 27 Muswell Hill Broadway, London Open \u2022 08:00-20:00 63 Hampstead High Street [Hampstead] 63 Hampstead High Street, London Open \u2022 08:00-19:00 205 Haverstock Hill [Belsize Park] 205-207 Haverstock Hill, Belsize Park, London NW3 4QG, Storbritannien, London Open \u2022 07:00-19:00 68 Salusbury Road [Queens Park] 68 Salusbury Road, London Open \u2022 07:00-20:00 142 Regents Park Road [Primrose Hill] 142 Regent's Park Road, London Open \u2022 07:00-20:00 184 Portobello Road [Notting Hill] 184 Portobello Road, London Open \u2022 07:00-20:00 Coal Drops Yard [Kings Cross] Unit 1198, Coal Drops Yard, London N1C 4DQ, London Open \u2022 07:30-21:00"
+    },
+    {
+      "index": 5,
+      "heading": "About",
+      "full_text": "SKIP FOOTER LINKS About Culture Apply for a job Employee login Press kit Explore Food menu Allergens Ingredients Joe loyalty app Find a Store News Get Help Frequently Asked Questions Contact Us Legal Terms of Use Privacy Policie Compliance Documents Whistleblower Follow Us Policies Smiley Report Do not sell my personal information \u00a9 2026 Joe and the Juice. All rights reserved"
+    }
+  ],
+  "buttons": [
+    "Only Required",
+    "Save settings",
+    "Accept",
+    "Show details",
+    "Hide details",
+    "Strictly necessary",
+    "Functional",
+    "Statistical",
+    "Marketing",
+    "Unclassified",
+    "Settings",
+    "Accept",
+    "SEE THE MENU",
+    "GET THE APP",
+    "ADD TO BASKET",
+    "ADD TO BASKET",
+    "ADD TO BASKET",
+    "ADD TO BASKET",
+    "ADD TO BASKET",
+    "ADD TO BASKET",
+    "FULL MENU",
+    "OPEN IN THE STORE LOCATOR",
+    "SKIP FOOTER LINKS"
+  ],
+  "stats": [],
+  "all_headings": [
+    {
+      "tag": "H2",
+      "text": "WE ARE USING COOKIES"
+    },
+    {
+      "tag": "H3",
+      "text": "Strictly necessary"
+    },
+    {
+      "tag": "H3",
+      "text": "Functional"
+    },
+    {
+      "tag": "H3",
+      "text": "Statistical"
+    },
+    {
+      "tag": "H3",
+      "text": "Marketing"
+    },
+    {
+      "tag": "H3",
+      "text": "Unclassified"
+    },
+    {
+      "tag": "H2",
+      "text": "Cookie policy"
+    },
+    {
+      "tag": "H2",
+      "text": "What is a cookie?"
+    },
+    {
+      "tag": "H2",
+      "text": "How our website uses cookies"
+    },
+    {
+      "tag": "H2",
+      "text": "How long are cookies stored?"
+    },
+    {
+      "tag": "H2",
+      "text": "How to block or delete cookies"
+    },
+    {
+      "tag": "H2",
+      "text": "How can you delete cookies?"
+    },
+    {
+      "tag": "H2",
+      "text": "Changing your consent"
+    },
+    {
+      "tag": "H2",
+      "text": "Do you have any questions?"
+    },
+    {
+      "tag": "H1",
+      "text": "WELCOME TO JOE & THE JUICE"
+    },
+    {
+      "tag": "H2",
+      "text": "Order ahead, skip the line and get free sh*t with the Joe App!"
+    },
+    {
+      "tag": "H2",
+      "text": "Most popular products"
+    },
+    {
+      "tag": "H1",
+      "text": "FIND A JOE & THE JUICE NEAR YOU"
+    },
+    {
+      "tag": "H3",
+      "text": "About"
+    },
+    {
+      "tag": "H3",
+      "text": "Explore"
+    },
+    {
+      "tag": "H3",
+      "text": "Get Help"
+    },
+    {
+      "tag": "H3",
+      "text": "Legal"
+    },
+    {
+      "tag": "H3",
+      "text": "Follow Us"
+    }
+  ],
+  "all_paragraphs": [
+    "We are using two types of cookies: Necessary and performance. Necessary cookies ensure that the site is shown and works as intended. Performance cookies are used to improve the user experience. When you press \u201caccept\u201d, you\u2019re accepting perfomance cookies. You can always change your cookie consent on the link in the bottom of the page.",
+    "Strictly necessary cookies help make a website navigable by activating basic functions such as page navigation and access to secure website areas. Without these cookies, the website would not be able to work properly.",
+    "Functional cookies make it possible to save information that changes the way the website appears or acts. For instance your preferred language or region.",
+    "Statistical cookies help the website owner understand how visitors interact with the website by collecting and reporting information.",
+    "Marketing cookies are used to track visitors across websites. The intention is to display ads that are relevant and interesting to the individual user and thus more valuable for publishers and third-party advertisers.",
+    "We are in the process of classifying unclassified cookies together with the providers of the individual cookies.",
+    "A cookie is a small data file stored in your computer, tablet or smartphone. A cookie is not a program that can contain harmful malware or virus.",
+    "Some cookies perform essential functions for our website. Cookies also help us get an overview of your visit to our website so we can continuously optimize and tailor the experience to your needs and interests. For example, cookies remember things like the items added to the shopping cart; whether you have visited our website before; if you are logged in; and the specific language and currency you prefer to see on the website. We also use cookies to target our ads specifically to you on other websites. In general, we use cookies as part of our service to present you with content that is as relevant to you as possible.",
+    "You can see the specific services that store cookies and why they do it, under the different categories:",
+    "The length of time a cookie is stored on your devices and browsers varies. The lifetime is calculated according to your last visit to the website. When a cookie expires, it is automatically deleted. All our cookies\u2019 lifetimes are specified in our cookie policy.",
+    "You may at any time block all or just third-party cookies completely by changing the browser settings on your computer, tablet or smartphone. The location of these settings will depend on the browser you use. However, you should be aware that if you block all or just third-party cookies, there may be functions and services that you will be unable to use on the website (because these depend on cookies). You can opt-out of cookies from Google Analytics here.",
+    "It is easy to delete cookies that you have previously accepted. It depends on which browser (Chrome, Firefox, Safari, etc.) and device (smartphone, tablet, PC, Mac) you are using. You can typically find this information under settings \u2013 Security and Privacy \u2013 but this may vary from one browser to another. Specify which device/browser you are using (click the appropriate link):",
+    "You can change your consent by either deleting cookies from your browser or by changing your original choice by clicking the link below:",
+    "Remember: If you use more than one browser, you must delete cookies in all of them.",
+    "If you have any comments or questions relating to our information and/or processing of personal data, please feel welcome to contact us. The cookie policy itself is updated once a month by Cookie Information. If you have any questions about our cookie policy, you are welcome to contact Cookie Information on their website.",
+    "Find a store near you",
+    "The Joe Loyalty App is not just an ordering app, you\u2019ll be able to earn points with every order, level up through tiers and complete fun, rewarding challenges along the way.",
+    "1 St Peters Street [St Albans]",
+    "1 St Peter's Street, St Albans",
+    "Watford Atria",
+    "The Harlequin Centre, Watford",
+    "27 Muswell Hill Broadway [London]",
+    "27 Muswell Hill Broadway, London",
+    "63 Hampstead High Street [Hampstead]",
+    "63 Hampstead High Street, London",
+    "205 Haverstock Hill [Belsize Park]",
+    "205-207 Haverstock Hill, Belsize Park, London NW3 4QG, Storbritannien, London",
+    "68 Salusbury Road [Queens Park]",
+    "68 Salusbury Road, London",
+    "142 Regents Park Road [Primrose Hill]",
+    "142 Regent's Park Road, London",
+    "184 Portobello Road [Notting Hill]",
+    "184 Portobello Road, London",
+    "Coal Drops Yard [Kings Cross]",
+    "Unit 1198, Coal Drops Yard, London N1C 4DQ, London",
+    "\u00a9 2026 Joe and the Juice. All rights reserved"
+  ],
+  "all_links": [
+    "About Cookies",
+    "Cookie Information - Privacy policy",
+    "Cookie Information - Privacy policy",
+    "Cookie Information - Privacy policy",
+    "Microsoft - Privacy policy",
+    "Microsoft - Privacy policy",
+    "Microsoft - Privacy policy",
+    "Microsoft - Privacy policy",
+    "Microsoft - Privacy policy",
+    "Microsoft - Privacy policy",
+    "Cookie Information - Privacy policy",
+    "Cloudflare - Privacy policy",
+    "Cloudflare - Privacy policy",
+    "Cookie Information - Privacy policy",
+    "Cloudflare - Privacy policy",
+    "Microsoft - Privacy policy",
+    "Microsoft - Privacy policy",
+    "Cloudflare - Privacy policy",
+    "Spotify - Privacy policy",
+    "Google Analytics - Privacy policy",
+    "Google Analytics - Privacy policy",
+    "Spotify - Privacy policy",
+    "Microsoft Azure - Privacy policy",
+    "Vimeo - Privacy policy",
+    "Google Analytics - Privacy policy",
+    "Shopify Analytics - Privacy policy",
+    "Snapchat - Privacy policy",
+    "Snapchat - Privacy policy",
+    "Facebook - Privacy policy",
+    "Google - Privacy policy",
+    "Snapchat - Privacy policy",
+    "Adform - Privacy policy",
+    "Snapchat - Privacy policy",
+    "Google Marketing Platform - Privacy policy",
+    "Cookie Information",
+    "You can opt-out of cookies from Google Analytics here",
+    "Internet Explorer",
+    "Microsoft Edge",
+    "Mozilla Firefox",
+    "Google Chrome",
+    "Opera",
+    "Safari",
+    "Flash cookies",
+    "Apple",
+    "Android",
+    "Chrome, Android",
+    "You can change your consent by clicking here",
+    "Cookie Information",
+    "contact Cookie Information on their website.",
+    "FULL MENU",
+    "OPEN IN THE STORE LOCATOR",
+    "Culture",
+    "Apply for a job",
+    "Employee login",
+    "Press kit",
+    "Food menu",
+    "Allergens",
+    "Ingredients",
+    "Joe loyalty app",
+    "Find a Store",
+    "News",
+    "Frequently Asked Questions",
+    "Contact Us",
+    "Terms of Use",
+    "Privacy Policie",
+    "Compliance Documents",
+    "Whistleblower",
+    "Policies",
+    "Smiley Report",
+    "Do not sell my personal information"
+  ],
+  "raw_body_text": [
+    {
+      "text": "Joe App!",
+      "fontSize": "35px",
+      "tag": "SPAN"
+    },
+    {
+      "text": "FIND A JOE & THE JUICE",
+      "fontSize": "48px",
+      "tag": "SPAN"
+    },
+    {
+      "text": "NEAR YOU",
+      "fontSize": "48px",
+      "tag": "SPAN"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+---
+const navLinks = [
+  { href: "/", label: "Home" },
+  { href: "https://order.theacaiclub.com", label: "Order" },
+  { href: "/stores", label: "Stores" },
+  { href: "/app", label: "App" },
+  { href: "/about", label: "Culture" },
+  { href: "/careers", label: "Careers" },
+];
+
+const currentPath = Astro.url.pathname;
+---
+
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100" id="navbar">
+  <div class="max-w-[1400px] mx-auto px-6 sm:px-8 h-[60px] flex items-center justify-between">
+    <!-- Logo -->
+    <a href="/" class="flex items-center gap-3 shrink-0">
+      <img src="/images/logo.jpg" alt="The Açai Club" width="36" height="36" class="rounded-full" />
+    </a>
+
+    <!-- Desktop Nav — centered -->
+    <div class="hidden md:flex items-center gap-10">
+      {navLinks.map((link) => (
+        <a
+          href={link.href}
+          class:list={[
+            "font-heading text-[13px] font-bold uppercase tracking-[0.12em] transition-colors",
+            currentPath === link.href ? "text-dark" : "text-charcoal hover:text-dark",
+          ]}
+        >
+          {link.label}
+        </a>
+      ))}
+    </div>
+
+    <!-- Right side — hamburger for mobile -->
+    <div class="flex items-center gap-4">
+      <button
+        id="mobile-toggle"
+        class="md:hidden relative w-10 h-10"
+        aria-label="Toggle menu"
+      >
+        <span class="absolute left-2 right-2 h-0.5 bg-dark transition-all duration-300 top-[13px]" id="bar1"></span>
+        <span class="absolute left-2 right-2 h-0.5 bg-dark transition-all duration-300 top-[19px]" id="bar2"></span>
+        <span class="absolute left-2 right-2 h-0.5 bg-dark transition-all duration-300 top-[25px]" id="bar3"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div class="md:hidden hidden bg-white border-t border-gray-100" id="mobile-menu">
+    <div class="px-6 py-8 flex flex-col gap-6">
+      {navLinks.map((link) => (
+        <a
+          href={link.href}
+          class="font-heading text-lg font-semibold uppercase tracking-[0.15em] text-dark"
+        >
+          {link.label}
+        </a>
+      ))}
+    </div>
+  </div>
+</nav>
+
+<script>
+  const toggle = document.getElementById("mobile-toggle")!;
+  const menu = document.getElementById("mobile-menu")!;
+  const bar1 = document.getElementById("bar1")!;
+  const bar2 = document.getElementById("bar2")!;
+  const bar3 = document.getElementById("bar3")!;
+
+  let open = false;
+  toggle.addEventListener("click", () => {
+    open = !open;
+    menu.classList.toggle("hidden", !open);
+    bar1.style.top = open ? "19px" : "13px";
+    bar1.style.transform = open ? "rotate(45deg)" : "";
+    bar2.style.opacity = open ? "0" : "1";
+    bar3.style.top = open ? "19px" : "25px";
+    bar3.style.transform = open ? "rotate(-45deg)" : "";
+  });
+</script>
