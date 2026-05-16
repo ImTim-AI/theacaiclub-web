@@ -1,25 +1,39 @@
 @import "tailwindcss";
 
-@theme {
-  /* Core palette — dark-dominant like Joe & The Juice */
-  --color-dark: #1a1a1a;
-  --color-dark-card: #2a2a2a;
-  --color-dark-surface: #222222;
-  --color-dark-border: #333333;
-  --color-light: #ffffff;
-  --color-light-muted: #f5f5f5;
-  --color-grey: #999999;
+/*
+  Palette — matches the mobile app brand colours (see app/lib/theme/app_theme.dart).
+  We flipped from dark-dominant to cream-dominant on 2026-05-16. Class names kept
+  for stability: `bg-dark` now renders the cream brand bg, `text-light` now renders
+  the dark text on cream, etc. Read the comment next to each token for the role.
+*/
 
-  /* Brand accent — acai pink (like Joe's pink) */
+@theme {
+  /* Cream/sand surfaces — what used to be "dark" tokens */
+  --color-dark: #DED9D4;          /* brandCream — main page bg */
+  --color-dark-surface: #F2EEEA;  /* accentBackground — alt section bg */
+  --color-dark-card: #ffffff;     /* card surfaces (white pops on cream) */
+  --color-dark-border: #CBC8BE;   /* brandSand — borders / dividers */
+
+  /* Charcoal text — what used to be "light" tokens (kept for text legibility) */
+  --color-light: #3A3A38;         /* primaryDark — primary text on cream */
+  --color-light-muted: #EDE8E4;   /* cream — alt section bg (was section, not hover) */
+  --color-grey: #6B6B68;          /* brandMedium — secondary text */
+
+  /* CTA pill colour — taupe pill with white text, matches the mobile app */
+  --color-taupe-dark: #7E7E73;    /* CTA hover for brandTaupe */
+  --color-charcoal: #4F4F4D;      /* legacy — kept for explicit users */
+
+  /* Brand accents — pink retained for subtle pops */
   --color-pink: #E8B4B8;
   --color-pink-light: #f0cdd0;
 
-  /* Keep brand earth tones for subtle use */
-  --color-charcoal: #4F4F4D;
+  /* Earth tones retained for explicit use */
   --color-beige: #D9D0C8;
   --color-cream: #EDE8E4;
+  --color-sand: #CBC8BE;
+  --color-taupe: #9B9B90;
 
-  /* Product accent colors */
+  /* Product accent colours */
   --color-acai: #5B2C6F;
   --color-acai-light: #7D3C98;
   --color-berry: #C0392B;

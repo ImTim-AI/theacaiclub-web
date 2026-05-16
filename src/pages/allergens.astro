@@ -2,24 +2,64 @@
 import Layout from '../layouts/Layout.astro';
 
 const allergens = [
-  { name: "Celery", icon: "🥬" },
-  { name: "Cereals containing gluten", icon: "🌾" },
-  { name: "Crustaceans", icon: "🦐" },
-  { name: "Eggs", icon: "🥚" },
-  { name: "Fish", icon: "🐟" },
-  { name: "Lupin", icon: "🌿" },
-  { name: "Milk", icon: "🥛" },
-  { name: "Molluscs", icon: "🐚" },
-  { name: "Mustard", icon: "🟡" },
-  { name: "Nuts", icon: "🥜" },
-  { name: "Peanuts", icon: "🥜" },
-  { name: "Sesame seeds", icon: "🌰" },
-  { name: "Soybeans", icon: "🫘" },
-  { name: "Sulphur dioxide & sulphites", icon: "⚗️" },
+  { name: "Celery", svg: `<path d="M12 4v16M12 4c-1.5 0-3 1-3.5 3M12 4c1.5 0 3 1 3.5 3M12 6c-2 0-4 1-5 3M12 6c2 0 4 1 5 3"/>` },
+  { name: "Cereals containing gluten", svg: `<path d="M12 4v16M12 8l-3-2M12 8l3-2M12 12l-3-2M12 12l3-2M12 16l-3-2M12 16l3-2"/>` },
+  { name: "Crustaceans", svg: `<path d="M6 7c0-2 2-3 5-3s6 2 6 5-2 5-5 5M16 14c0 4-3 6-7 6M6 7l-2-1M6 7H4"/>` },
+  { name: "Eggs", svg: `<path d="M12 4c-3 0-5.5 4-5.5 8.5S9 20 12 20s5.5-3 5.5-7.5S15 4 12 4z"/>` },
+  { name: "Fish", svg: `<path d="M4 12c2-3 5-4 8-4s5 1 7 3l3-2v6l-3-2c-2 2-4 3-7 3s-6-1-8-4z"/><circle cx="16" cy="11" r=".5"/>` },
+  { name: "Lupin", svg: `<path d="M5 20c0-7 6-13 14-13 0 8-6 14-14 14M5 20c0 0 4-2 7-5"/>` },
+  { name: "Milk", svg: `<path d="M9 4h6v3l1 13H8l1-13V4z"/>` },
+  { name: "Molluscs", svg: `<path d="M12 4c-4 0-8 4-8 8s4 8 8 8M12 8c-2 0-4 2-4 4s2 4 4 4M12 12c-1 0-2 1-2 2"/>` },
+  { name: "Mustard", svg: `<circle cx="9" cy="8" r="1"/><circle cx="15" cy="8" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="9" cy="16" r="1"/><circle cx="15" cy="16" r="1"/>` },
+  { name: "Nuts", svg: `<path d="M12 4c-4 0-7 3.5-7 8s3 8 7 8 7-3.5 7-8-3-8-7-8z"/>` },
+  { name: "Peanuts", svg: `<path d="M12 4c-3 0-5 1.5-5 3.5s2 3 5 3 5-1 5-3-2-3.5-5-3.5zM12 10.5c-3 0-5 1.5-5 3.5s2 4 5 4 5-2 5-4-2-3.5-5-3.5z"/>` },
+  { name: "Sesame seeds", svg: `<ellipse cx="9" cy="9" rx="1.3" ry="2" transform="rotate(-30 9 9)"/><ellipse cx="15" cy="9" rx="1.3" ry="2" transform="rotate(30 15 9)"/><ellipse cx="9" cy="15" rx="1.3" ry="2" transform="rotate(30 9 15)"/><ellipse cx="15" cy="15" rx="1.3" ry="2" transform="rotate(-30 15 15)"/>` },
+  { name: "Soybeans", svg: `<path d="M5 12c0-2 1-4 3-4h8c2 0 3 2 3 4s-1 4-3 4H8c-2 0-3-2-3-4z"/><circle cx="9" cy="11" r="1.3"/><circle cx="12" cy="13" r="1.3"/><circle cx="15" cy="11" r="1.3"/>` },
+  { name: "Sulphur dioxide & sulphites", svg: `<path d="M9 3h6M10 3v6l-4 9c-.7 1.5.4 3 2 3h8c1.6 0 2.7-1.5 2-3l-4-9V3M7 14h10"/>` },
 ];
+
+const allergenFaqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  '@id': 'https://theacaiclub.com/allergens/#faq',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Are The Açai Club products safe for people with severe allergies?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Our products are prepared in an open kitchen where all 14 major UK allergens are handled. While our team takes every precaution to keep ingredients separate, we cannot guarantee that any product is free from allergens due to shared equipment and preparation areas. If you have a serious allergy or intolerance, please contact your nearest store before placing your order.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Where can I find allergen information for a specific product?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Full allergen and nutritional information for each menu item is available in our online ordering system at order.theacaiclub.com. Select your store, choose a product, and scroll to the bottom of the product page to view its full allergen and nutritional information.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Which allergens are handled at The Açai Club?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'All 14 major UK allergens are handled in our open kitchens: celery, cereals containing gluten, crustaceans, eggs, fish, lupin, milk, molluscs, mustard, nuts, peanuts, sesame seeds, soybeans, and sulphur dioxide & sulphites.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How do I contact a store about my allergy before ordering?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Reading: 0118 228 8750. Beaconsfield: 01494 370876. Datchet: 01753 297015. Each store also has a dedicated email address listed on the stores page.',
+      },
+    },
+  ],
+};
 ---
 
-<Layout title="Allergens | The Açai Club" description="Allergen information for The Açai Club. Find out about the 14 major allergens & how to get product-specific information.">
+<Layout title="Allergens | The Açai Club" description="Allergen information for The Açai Club. We handle all 14 UK major allergens in open kitchens. Find out how to get product-specific allergen and nutritional info." schemaJsonLd={allergenFaqSchema}>
 
   <!-- Hero -->
   <section class="pt-28 pb-16 bg-dark">
@@ -36,7 +76,7 @@ const allergens = [
   <!-- Warning banner -->
   <section class="bg-beige/10 border-y border-beige/20 py-8">
     <div class="max-w-3xl mx-auto px-8 text-center">
-      <p class="text-beige font-heading font-semibold uppercase tracking-wider text-sm mb-2">Important Notice</p>
+      <p class="text-charcoal font-heading font-semibold uppercase tracking-wider text-sm mb-2">Important Notice</p>
       <p class="text-grey text-base leading-relaxed">
         Our products are prepared in an <strong class="text-light">open kitchen</strong> where all 14 major allergens are handled. While our team takes every precaution to keep ingredients separate, we <strong class="text-light">cannot guarantee</strong> that any product is free from allergens due to shared equipment & preparation areas.
       </p>
@@ -54,8 +94,8 @@ const allergens = [
       </h2>
       <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
         {allergens.map((a) => (
-          <div class="bg-dark-card rounded-xl p-4 text-center border border-dark-border">
-            <div class="text-2xl mb-2">{a.icon}</div>
+          <div class="bg-dark-card rounded-xl p-4 text-center border border-dark-border flex flex-col items-center">
+            <svg class="w-7 h-7 text-charcoal mb-2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" set:html={a.svg}></svg>
             <p class="text-grey text-xs font-heading font-semibold uppercase tracking-wider leading-tight">{a.name}</p>
           </div>
         ))}
@@ -70,11 +110,11 @@ const allergens = [
         Product-specific allergen info
       </h2>
       <p class="text-grey text-base leading-relaxed mb-8">
-        Full allergen information for each menu item is available in our ordering system. Select your store, choose a product, & scroll to the bottom of the product page to view its full allergen & nutritional information.
+        Full allergen information for each menu item is available in our ordering system. Select your store, choose a product & scroll to the bottom of the product page to view its full allergen & nutritional information.
       </p>
       <a
         href="https://order.theacaiclub.com"
-        class="inline-flex px-10 py-4 bg-light text-dark font-heading font-bold uppercase tracking-wider text-sm rounded-full hover:bg-light-muted transition-colors"
+        class="inline-flex px-10 py-4 bg-taupe text-white font-heading font-bold uppercase tracking-wider text-sm rounded-full hover:bg-taupe-dark transition-colors"
       >
         View Menu & Allergens
       </a>
@@ -91,17 +131,17 @@ const allergens = [
         <div class="bg-dark-card rounded-xl p-6 border border-dark-border text-center">
           <h3 class="font-heading font-semibold text-light text-sm uppercase tracking-wider mb-1">Reading</h3>
           <p class="text-grey text-xs mb-3">85 Kings Road, RG1 3DD</p>
-          <a href="tel:01182288750" class="text-beige text-sm hover:text-light transition-colors">0118 228 8750</a>
+          <a href="tel:01182288750" class="text-charcoal text-sm hover:text-light transition-colors">0118 228 8750</a>
         </div>
         <div class="bg-dark-card rounded-xl p-6 border border-dark-border text-center">
           <h3 class="font-heading font-semibold text-light text-sm uppercase tracking-wider mb-1">Beaconsfield</h3>
           <p class="text-grey text-xs mb-3">22 Gregories Road, HP9 1HQ</p>
-          <a href="tel:01494370876" class="text-beige text-sm hover:text-light transition-colors">01494 370876</a>
+          <a href="tel:01494370876" class="text-charcoal text-sm hover:text-light transition-colors">01494 370876</a>
         </div>
         <div class="bg-dark-card rounded-xl p-6 border border-dark-border text-center">
           <h3 class="font-heading font-semibold text-light text-sm uppercase tracking-wider mb-1">Datchet</h3>
           <p class="text-grey text-xs mb-3">10 High Street, SL3 9EA</p>
-          <a href="tel:01753297015" class="text-beige text-sm hover:text-light transition-colors">01753 297015</a>
+          <a href="tel:01753297015" class="text-charcoal text-sm hover:text-light transition-colors">01753 297015</a>
         </div>
       </div>
     </div>

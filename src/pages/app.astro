@@ -1,34 +1,63 @@
 ---
 import Layout from '../layouts/Layout.astro';
+
+const appSchemas = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'MobileApplication',
+    '@id': 'https://theacaiclub.com/app/#ios',
+    name: 'The Açai Club',
+    operatingSystem: 'iOS',
+    applicationCategory: 'FoodApplication',
+    description: 'Order ahead, collect berries on every açai bowl, and earn cups on every drink. Nine berries unlock a free bowl. Nine cups unlock a free drink.',
+    downloadUrl: 'https://apps.apple.com/gb/app/the-a%C3%A7ai-club/id6478923734',
+    installUrl: 'https://apps.apple.com/gb/app/the-a%C3%A7ai-club/id6478923734',
+    publisher: { '@id': 'https://theacaiclub.com/#organization' },
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'GBP' },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'MobileApplication',
+    '@id': 'https://theacaiclub.com/app/#android',
+    name: 'The Açai Club',
+    operatingSystem: 'Android',
+    applicationCategory: 'FoodApplication',
+    description: 'Order ahead, collect berries on every açai bowl, and earn cups on every drink. Nine berries unlock a free bowl. Nine cups unlock a free drink.',
+    downloadUrl: 'https://play.google.com/store/apps/details?id=com.epostechnologies.theacaiclub',
+    installUrl: 'https://play.google.com/store/apps/details?id=com.epostechnologies.theacaiclub',
+    publisher: { '@id': 'https://theacaiclub.com/#organization' },
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'GBP' },
+  },
+];
 ---
 
-<Layout title="Download the App | The Açai Club" description="Download The Açai Club app. Earn rewards, track Run Club, & order ahead.">
+<Layout title="Download the App | The Açai Club" description="Download The Açai Club app for iOS or Android. Order ahead, collect berries on every bowl & earn cups on every drink. First berry on us." schemaJsonLd={appSchemas}>
 
-  <!-- Hero — clean, centered like Joe Juice -->
+  <!-- Hero - clean, centered like Joe Juice -->
   <section class="relative pt-32 pb-28 bg-dark overflow-hidden">
     <!-- Large faded background text -->
     <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-      <span class="font-heading font-medium text-[18vw] uppercase leading-none text-light/[0.03] whitespace-nowrap">
+      <span class="font-heading font-medium text-[18vw] uppercase leading-none text-light/[0.08] whitespace-nowrap">
         REWARDS
       </span>
     </div>
 
     <div class="relative z-10 max-w-3xl mx-auto px-8 text-center">
       <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-light leading-tight">
-        Earn points, skip the line, <span class="text-beige">claim rewards</span>
+        Earn points, skip the line, <span class="text-charcoal">claim rewards</span>
       </h1>
       <p class="mt-6 text-grey text-lg max-w-lg mx-auto leading-relaxed">
         Download the app & earn points with every order. Your first berry is on us.
       </p>
       <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="https://apps.apple.com/gb/app/the-a%C3%A7ai-club/id6478923734" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-3 px-8 py-4 bg-light text-dark rounded-full hover:bg-light-muted transition-colors">
+        <a href="https://apps.apple.com/gb/app/the-a%C3%A7ai-club/id6478923734" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-3 px-8 py-4 bg-taupe text-white rounded-full hover:bg-taupe-dark transition-colors">
           <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
           <div class="text-left">
             <div class="text-[10px] leading-none opacity-60">Download on the</div>
             <div class="text-sm font-heading font-normal leading-tight">App Store</div>
           </div>
         </a>
-        <a href="https://play.google.com/store/apps/details?id=com.epostechnologies.theacaiclub" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-3 px-8 py-4 bg-light text-dark rounded-full hover:bg-light-muted transition-colors">
+        <a href="https://play.google.com/store/apps/details?id=com.epostechnologies.theacaiclub" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-3 px-8 py-4 bg-taupe text-white rounded-full hover:bg-taupe-dark transition-colors">
           <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.67L14.09 12.77 3.18.33a.42.42 0 00-.18.35v22.65c0 .15.07.27.18.34zm.77.33l12.37-7.14-2.73-2.73zm12.37-16.53L3.95 0l10.64 10.64zm4.14 3.53l-3.31-1.91-2.97 2.97 2.97 2.97 3.31-1.91a1.07 1.07 0 000-2.12z"/></svg>
           <div class="text-left">
             <div class="text-[10px] leading-none opacity-60">Get it on</div>
@@ -39,18 +68,18 @@ import Layout from '../layouts/Layout.astro';
     </div>
   </section>
 
-  <!-- Three ways to earn — compact -->
+  <!-- Three ways to earn - compact -->
   <section class="py-24 bg-dark-surface">
     <div class="max-w-[1400px] mx-auto px-8">
       <h2 class="font-heading text-3xl sm:text-4xl font-bold text-light mb-12 text-center">
-        Two ways to <span class="text-beige">earn</span>
+        Two ways to <span class="text-charcoal">earn</span>
       </h2>
 
       <div class="grid lg:grid-cols-2 gap-6 max-w-3xl mx-auto">
         <div class="bg-dark-card rounded-2xl p-8 border border-dark-border">
           <h3 class="font-heading text-xl font-bold text-light mb-3">Berry Rewards</h3>
           <p class="text-grey text-sm leading-relaxed mb-6">
-            Earn one berry for each regular-sized açai bowl. Collect nine & your next bowl is completely free.
+            Earn one berry for every regular-sized açai bowl. Collect nine & your next bowl is completely free.
           </p>
           <div class="flex gap-1">
             {[1,2,3,4,5,6,7,8,9].map(() => (
@@ -65,7 +94,7 @@ import Layout from '../layouts/Layout.astro';
         <div class="bg-dark-card rounded-2xl p-8 border border-dark-border">
           <h3 class="font-heading text-xl font-bold text-light mb-3">Cup Rewards</h3>
           <p class="text-grey text-sm leading-relaxed mb-6">
-            Earn one cup for each eligible drink. Collect nine cups to earn a free drink.
+            Earn one cup for every eligible drink. Collect nine cups to earn a free drink.
           </p>
           <div class="flex gap-1">
             {[1,2,3,4,5,6,7,8,9].map(() => (
@@ -90,24 +119,24 @@ import Layout from '../layouts/Layout.astro';
       </h2>
       <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-4xl mx-auto">
         <div class="text-center">
-          <div class="w-14 h-14 rounded-full bg-dark-card border border-dark-border flex items-center justify-center font-heading font-normal text-xl text-beige mx-auto mb-5">1</div>
+          <div class="w-14 h-14 rounded-full bg-dark-card border border-dark-border flex items-center justify-center font-heading font-normal text-xl text-charcoal mx-auto mb-5">1</div>
           <h3 class="font-heading font-normal text-light mb-2">Download</h3>
-          <p class="text-grey text-sm">Get the app & create your free account in seconds.</p>
+          <p class="text-grey text-sm">Get the app & create your free account in seconds. First berry is free.</p>
         </div>
         <div class="text-center">
-          <div class="w-14 h-14 rounded-full bg-dark-card border border-dark-border flex items-center justify-center font-heading font-normal text-xl text-beige mx-auto mb-5">2</div>
+          <div class="w-14 h-14 rounded-full bg-dark-card border border-dark-border flex items-center justify-center font-heading font-normal text-xl text-charcoal mx-auto mb-5">2</div>
           <h3 class="font-heading font-normal text-light mb-2">Order</h3>
-          <p class="text-grey text-sm">Order in-store or ahead through the app. First berry is free.</p>
+          <p class="text-grey text-sm">Order in-store or ahead through the app.</p>
         </div>
         <div class="text-center">
-          <div class="w-14 h-14 rounded-full bg-dark-card border border-dark-border flex items-center justify-center font-heading font-normal text-xl text-beige mx-auto mb-5">3</div>
+          <div class="w-14 h-14 rounded-full bg-dark-card border border-dark-border flex items-center justify-center font-heading font-normal text-xl text-charcoal mx-auto mb-5">3</div>
           <h3 class="font-heading font-normal text-light mb-2">Earn</h3>
           <p class="text-grey text-sm">Collect berries & cups with every purchase.</p>
         </div>
         <div class="text-center">
-          <div class="w-14 h-14 rounded-full bg-dark-card border border-dark-border flex items-center justify-center font-heading font-normal text-xl text-beige mx-auto mb-5">4</div>
+          <div class="w-14 h-14 rounded-full bg-dark-card border border-dark-border flex items-center justify-center font-heading font-normal text-xl text-charcoal mx-auto mb-5">4</div>
           <h3 class="font-heading font-normal text-light mb-2">Redeem</h3>
-          <p class="text-grey text-sm">Claim free bowls, drinks, & more.</p>
+          <p class="text-grey text-sm">Claim free bowls, drinks & other rewards.</p>
         </div>
       </div>
     </div>
@@ -117,15 +146,26 @@ import Layout from '../layouts/Layout.astro';
   <section class="py-24 bg-dark-surface border-t border-dark-border">
     <div class="max-w-4xl mx-auto px-8 text-center">
       <h2 class="font-heading text-4xl sm:text-5xl font-bold uppercase tracking-tight text-light mb-4">
-        Your first berry is <span class="text-beige">free</span>
+        Your first berry <span class="text-charcoal">on us</span>
       </h2>
       <p class="text-grey text-lg mb-10">
-        Download the app, sign up, & claim your free berry today.
+        Download the app, sign up & claim your free berry today.
       </p>
-      <a href="https://apps.apple.com/gb/app/the-a%C3%A7ai-club/id6478923734" target="_blank" rel="noopener noreferrer" class="inline-flex px-10 py-4 bg-light text-dark font-heading font-bold uppercase tracking-wider text-sm rounded-full hover:bg-light-muted transition-colors">
+      <a id="download-now" href="https://apps.apple.com/gb/app/the-a%C3%A7ai-club/id6478923734" target="_blank" rel="noopener noreferrer" class="inline-flex px-10 py-4 bg-taupe text-white font-heading font-bold uppercase tracking-wider text-sm rounded-full hover:bg-taupe-dark transition-colors">
         Download Now
       </a>
     </div>
   </section>
+
+  <script is:inline>
+    (function () {
+      const link = document.getElementById('download-now');
+      if (!link) return;
+      const ua = navigator.userAgent || '';
+      if (/android/i.test(ua)) {
+        link.href = 'https://play.google.com/store/apps/details?id=com.epostechnologies.theacaiclub';
+      }
+    })();
+  </script>
 
 </Layout>

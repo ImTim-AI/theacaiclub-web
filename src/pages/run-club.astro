@@ -1,0 +1,275 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const runClubSchemas = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'SportsEvent',
+    '@id': 'https://theacaiclub.com/run-club/#event-beaconsfield',
+    name: 'The Açai Club Run Club, Beaconsfield',
+    description: 'Free 5-mile community run starting from The Açai Club Beaconsfield. Run/walk format: 3 minutes run, 1 minute walk. All fitness levels and all ages welcome. No booking required.',
+    sport: 'Running',
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    eventSchedule: {
+      '@type': 'Schedule',
+      repeatFrequency: 'P1W',
+      byDay: 'https://schema.org/Sunday',
+      startTime: '08:00',
+      endTime: '09:30',
+    },
+    location: {
+      '@type': 'Place',
+      name: 'The Açai Club, Beaconsfield',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: '22 Gregories Road',
+        addressLocality: 'Beaconsfield',
+        postalCode: 'HP9 1HQ',
+        addressCountry: 'GB',
+      },
+    },
+    organizer: { '@id': 'https://theacaiclub.com/#organization' },
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'GBP', availability: 'https://schema.org/InStock' },
+    isAccessibleForFree: true,
+    image: 'https://theacaiclub.com/images/ig-runclub-3.webp',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'SportsEvent',
+    '@id': 'https://theacaiclub.com/run-club/#event-datchet',
+    name: 'The Açai Club Run Club, Datchet',
+    description: 'Free 5-mile community run starting from The Açai Club Datchet. Run/walk format: 3 minutes run, 1 minute walk. All fitness levels and all ages welcome. No booking required.',
+    sport: 'Running',
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    eventSchedule: {
+      '@type': 'Schedule',
+      repeatFrequency: 'P1W',
+      byDay: 'https://schema.org/Sunday',
+      startTime: '08:00',
+      endTime: '09:30',
+    },
+    location: {
+      '@type': 'Place',
+      name: 'The Açai Club, Datchet',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: '10 High Street',
+        addressLocality: 'Datchet',
+        postalCode: 'SL3 9EA',
+        addressCountry: 'GB',
+      },
+    },
+    organizer: { '@id': 'https://theacaiclub.com/#organization' },
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'GBP', availability: 'https://schema.org/InStock' },
+    isAccessibleForFree: true,
+    image: 'https://theacaiclub.com/images/ig-runclub-3.webp',
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    '@id': 'https://theacaiclub.com/run-club/#howto',
+    name: 'How to join The Açai Club Run Club',
+    description: 'Join our free Sunday Run Club in four steps and start earning rewards in the app.',
+    totalTime: 'PT1H30M',
+    step: [
+      { '@type': 'HowToStep', position: 1, name: 'Show up', text: 'Meet us at the Beaconsfield or Datchet store at 8am sharp every Sunday. Just turn up, no booking needed.' },
+      { '@type': 'HowToStep', position: 2, name: 'Run together', text: 'A friendly rhythm: run three minutes, walk one. Repeat for five miles. All fitness levels welcome.' },
+      { '@type': 'HowToStep', position: 3, name: 'Earn a berry', text: 'Every run earns a berry in The Açai Club app. Stack nine berries and your next bowl is on us.' },
+      { '@type': 'HowToStep', position: 4, name: 'Repeat weekly', text: 'Track your runs in the app and rack up points each Sunday you show up.' },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    '@id': 'https://theacaiclub.com/run-club/#faq',
+    mainEntity: [
+      { '@type': 'Question', name: 'When does The Açai Club Run Club meet?', acceptedAnswer: { '@type': 'Answer', text: 'Every Sunday at 8am sharp, starting from our Beaconsfield (22 Gregories Road, HP9 1HQ) and Datchet (10 High Street, SL3 9EA) stores. Reading is coming soon.' } },
+      { '@type': 'Question', name: 'How long is the run?', acceptedAnswer: { '@type': 'Answer', text: '5 miles total, ran at every level. We use a friendly run/walk rhythm: 3 minutes run, 1 minute walk, repeat.' } },
+      { '@type': 'Question', name: 'Is the Run Club free?', acceptedAnswer: { '@type': 'Answer', text: 'Yes. Run Club is completely free with no sign up required. Every run earns you a berry in The Açai Club app. Stack nine berries for a free bowl.' } },
+      { '@type': 'Question', name: 'Do I need to book in advance?', acceptedAnswer: { '@type': 'Answer', text: 'No booking needed. Just turn up at 8am at one of our stores.' } },
+      { '@type': 'Question', name: 'Who can join?', acceptedAnswer: { '@type': 'Answer', text: 'Everyone is welcome. All fitness levels and all ages. Whether you are training for a marathon or just getting started, you will fit right in.' } },
+    ],
+  },
+];
+---
+
+<Layout title="Run Club | The Açai Club" description="Free 5-mile community run every Sunday at 8am from our Beaconsfield and Datchet stores. Run/walk format. Everyone welcome. Earn berries in the app." schemaJsonLd={runClubSchemas}>
+
+  <!-- Hero -->
+  <section class="relative pt-32 pb-28 bg-dark overflow-hidden">
+    <!-- Large faded background text -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
+      <span class="font-heading font-medium text-[18vw] uppercase leading-none text-light/[0.08] whitespace-nowrap">
+        RUN CLUB
+      </span>
+    </div>
+
+    <div class="relative z-10 max-w-3xl mx-auto px-8 text-center">
+      <p class="font-heading text-sm uppercase tracking-[0.2em] text-charcoal mb-6">Every Sunday at 8am</p>
+      <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tight text-light leading-tight">
+        Run together, <span class="text-charcoal">earn rewards</span>
+      </h1>
+      <p class="mt-6 text-grey text-lg max-w-lg mx-auto leading-relaxed">
+        Lace up, show up & earn berries in the app. Our Run Club brings the community together every Sunday morning. Everyone welcome. All fitness levels, all ages. No sign up. No pressure.
+      </p>
+      <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="/app" class="inline-flex justify-center px-10 py-4 bg-taupe text-white font-heading font-bold uppercase tracking-wider text-sm rounded-full hover:bg-taupe-dark transition-colors">
+          Join via App
+        </a>
+        <a href="/stores" class="inline-flex justify-center px-10 py-4 bg-transparent text-light font-heading font-bold uppercase tracking-wider text-sm rounded-full border border-dark-border hover:bg-dark-card transition-colors">
+          Find a Store
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats + photo -->
+  <section class="bg-dark-surface pt-16 pb-20">
+    <div class="max-w-4xl mx-auto px-8">
+      <div class="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+        <div class="rounded-2xl overflow-hidden max-w-[336px] mx-auto md:mx-0 md:mr-auto">
+          <img src="/images/ig-runclub-3.webp" alt="The Açai Club Run Club group portrait on an autumn morning" width="640" height="640" class="block w-full h-auto" />
+        </div>
+
+        <div class="space-y-10 text-center md:text-left">
+          <div>
+            <div class="text-3xl sm:text-4xl font-heading font-normal text-light">8:00</div>
+            <p class="text-grey mt-1 uppercase text-[11px] tracking-wider">AM Start</p>
+          </div>
+          <div>
+            <div class="text-3xl sm:text-4xl font-heading font-normal text-light">5mi</div>
+            <p class="text-grey mt-1 uppercase text-[11px] tracking-wider">Every Level</p>
+          </div>
+          <div>
+            <div class="text-2xl sm:text-3xl font-heading font-normal text-light">Run/walk</div>
+            <p class="text-grey mt-1 uppercase text-[11px] tracking-wider">3 min run · 1 min walk</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="py-24 bg-dark">
+    <div class="max-w-[1400px] mx-auto px-8">
+      <h2 class="font-heading text-3xl sm:text-4xl font-bold uppercase tracking-tight text-light text-center mb-16">
+        How it works
+      </h2>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-4xl mx-auto">
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-full bg-dark-card border border-dark-border flex items-center justify-center font-heading font-normal text-xl text-charcoal mx-auto mb-5">1</div>
+          <h3 class="font-heading font-normal text-light mb-2">Show up</h3>
+          <p class="text-grey text-sm">Meet us at the store, 8am sharp every Sunday. Just turn up, no booking needed.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-full bg-dark-card border border-dark-border flex items-center justify-center font-heading font-normal text-xl text-charcoal mx-auto mb-5">2</div>
+          <h3 class="font-heading font-normal text-light mb-2">Run together</h3>
+          <p class="text-grey text-sm">A friendly rhythm: run three, walk one. Repeat for five miles. Marathon trainer or first-timer, you'll fit right in.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-full bg-dark-card border border-dark-border flex items-center justify-center font-heading font-normal text-xl text-charcoal mx-auto mb-5">3</div>
+          <h3 class="font-heading font-normal text-light mb-2">Earn a berry</h3>
+          <p class="text-grey text-sm">Every run earns a berry in the app. Stack nine berries & your next bowl is on us.</p>
+        </div>
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-full bg-dark-card border border-dark-border flex items-center justify-center font-heading font-normal text-xl text-charcoal mx-auto mb-5">4</div>
+          <h3 class="font-heading font-normal text-light mb-2">Repeat weekly</h3>
+          <p class="text-grey text-sm">Track your runs in the app & rack up points each Sunday you show up.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Where we run -->
+  <section class="py-24 bg-dark-surface">
+    <div class="max-w-[1400px] mx-auto px-8">
+      <h2 class="font-heading text-3xl sm:text-4xl font-bold uppercase tracking-tight text-light text-center mb-4">
+        Where we run
+      </h2>
+      <p class="text-grey text-base max-w-lg mx-auto text-center mb-12">
+        Run Club starts from our Beaconsfield & Datchet stores. Reading coming soon.
+      </p>
+      <div class="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+        <div class="bg-dark-card rounded-2xl p-8 border border-dark-border text-center">
+          <h3 class="font-heading font-normal text-light text-xl">Beaconsfield</h3>
+          <p class="text-grey text-sm mt-2">22 Gregories Road, HP9 1HQ</p>
+          <p class="text-charcoal font-heading text-xs uppercase tracking-wider mt-4">Sundays · 8am</p>
+        </div>
+        <div class="bg-dark-card rounded-2xl p-8 border border-dark-border text-center">
+          <h3 class="font-heading font-normal text-light text-xl">Datchet</h3>
+          <p class="text-grey text-sm mt-2">10 High Street, SL3 9EA</p>
+          <p class="text-charcoal font-heading text-xs uppercase tracking-wider mt-4">Sundays · 8am</p>
+        </div>
+        <div class="bg-dark-card rounded-2xl p-8 border border-dark-border text-center opacity-60">
+          <h3 class="font-heading font-normal text-light text-xl">Reading</h3>
+          <p class="text-grey text-sm mt-2">85 Kings Road, RG1 3DD</p>
+          <p class="text-charcoal font-heading text-xs uppercase tracking-wider mt-4">Coming soon</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="py-24 bg-dark border-t border-dark-border">
+    <div class="max-w-3xl mx-auto px-8">
+      <h2 class="font-heading text-3xl sm:text-4xl font-bold uppercase tracking-tight text-light text-center mb-12">
+        Run Club FAQ
+      </h2>
+      <div class="space-y-6">
+        <details class="bg-dark-card rounded-2xl p-6 border border-dark-border group">
+          <summary class="font-heading font-normal text-light cursor-pointer list-none flex items-center justify-between">
+            <span>When does The Açai Club Run Club meet?</span>
+            <span class="text-charcoal text-2xl group-open:rotate-45 transition-transform">+</span>
+          </summary>
+          <p class="text-grey text-sm mt-4 leading-relaxed">Every Sunday at 8am sharp, starting from our Beaconsfield (22 Gregories Road, HP9 1HQ) and Datchet (10 High Street, SL3 9EA) stores. Reading is coming soon.</p>
+        </details>
+        <details class="bg-dark-card rounded-2xl p-6 border border-dark-border group">
+          <summary class="font-heading font-normal text-light cursor-pointer list-none flex items-center justify-between">
+            <span>How long is the run?</span>
+            <span class="text-charcoal text-2xl group-open:rotate-45 transition-transform">+</span>
+          </summary>
+          <p class="text-grey text-sm mt-4 leading-relaxed">5 miles total, ran at every level. We use a friendly run/walk rhythm: 3 minutes run, 1 minute walk, repeat.</p>
+        </details>
+        <details class="bg-dark-card rounded-2xl p-6 border border-dark-border group">
+          <summary class="font-heading font-normal text-light cursor-pointer list-none flex items-center justify-between">
+            <span>Is the Run Club free?</span>
+            <span class="text-charcoal text-2xl group-open:rotate-45 transition-transform">+</span>
+          </summary>
+          <p class="text-grey text-sm mt-4 leading-relaxed">Yes. Run Club is completely free with no sign up required. Every run earns you a berry in The Açai Club app. Stack nine berries for a free bowl.</p>
+        </details>
+        <details class="bg-dark-card rounded-2xl p-6 border border-dark-border group">
+          <summary class="font-heading font-normal text-light cursor-pointer list-none flex items-center justify-between">
+            <span>Do I need to book in advance?</span>
+            <span class="text-charcoal text-2xl group-open:rotate-45 transition-transform">+</span>
+          </summary>
+          <p class="text-grey text-sm mt-4 leading-relaxed">No booking needed. Just turn up at 8am at one of our stores.</p>
+        </details>
+        <details class="bg-dark-card rounded-2xl p-6 border border-dark-border group">
+          <summary class="font-heading font-normal text-light cursor-pointer list-none flex items-center justify-between">
+            <span>Who can join?</span>
+            <span class="text-charcoal text-2xl group-open:rotate-45 transition-transform">+</span>
+          </summary>
+          <p class="text-grey text-sm mt-4 leading-relaxed">Everyone is welcome. All fitness levels and all ages. Whether you are training for a marathon or just getting started, you will fit right in.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="py-24 bg-dark border-t border-dark-border">
+    <div class="max-w-4xl mx-auto px-8 text-center">
+      <h2 class="font-heading text-4xl sm:text-5xl font-bold uppercase tracking-tight text-light mb-4">
+        See you <span class="text-charcoal">Sunday</span>
+      </h2>
+      <p class="text-grey text-lg mb-10">
+        Download the app, show up & start earning berries.
+      </p>
+      <a href="/app" class="inline-flex px-10 py-4 bg-taupe text-white font-heading font-bold uppercase tracking-wider text-sm rounded-full hover:bg-taupe-dark transition-colors">
+        Get the App
+      </a>
+    </div>
+  </section>
+
+</Layout>

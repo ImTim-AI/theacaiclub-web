@@ -5,14 +5,22 @@ const stores = [
   {
     city: "Reading",
     slug: "reading",
-    name: "The Açai Club — Reading",
+    name: "The Açai Club, Reading",
+    streetAddress: "85 Kings Road",
+    addressLocality: "Reading",
+    postalCode: "RG1 3DD",
+    geo: { latitude: 51.4569, longitude: -0.9626 },
     address: "85 Kings Road, Reading RG1 3DD",
     email: "reading@theacaiclub.com",
     phone: "0118 228 8750",
+    telSchema: "+441182288750",
     hours: [
       { day: "Mon–Fri", time: "08:00–19:00" },
       { day: "Sat–Sun", time: "08:00–18:00" },
-      { day: "Run Club", time: "Every Sunday at 8 AM" },
+    ],
+    hoursSchema: [
+      { dow: ["Monday","Tuesday","Wednesday","Thursday","Friday"], opens: "08:00", closes: "19:00" },
+      { dow: ["Saturday","Sunday"], opens: "08:00", closes: "18:00" },
     ],
     orderUrl: "https://order.theacaiclub.com/RestaurantSelection/1",
     mapsUrl: "https://www.google.com/maps/search/?api=1&query=85+Kings+Road+Reading+RG1+3DD",
@@ -21,14 +29,22 @@ const stores = [
   {
     city: "Beaconsfield",
     slug: "beaconsfield",
-    name: "The Açai Club — Beaconsfield",
+    name: "The Açai Club, Beaconsfield",
+    streetAddress: "22 Gregories Road",
+    addressLocality: "Beaconsfield",
+    postalCode: "HP9 1HQ",
+    geo: { latitude: 51.6101, longitude: -0.6427 },
     address: "22 Gregories Road, Beaconsfield HP9 1HQ",
     email: "beaconsfield@theacaiclub.com",
     phone: "01494 370876",
+    telSchema: "+441494370876",
     hours: [
       { day: "Mon–Fri", time: "08:00–19:00" },
       { day: "Sat–Sun", time: "08:00–18:00" },
-      { day: "Run Club", time: "Every Sunday at 8 AM" },
+    ],
+    hoursSchema: [
+      { dow: ["Monday","Tuesday","Wednesday","Thursday","Friday"], opens: "08:00", closes: "19:00" },
+      { dow: ["Saturday","Sunday"], opens: "08:00", closes: "18:00" },
     ],
     orderUrl: "https://order.theacaiclub.com/RestaurantSelection/3",
     mapsUrl: "https://www.google.com/maps/search/?api=1&query=22+Gregories+Road+Beaconsfield+HP9+1HQ",
@@ -37,23 +53,71 @@ const stores = [
   {
     city: "Datchet",
     slug: "datchet",
-    name: "The Açai Club — Datchet",
+    name: "The Açai Club, Datchet",
+    streetAddress: "10 High Street",
+    addressLocality: "Datchet",
+    postalCode: "SL3 9EA",
+    geo: { latitude: 51.4838, longitude: -0.5814 },
     address: "10 High Street, Datchet SL3 9EA",
     email: "datchet@theacaiclub.com",
     phone: "01753 297015",
+    telSchema: "+441753297015",
     hours: [
       { day: "Mon–Fri", time: "08:00–19:00" },
       { day: "Sat–Sun", time: "08:00–18:00" },
-      { day: "Run Club", time: "Every Sunday at 8 AM" },
+    ],
+    hoursSchema: [
+      { dow: ["Monday","Tuesday","Wednesday","Thursday","Friday"], opens: "08:00", closes: "19:00" },
+      { dow: ["Saturday","Sunday"], opens: "08:00", closes: "18:00" },
     ],
     orderUrl: "https://order.theacaiclub.com/RestaurantSelection/4",
     mapsUrl: "https://www.google.com/maps/search/?api=1&query=10+High+Street+Datchet+SL3+9EA",
     mapsEmbed: "https://maps.google.com/maps?q=10+High+Street+Datchet+SL3+9EA&output=embed",
   },
 ];
+
+const restaurantSchemas = stores.map((s) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Restaurant',
+  '@id': `https://theacaiclub.com/stores/#${s.slug}`,
+  name: s.name,
+  url: `https://theacaiclub.com/stores/`,
+  image: 'https://theacaiclub.com/images/logo.jpg',
+  servesCuisine: ['Açaí', 'Smoothies', 'Healthy', 'Breakfast'],
+  priceRange: '££',
+  telephone: s.telSchema,
+  email: s.email,
+  hasMenu: s.orderUrl,
+  acceptsReservations: false,
+  parentOrganization: { '@id': 'https://theacaiclub.com/#organization' },
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: s.streetAddress,
+    addressLocality: s.addressLocality,
+    postalCode: s.postalCode,
+    addressCountry: 'GB',
+  },
+  geo: {
+    '@type': 'GeoCoordinates',
+    latitude: s.geo.latitude,
+    longitude: s.geo.longitude,
+  },
+  hasMap: s.mapsUrl,
+  openingHoursSpecification: s.hoursSchema.map((h) => ({
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek: h.dow,
+    opens: h.opens,
+    closes: h.closes,
+  })),
+  potentialAction: {
+    '@type': 'OrderAction',
+    target: s.orderUrl,
+    deliveryMethod: ['http://purl.org/goodrelations/v1#DeliveryModeOwnFleet', 'http://purl.org/goodrelations/v1#DeliveryModePickUp'],
+  },
+}));
 ---
 
-<Layout title="Stores | The Açai Club" description="Find your nearest The Açai Club store in Reading, Beaconsfield, or Datchet.">
+<Layout title="Stores | The Açai Club" description="Find your nearest The Açai Club. Three UK stores in Reading, Beaconsfield, and Datchet. Addresses, opening hours, phone numbers, and online ordering." schemaJsonLd={restaurantSchemas}>
 
   <!-- Hero -->
   <section class="pt-28 pb-16 bg-dark">
@@ -62,7 +126,7 @@ const stores = [
         Find The Açai Club<br /><span class="text-charcoal">nearest you</span>
       </h1>
       <p class="mt-4 text-grey text-lg">
-        Pop in, grab a bowl, & feel the vibes.
+        Pop in, grab a bowl & feel the vibes.
       </p>
     </div>
   </section>
@@ -96,14 +160,14 @@ const stores = [
               <p class="mt-2 text-grey text-base">{store.address}</p>
               <p class="mt-1 text-grey text-sm">{store.phone}</p>
               <p class="mt-1">
-                <a href={`mailto:${store.email}`} class="text-beige text-sm hover:text-light transition-colors">{store.email}</a>
+                <a href={`mailto:${store.email}`} class="text-charcoal text-sm hover:text-light transition-colors">{store.email}</a>
               </p>
 
               <!-- Hours -->
               <div class="mt-6 space-y-1">
                 {store.hours.map((h) => (
                   <div class="flex items-center gap-4 text-sm">
-                    <span class="text-beige font-heading font-semibold uppercase tracking-wider w-24">{h.day}</span>
+                    <span class="text-charcoal font-heading font-semibold uppercase tracking-wider w-24">{h.day}</span>
                     <span class="text-grey">{h.time}</span>
                   </div>
                 ))}
@@ -113,7 +177,7 @@ const stores = [
               <div class="mt-8 flex flex-wrap gap-3">
                 <a
                   href={store.orderUrl}
-                  class="inline-flex px-8 py-3 bg-light text-dark font-heading font-bold uppercase tracking-wider text-sm rounded-full hover:bg-light-muted transition-colors"
+                  class="inline-flex px-8 py-3 bg-taupe text-white font-heading font-bold uppercase tracking-wider text-sm rounded-full hover:bg-taupe-dark transition-colors"
                 >
                   Order Now
                 </a>
@@ -139,13 +203,13 @@ const stores = [
   <section class="py-24 bg-dark-surface border-t border-dark-border">
     <div class="max-w-4xl mx-auto px-8 text-center">
       <h2 class="font-heading text-3xl font-bold uppercase tracking-tight text-light mb-4">
-        More locations <span class="text-beige">coming soon</span>
+        More locations <span class="text-charcoal">coming soon</span>
       </h2>
       <p class="text-grey text-lg max-w-md mx-auto mb-10">
         We're expanding across the UK & beyond. Stay tuned.
       </p>
       <p class="text-grey text-base max-w-md mx-auto">
-        Questions? Reach us at <a href="mailto:hello@theacaiclub.com" class="text-beige hover:text-light transition-colors">hello@theacaiclub.com</a>
+        Questions? Reach us at <a href="mailto:hello@theacaiclub.com" class="text-charcoal hover:text-light transition-colors">hello@theacaiclub.com</a>
       </p>
     </div>
   </section>

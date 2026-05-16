@@ -6,9 +6,73 @@ import Footer from '../components/Footer.astro';
 interface Props {
   title: string;
   description?: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article';
+  schemaJsonLd?: object | object[];
 }
 
-const { title, description = "Fresh açai bowls, smoothies, & good vibes. Join The Açai Club — earn rewards, join our Run Club, & fuel your lifestyle." } = Astro.props;
+const {
+  title,
+  description = "Fresh açai bowls, smoothies & good vibes. Three UK stores in Reading, Beaconsfield & Datchet. Join our Sunday Run Club & earn rewards in the app.",
+  ogImage = '/images/logo.jpg',
+  ogType = 'website',
+  schemaJsonLd,
+} = Astro.props;
+
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site).href;
+const absoluteOgImage = new URL(ogImage, Astro.site).href;
+
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Restaurant',
+  '@id': 'https://theacaiclub.com/#organization',
+  name: 'The Açai Club',
+  alternateName: 'The Acai Club',
+  url: 'https://theacaiclub.com',
+  logo: 'https://theacaiclub.com/images/logo.jpg',
+  image: 'https://theacaiclub.com/images/logo.jpg',
+  description: 'UK açai bowl restaurant chain with three stores in Reading, Beaconsfield, and Datchet. Never blended 140g pure açai, real ingredients, Sunday Run Club, and a rewards app.',
+  servesCuisine: ['Açaí', 'Smoothies', 'Healthy', 'Breakfast'],
+  priceRange: '££',
+  legalName: 'THE ACAI CLUB LTD',
+  identifier: 'GB-COH-15227787',
+  email: 'hello@theacaiclub.com',
+  sameAs: [
+    'https://www.instagram.com/theacaiclub_/',
+    'https://apps.apple.com/gb/app/the-a%C3%A7ai-club/id6478923734',
+    'https://play.google.com/store/apps/details?id=com.epostechnologies.theacaiclub',
+    'https://find-and-update.company-information.service.gov.uk/company/15227787',
+  ],
+  address: {
+    '@type': 'PostalAddress',
+    addressCountry: 'GB',
+    addressRegion: 'England',
+  },
+  hasMap: 'https://theacaiclub.com/stores/',
+  acceptsReservations: false,
+};
+
+const pathSegments = Astro.url.pathname.split('/').filter(Boolean);
+const breadcrumbSchema = pathSegments.length > 0
+  ? {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://theacaiclub.com/' },
+        ...pathSegments.map((seg, i) => ({
+          '@type': 'ListItem',
+          position: i + 2,
+          name: seg.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+          item: `https://theacaiclub.com/${pathSegments.slice(0, i + 1).join('/')}/`,
+        })),
+      ],
+    }
+  : null;
+
+const baseSchemas = breadcrumbSchema ? [organizationSchema, breadcrumbSchema] : [organizationSchema];
+const allSchemas = schemaJsonLd
+  ? [...baseSchemas, ...(Array.isArray(schemaJsonLd) ? schemaJsonLd : [schemaJsonLd])]
+  : baseSchemas;
 ---
 
 <!doctype html>
@@ -17,14 +81,47 @@ const { title, description = "Fresh açai bowls, smoothies, & good vibes. Join T
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    <link rel="icon" type="image/jpeg" href="/images/logo.jpg" />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/images/logo.jpg" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:image" content={absoluteOgImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="The Açai Club" />
+    <meta property="og:locale" content="en_GB" />
+
+    <!-- Twitter card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={absoluteOgImage} />
+
+    <!-- Theme -->
+    <meta name="theme-color" content="#DED9D4" />
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet" />
     <link href="https://fonts.cdnfonts.com/css/gotham" rel="stylesheet" />
+
     <title>{title}</title>
+
+    <!-- Structured data -->
+    {allSchemas.map((schema) => (
+      <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    ))}
   </head>
-  <body class="antialiased bg-white">
+  <body class="antialiased bg-dark">
     <Navbar />
     <main class="pt-[60px]">
       <slot />

@@ -3,6 +3,7 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "https://order.theacaiclub.com", label: "Order" },
   { href: "/stores", label: "Stores" },
+  { href: "/run-club", label: "Run Club" },
   { href: "/app", label: "App" },
   { href: "/about", label: "Culture" },
   { href: "/careers", label: "Careers" },
@@ -18,14 +19,14 @@ const currentPath = Astro.url.pathname;
       <img src="/images/logo.jpg" alt="The Açai Club" width="36" height="36" class="rounded-full" />
     </a>
 
-    <!-- Desktop Nav — centered -->
+    <!-- Desktop Nav - centered -->
     <div class="hidden md:flex items-center gap-10">
       {navLinks.map((link) => (
         <a
           href={link.href}
           class:list={[
             "font-heading text-[13px] font-bold uppercase tracking-[0.12em] transition-colors",
-            currentPath === link.href ? "text-dark" : "text-charcoal hover:text-dark",
+            currentPath === link.href ? "text-light" : "text-charcoal hover:text-light",
           ]}
         >
           {link.label}
@@ -33,7 +34,7 @@ const currentPath = Astro.url.pathname;
       ))}
     </div>
 
-    <!-- Right side — hamburger for mobile -->
+    <!-- Right side - hamburger for mobile -->
     <div class="flex items-center gap-4">
       <button
         id="mobile-toggle"
@@ -53,7 +54,7 @@ const currentPath = Astro.url.pathname;
       {navLinks.map((link) => (
         <a
           href={link.href}
-          class="font-heading text-lg font-semibold uppercase tracking-[0.15em] text-dark"
+          class="font-heading text-lg font-semibold uppercase tracking-[0.15em] text-light"
         >
           {link.label}
         </a>
