@@ -1,0 +1,30 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Page not found | The Açai Club" description="The page you're looking for doesn't exist. Head back to the home page, find your nearest store, or order online.">
+
+  <section class="min-h-[calc(100vh-60px)] flex items-center justify-center px-8 py-24 bg-dark">
+    <div class="max-w-2xl text-center">
+      <p class="font-heading text-sm uppercase tracking-[0.2em] text-charcoal mb-6">404</p>
+      <h1 class="font-heading text-5xl sm:text-6xl font-black uppercase tracking-tight text-light leading-tight mb-6">
+        Bowl not found
+      </h1>
+      <p class="text-grey text-lg mb-12 leading-relaxed">
+        That page doesn't exist. It might have moved or never been here in the first place. Try one of the links below.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="/" class="inline-flex justify-center px-10 py-4 bg-taupe text-white font-heading font-bold uppercase tracking-wider text-sm rounded-full hover:bg-taupe-dark transition-colors">
+          Home
+        </a>
+        <a href="/stores/" class="inline-flex justify-center px-10 py-4 bg-transparent text-light font-heading font-bold uppercase tracking-wider text-sm rounded-full border border-dark-border hover:bg-dark-card transition-colors">
+          Find a Store
+        </a>
+        <a href="https://order.theacaiclub.com" class="inline-flex justify-center px-10 py-4 bg-transparent text-light font-heading font-bold uppercase tracking-wider text-sm rounded-full border border-dark-border hover:bg-dark-card transition-colors">
+          Order Online
+        </a>
+      </div>
+    </div>
+  </section>
+
+</Layout>
