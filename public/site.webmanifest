@@ -1,0 +1,14 @@
+{
+  "name": "The Açai Club",
+  "short_name": "Açai Club",
+  "description": "Fresh açai bowls, smoothies, and good vibes. Three UK stores in Reading, Beaconsfield, and Datchet.",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "theme_color": "#DED9D4",
+  "background_color": "#DED9D4",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
+}

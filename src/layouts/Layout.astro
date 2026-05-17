@@ -69,7 +69,19 @@ const breadcrumbSchema = pathSegments.length > 0
     }
   : null;
 
-const baseSchemas = breadcrumbSchema ? [organizationSchema, breadcrumbSchema] : [organizationSchema];
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': 'https://theacaiclub.com/#website',
+  url: 'https://theacaiclub.com',
+  name: 'The Açai Club',
+  publisher: { '@id': 'https://theacaiclub.com/#organization' },
+  inLanguage: 'en-GB',
+};
+
+const baseSchemas = breadcrumbSchema
+  ? [organizationSchema, websiteSchema, breadcrumbSchema]
+  : [organizationSchema, websiteSchema];
 const allSchemas = schemaJsonLd
   ? [...baseSchemas, ...(Array.isArray(schemaJsonLd) ? schemaJsonLd : [schemaJsonLd])]
   : baseSchemas;
@@ -84,9 +96,11 @@ const allSchemas = schemaJsonLd
     <link rel="canonical" href={canonicalUrl} />
 
     <!-- Favicons -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="alternate icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" href="/images/logo.jpg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
 
     <!-- Open Graph -->
     <meta property="og:title" content={title} />
