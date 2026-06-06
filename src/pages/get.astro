@@ -1,0 +1,72 @@
+---
+// Instant app-store redirect page.
+// Scanned from a QR code -> detects the visitor's platform and sends them
+// straight to the App Store (iOS) or Google Play (Android).
+// Desktop / unknown visitors get a branded chooser with both buttons.
+const IOS_URL = 'https://apps.apple.com/gb/app/the-a%C3%A7ai-club/id6478923734';
+const ANDROID_URL = 'https://play.google.com/store/apps/details?id=com.epostechnologies.theacaiclub';
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Get the app | The Açai Club</title>
+  <meta name="description" content="Download The Açai Club app for iOS or Android." />
+  <link rel="icon" href="/favicon.ico" />
+  <!-- Redirect mobile visitors before paint so the chooser never flashes -->
+  <script is:inline define:vars={{ IOS_URL, ANDROID_URL }}>
+    (function () {
+      var ua = navigator.userAgent || navigator.vendor || '';
+      var isAndroid = /android/i.test(ua);
+      var isIOS = /iPhone|iPad|iPod/i.test(ua) ||
+        (/Macintosh/.test(ua) && typeof document !== 'undefined' && 'ontouchend' in document);
+      if (isAndroid) { window.location.replace(ANDROID_URL); }
+      else if (isIOS) { window.location.replace(IOS_URL); }
+      // Desktop / unknown: fall through to the chooser below.
+    })();
+  </script>
+  <style>
+    :root { --dark:#1a1a1a; --light:#f5f1ec; --grey:#9a948e; --taupe:#8a7d70; --border:#33302d; }
+    * { box-sizing: border-box; }
+    html, body { margin:0; height:100%; }
+    body {
+      background:var(--dark); color:var(--light);
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      display:flex; align-items:center; justify-content:center; padding:24px;
+    }
+    .card { text-align:center; max-width:360px; width:100%; }
+    .logo { width:96px; height:96px; border-radius:22px; margin:0 auto 24px; display:block; }
+    h1 { font-size:1.6rem; font-weight:800; margin:0 0 8px; letter-spacing:-0.02em; }
+    p { color:var(--grey); margin:0 0 28px; line-height:1.5; }
+    .btns { display:flex; flex-direction:column; gap:12px; }
+    a.store {
+      display:flex; align-items:center; justify-content:center; gap:12px;
+      padding:14px 20px; background:var(--taupe); color:#fff; text-decoration:none;
+      border-radius:999px; font-weight:600; transition:opacity .15s;
+    }
+    a.store:hover { opacity:.9; }
+    a.store svg { width:22px; height:22px; fill:currentColor; }
+    .sub { font-size:11px; opacity:.6; line-height:1; }
+    .lbl { font-size:14px; line-height:1.1; }
+    .txt { text-align:left; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <img class="logo" src="/icon-512.png" alt="The Açai Club" />
+    <h1>The Açai Club</h1>
+    <p>Order ahead, collect berries &amp; cups, and claim free bowls and drinks. Your first berry is on us.</p>
+    <div class="btns">
+      <a class="store" href={IOS_URL} rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        <span class="txt"><span class="sub">Download on the</span><br /><span class="lbl">App Store</span></span>
+      </a>
+      <a class="store" href={ANDROID_URL} rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M3.18 23.67L14.09 12.77 3.18.33a.42.42 0 00-.18.35v22.65c0 .15.07.27.18.34zm.77.33l12.37-7.14-2.73-2.73zm12.37-16.53L3.95 0l10.64 10.64zm4.14 3.53l-3.31-1.91-2.97 2.97 2.97 2.97 3.31-1.91a1.07 1.07 0 000-2.12z"/></svg>
+        <span class="txt"><span class="sub">Get it on</span><br /><span class="lbl">Google Play</span></span>
+      </a>
+    </div>
+  </main>
+</body>
+</html>
