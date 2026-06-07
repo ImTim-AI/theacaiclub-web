@@ -1,31 +1,31 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-// WEB ORDERING (web-ordering branch) — JTJ-style flow in Açai brand.
-// MOCK DATA ONLY for now — no DB/EPOS/edge calls. Interactive client island below.
-// Production: swap the MENU/UPSELL mock + add-to-cart for order-quote/order-pay edge calls
-// and a Stripe Express/Payment Element checkout. See theacaiclub/tasks.md.
+// WEB ORDERING (web-ordering branch). JTJ-style flow in Acai brand.
+// LIVE READ-ONLY: get-locations, get-ordering-schedule, load-menu, get-menu-item-detail.
+// No writes/orders/EPOS changes. Cart + checkout client-side; pay is a stub until order-pay + Stripe.
+// Brand colours only (app_theme.dart / global.css). No em-dashes anywhere.
 ---
-<Layout title="Order Online | The Açai Club" description="Order ahead for collection from your local Açai Club. Berry on every bowl, cup on every drink, 9 berries = a free bowl.">
+<Layout title="Order Online | The Acai Club" description="Order ahead for collection from your local Acai Club. Berry on every bowl, cup on every drink, 9 berries unlock a free bowl.">
   <div id="order-app">
-    <!-- ===== SHOP VIEW ===== -->
+    <!-- ===== SHOP ===== -->
     <div id="shop">
       <section class="oa-hero">
         <div class="oa-wrap oa-hero-in">
           <h1>Order ahead. Skip the queue.</h1>
-          <p>Berry on every bowl, cup on every drink — 9 berries unlock a free bowl.</p>
+          <p>Berry on every bowl, cup on every drink. 9 berries unlock a free bowl.</p>
         </div>
       </section>
 
       <div class="oa-wrap oa-pickup">
         <div class="card">
-          <div class="seg loc" data-store>
+          <button class="seg loc" id="openPicker">
             <div class="ic">📍</div>
-            <div><div class="lbl">Pick up from</div><div class="val" data-storename>Reading</div></div>
+            <div class="txt"><div class="lbl">Pick up from</div><div class="val" data-storename>Reading</div></div>
             <div class="chev">›</div>
-          </div>
-          <div class="seg">
+          </button>
+          <div class="seg status">
             <div class="ic">🏪</div>
-            <div><div class="lbl"><span class="open">Store is open</span></div><div class="val">08:00 – 18:00</div></div>
+            <div class="txt"><div class="lbl"><span class="open" id="openState">Checking…</span></div><div class="val" id="openHours">&nbsp;</div></div>
           </div>
         </div>
       </div>
@@ -39,19 +39,16 @@ import Layout from '../../layouts/Layout.astro';
             <h3>Your order</h3>
             <div id="cartLines"></div>
             <div class="berrybar" id="berryBar"></div>
-            <div class="uplist"><h4>You may also like</h4><div class="ups" id="upsell"></div></div>
             <button class="cta disabled" id="reviewBtn">Review order</button>
           </div>
         </aside>
       </div>
     </div>
 
-    <!-- ===== CHECKOUT VIEW ===== -->
+    <!-- ===== CHECKOUT ===== -->
     <div id="checkout" style="display:none">
       <div class="oa-wrap">
-        <div class="co-head">
-          <button class="back" id="backBtn">← Back to menu</button>
-        </div>
+        <div class="co-head"><button class="back" id="backBtn">← Back to menu</button></div>
         <div class="co-grid">
           <div class="co-card">
             <h3>Checkout</h3>
@@ -61,18 +58,18 @@ import Layout from '../../layouts/Layout.astro';
             </div>
             <div class="field">
               <label>Email address</label>
-              <div class="hint">We'll send a one-time code to sign you in — no password needed.</div>
+              <div class="hint">We'll send a one-time code to sign you in, no password needed.</div>
               <input placeholder="you@email.com" />
-              <div class="otp-note">🔒 Passwordless — your berries are linked to this email.</div>
+              <div class="otp-note">🔒 Passwordless. Your berries are linked to this email.</div>
             </div>
             <div class="field">
               <label>Pick-up</label><div class="hint">&nbsp;</div>
               <div class="storebox">
-                <div>📍 <b data-storename>Reading</b><br><span class="sub">Collection point</span><br><span class="open">● Open • 08:00–18:00</span></div>
-                <button class="chg">Change</button>
+                <div>📍 <b data-storename>Reading</b><br><span class="sub" data-storeaddr>Collection point</span><br><span class="open" data-costatus>&nbsp;</span></div>
+                <button class="chg" id="changeStore2">Change</button>
               </div>
               <div class="seg2">
-                <div class="choice sel">⚡ ASAP (10–15 min)<div class="mk"></div></div>
+                <div class="choice sel">⚡ ASAP (10-15 min)<div class="mk"></div></div>
                 <div class="choice">🕒 Schedule<div class="mk"></div></div>
               </div>
             </div>
@@ -92,6 +89,7 @@ import Layout from '../../layouts/Layout.astro';
               <div style="display:flex;justify-content:space-between;align-items:center">
                 <h3 style="margin:0">Basket</h3><span id="coCount" class="sub">0 items</span>
               </div>
+              <div id="coBasket"></div>
             </div>
           </div>
         </div>
@@ -106,23 +104,30 @@ import Layout from '../../layouts/Layout.astro';
           <div class="ph" id="mPh"></div>
           <div class="pts">🫐 <span id="mPts">Earn 1 berry</span></div>
         </div>
-        <div class="mhead"><h3 id="mName">Item</h3><p id="mDesc">Ingredients</p></div>
-        <div class="opts">
-          <div class="opt-grp"><div class="gh"><b>Size</b><span>Choose 1</span></div><div id="mSize"></div></div>
-          <div class="opt-grp"><div class="gh"><b>Add extras</b><span>Optional</span></div><div id="mExtras"></div></div>
-          <div class="nutri">
-            <div><div class="k">Kcal</div><div class="v">312</div></div>
-            <div><div class="k">Fat</div><div class="v">9g</div></div>
-            <div><div class="k">Carbs</div><div class="v">48g</div></div>
-            <div><div class="k">Protein</div><div class="v">11g</div></div>
-          </div>
-        </div>
+        <div class="mhead"><h3 id="mName">Item</h3><p id="mDesc"></p></div>
+        <div class="opts" id="mOpts"></div>
         <div class="mfoot">
           <div class="qty"><button id="mMinus">−</button><span class="n" id="mQ">1</span><button id="mPlus">+</button></div>
           <button class="addbtn" id="mAdd">Add to basket · <span id="mPrice">£0.00</span></button>
         </div>
       </div>
     </div>
+
+    <!-- ===== STORE PICKER ===== -->
+    <div class="scrim picker" id="storePicker">
+      <div class="pmodal">
+        <div class="phead">
+          <h3>Choose your store</h3>
+          <button class="close dark" id="pClose">✕</button>
+        </div>
+        <div class="psearch"><span>🔍</span><input id="pSearch" placeholder="Search stores" /></div>
+        <button class="ploc" id="pUseLoc">➤ Use my current location</button>
+        <div class="plist" id="pList"></div>
+      </div>
+    </div>
+
+    <!-- ===== MOBILE ORDER BAR ===== -->
+    <button class="mbar" id="mobileBar"></button>
   </div>
 </Layout>
 
@@ -131,47 +136,44 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .oa-wrap{max-width:1320px;margin:0 auto;padding:0 24px}
   #order-app h1,#order-app h2,#order-app h3,#order-app h4{font-family:var(--font-heading);letter-spacing:-.01em}
   #order-app button{cursor:pointer;border:none;background:none;color:inherit;font-family:inherit}
-  /* hero */
   #order-app .oa-hero{background:var(--off)}
   #order-app .oa-hero-in{padding:30px 24px 70px}
   #order-app .oa-hero h1{font-size:30px;font-weight:800;color:var(--charcoal)}
   #order-app .oa-hero p{color:var(--medium);margin-top:6px;font-size:15px}
   #order-app .oa-pickup{margin-top:-48px;position:relative;z-index:5}
   #order-app .oa-pickup .card{background:#fff;border:1px solid var(--sand);border-radius:var(--r);box-shadow:0 10px 30px rgba(58,58,56,.10);display:flex;overflow:hidden}
-  #order-app .oa-pickup .seg{display:flex;align-items:center;gap:14px;padding:18px 22px}
-  #order-app .oa-pickup .seg.loc{flex:1;cursor:pointer}
+  #order-app .oa-pickup .seg{display:flex;align-items:center;gap:14px;padding:18px 22px;text-align:left;background:none}
+  #order-app .oa-pickup .seg.loc{flex:1;cursor:pointer;width:100%}
+  #order-app .oa-pickup .seg.loc:hover{background:var(--off)}
   #order-app .oa-pickup .seg+.seg{border-left:1px solid var(--sand)}
-  #order-app .oa-pickup .ic{width:46px;height:46px;border-radius:50%;background:var(--pink-light);display:grid;place-items:center;font-size:20px;flex:none}
+  #order-app .oa-pickup .ic{width:46px;height:46px;border-radius:50%;background:var(--off);display:grid;place-items:center;font-size:20px;flex:none}
+  #order-app .oa-pickup .txt{min-width:0}
   #order-app .oa-pickup .lbl{font-size:12px;color:var(--medium);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
   #order-app .oa-pickup .val{font-family:var(--font-heading);font-weight:700;font-size:16px;margin-top:2px;color:var(--charcoal)}
   #order-app .open{color:var(--medium);font-weight:700;font-size:13px}
+  #order-app .open.is-open{color:var(--acai)}
   #order-app .oa-pickup .chev{margin-left:auto;color:var(--taupe);font-size:22px}
-  /* cats */
   #order-app .oa-cats{position:sticky;top:60px;z-index:30;background:var(--cream);padding:16px 0;border-bottom:1px solid var(--sand)}
   #order-app .oa-cats .row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none}
   #order-app .oa-cats .row::-webkit-scrollbar{display:none}
-  #order-app .pill{display:flex;align-items:center;gap:9px;padding:11px 18px;border-radius:999px;background:#fff;border:1px solid var(--sand);white-space:nowrap;font-weight:700;font-size:14px;color:var(--medium);transition:.15s}
+  #order-app .pill{display:flex;align-items:center;gap:9px;padding:8px 16px 8px 8px;border-radius:999px;background:#fff;border:1px solid var(--sand);white-space:nowrap;font-weight:700;font-size:14px;color:var(--medium);transition:.15s}
+  #order-app .pill .pthumb{width:30px;height:30px;border-radius:50%;background-size:cover;background-position:center;background-color:var(--off);flex:none}
   #order-app .pill:hover{border-color:var(--taupe)}
   #order-app .pill.active{background:var(--charcoal);color:#fff;border-color:var(--charcoal)}
-  /* grid */
   #order-app .oa-grid{display:grid;grid-template-columns:1fr 372px;gap:30px;align-items:start;padding:30px 24px 80px}
   #order-app .section{margin-bottom:34px}
   #order-app .section h2,#order-app .feat h2{font-size:22px;font-weight:800;text-transform:uppercase;margin-bottom:16px;color:var(--charcoal)}
-  #order-app .feat{background:var(--pink-light);border-radius:24px;padding:22px;margin-bottom:34px}
+  #order-app .feat{background:var(--off);border-radius:24px;padding:22px;margin-bottom:34px}
   #order-app .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   #order-app .item{display:flex;gap:16px;background:#fff;border:1px solid var(--sand);border-radius:var(--r);padding:14px;cursor:pointer;transition:.15s}
   #order-app .item:hover{box-shadow:0 8px 22px rgba(58,58,56,.10);transform:translateY(-1px)}
-  #order-app .item .pic{width:104px;height:104px;border-radius:var(--rs);flex:none;background-size:cover;background-position:center}
+  #order-app .item .pic{width:104px;height:104px;border-radius:var(--rs);flex:none;background-position:center}
   #order-app .item .body{flex:1;min-width:0;display:flex;flex-direction:column}
   #order-app .item .nm{font-family:var(--font-heading);font-weight:700;font-size:16px;color:var(--charcoal)}
   #order-app .item .desc{color:var(--medium);font-size:13px;line-height:1.45;margin-top:5px}
   #order-app .item .foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:10px}
   #order-app .item .price{font-weight:700;font-size:15px;color:var(--charcoal)}
   #order-app .item .add{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--charcoal);display:grid;place-items:center;font-size:16px;flex:none;color:var(--charcoal)}
-  #order-app .tag{display:inline-block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:4px 9px;border-radius:999px;margin-top:8px;width:fit-content}
-  #order-app .tag.new{background:var(--pink);color:#fff}
-  #order-app .tag.pop{background:var(--charcoal);color:#fff}
-  /* rail */
   #order-app .rail{position:sticky;top:140px}
   #order-app .rail .panel{background:#fff;border:1px solid var(--sand);border-radius:var(--r);padding:22px}
   #order-app .rail h3{font-size:19px;font-weight:800;margin-bottom:6px;color:var(--charcoal)}
@@ -183,186 +185,241 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .line .ex{color:var(--medium);font-size:12px;margin-top:2px}
   #order-app .line .pr{font-weight:700;font-size:14px;white-space:nowrap}
   #order-app .empty{color:var(--medium);font-size:14px;padding:18px 0;text-align:center}
-  #order-app .uplist{background:var(--off);border-radius:var(--r);padding:18px;margin-top:18px}
-  #order-app .uplist h4{font-size:15px;font-weight:800;margin-bottom:12px;color:var(--charcoal)}
-  #order-app .ups{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  #order-app .up{background:#fff;border-radius:var(--rs);padding:10px;position:relative}
-  #order-app .up .pic{height:74px;border-radius:8px;background-size:cover;margin-bottom:8px}
-  #order-app .up .nm{font-size:13px;font-weight:600;line-height:1.3;color:var(--charcoal)}
-  #order-app .up .pr{font-size:12px;color:var(--medium);margin-top:3px}
-  #order-app .up .add{position:absolute;right:14px;top:58px;width:30px;height:30px;border-radius:50%;background:var(--charcoal);color:#fff;display:grid;place-items:center;font-size:17px}
   #order-app .cta{width:100%;background:var(--charcoal);color:#fff;font-family:var(--font-heading);font-weight:700;font-size:15px;letter-spacing:.03em;padding:17px;border-radius:999px;margin-top:20px;text-transform:uppercase;transition:.15s}
   #order-app .cta:hover{opacity:.92}
   #order-app .cta.disabled{background:var(--sand);cursor:not-allowed}
-  #order-app .berrybar{display:flex;align-items:center;gap:10px;background:var(--pink-light);border-radius:var(--rs);padding:11px 14px;margin-top:16px;font-size:13px;color:var(--acai);font-weight:600}
-  /* modal */
+  #order-app .berrybar{display:flex;align-items:center;gap:10px;background:var(--off);border-radius:var(--rs);padding:11px 14px;margin-top:16px;font-size:13px;color:var(--acai);font-weight:600}
   #order-app .scrim{position:fixed;inset:0;background:rgba(58,58,56,.45);backdrop-filter:blur(3px);z-index:60;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
   #order-app .scrim.open{display:flex}
   #order-app .modal{background:#fff;border-radius:24px;max-width:520px;width:100%;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.3)}
   #order-app .modal .top{position:relative;background:var(--off);padding:34px;text-align:center}
-  #order-app .modal .ph{height:230px;border-radius:16px;background-size:cover;background-position:center;margin:0 auto;max-width:340px}
-  #order-app .modal .close{position:absolute;left:16px;top:16px;width:38px;height:38px;border-radius:50%;background:var(--charcoal);color:#fff;font-size:18px}
+  #order-app .modal .ph{height:230px;border-radius:16px;background-size:cover;background-position:center;margin:0 auto;max-width:340px;background-color:var(--card)}
+  #order-app .close{position:absolute;left:16px;top:16px;width:38px;height:38px;border-radius:50%;background:var(--charcoal);color:#fff;font-size:18px}
   #order-app .modal .pts{position:absolute;left:50%;bottom:-16px;transform:translateX(-50%);background:#fff;border:1px solid var(--sand);box-shadow:0 6px 18px rgba(0,0,0,.10);border-radius:999px;padding:9px 16px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--acai)}
-  #order-app .mhead{background:var(--pink-light);padding:26px}
+  #order-app .mhead{background:var(--card);padding:26px;border-bottom:1px solid var(--off)}
   #order-app .mhead h3{font-size:22px;font-weight:800;color:var(--charcoal)}
   #order-app .mhead p{color:var(--medium);font-size:13px;margin-top:6px;line-height:1.5}
-  #order-app .opts{padding:22px 26px;max-height:42vh;overflow:auto}
-  #order-app .opt-grp+.opt-grp{margin-top:22px}
+  #order-app .opts{padding:18px 26px;max-height:44vh;overflow:auto}
+  #order-app .opt-grp+.opt-grp{margin-top:20px}
   #order-app .opt-grp .gh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
   #order-app .opt-grp .gh b{font-size:15px;color:var(--charcoal)}
   #order-app .opt-grp .gh span{font-size:12px;color:var(--medium);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
-  #order-app .orow{display:flex;align-items:center;gap:12px;border:1px solid var(--sand);border-radius:var(--rs);padding:12px 14px;margin-bottom:10px;cursor:pointer;transition:.12s}
+  #order-app .orow{display:flex;align-items:center;gap:12px;border:1px solid var(--sand);border-radius:var(--rs);padding:11px 14px;margin-bottom:9px;cursor:pointer;transition:.12s}
   #order-app .orow:hover{border-color:var(--taupe)}
   #order-app .orow.sel{border-color:var(--acai);background:var(--off)}
-  #order-app .orow .th{width:34px;height:34px;border-radius:8px;background-size:cover;flex:none;background:var(--off)}
   #order-app .orow .ol{flex:1;font-weight:600;font-size:14px;color:var(--charcoal)}
   #order-app .orow .op{font-size:13px;color:var(--medium);font-weight:600}
-  #order-app .orow .mk{width:22px;height:22px;border-radius:50%;border:2px solid var(--sand);flex:none}
+  #order-app .orow .mk{width:22px;height:22px;border-radius:6px;border:2px solid var(--sand);flex:none}
   #order-app .orow.sel .mk{border-color:var(--acai);background:var(--acai);box-shadow:inset 0 0 0 3px #fff}
-  #order-app .nutri{display:flex;border-top:1px solid var(--off);margin-top:14px;padding-top:14px}
-  #order-app .nutri div{flex:1;text-align:center;border-right:1px solid var(--off)}
-  #order-app .nutri div:last-child{border:none}
-  #order-app .nutri .k{font-size:11px;color:var(--medium);text-transform:uppercase}
-  #order-app .nutri .v{font-weight:700;font-size:15px;margin-top:3px;color:var(--charcoal)}
   #order-app .mfoot{display:flex;align-items:center;gap:14px;padding:18px 26px;border-top:1px solid var(--off)}
   #order-app .mfoot .qty{transform:scale(1.15);transform-origin:left}
   #order-app .mfoot .addbtn{flex:1;background:var(--charcoal);color:#fff;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:16px;border-radius:999px;font-size:15px}
-  /* checkout */
-  #order-app .co-head{display:flex;align-items:center;gap:16px;background:#fff;border:1px solid var(--sand);border-radius:var(--r);padding:16px 22px;margin:24px 0}
-  #order-app .co-head .back{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--charcoal)}
-  #order-app .co-grid{display:grid;grid-template-columns:1fr 400px;gap:24px;align-items:start;padding-bottom:80px}
-  #order-app .co-card{background:#fff;border:1px solid var(--sand);border-radius:var(--r);padding:26px}
-  #order-app .co-card h3{font-size:21px;font-weight:800;margin-bottom:20px;color:var(--charcoal)}
-  #order-app .sub{color:var(--medium);font-size:13px;font-weight:600}
-  #order-app .field{margin-bottom:20px}
-  #order-app .field label{font-weight:700;font-size:14px;color:var(--charcoal)}
-  #order-app .field .hint{color:var(--medium);font-size:13px;margin:3px 0 9px}
-  #order-app .field input{width:100%;border:1.5px solid var(--sand);border-radius:var(--rs);padding:14px 16px;font-size:15px;font-family:inherit}
-  #order-app .field input:focus{outline:none;border-color:var(--acai)}
-  #order-app .otp-note{font-size:12px;color:var(--acai);margin-top:8px;font-weight:600}
-  #order-app .seg2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  #order-app .choice{display:flex;align-items:center;gap:10px;border:1.5px solid var(--sand);border-radius:var(--rs);padding:15px 16px;font-weight:700;font-size:14px;cursor:pointer;color:var(--charcoal)}
-  #order-app .choice.sel{border-color:var(--acai);background:var(--off)}
-  #order-app .choice .mk{margin-left:auto;width:20px;height:20px;border-radius:50%;border:2px solid var(--sand)}
-  #order-app .choice.sel .mk{border-color:var(--acai);background:var(--acai);box-shadow:inset 0 0 0 3px #fff}
-  #order-app .storebox{background:var(--off);border-radius:var(--rs);padding:16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:12px}
-  #order-app .storebox .chg{margin-left:auto;color:var(--acai);font-weight:700;font-size:13px;text-transform:uppercase}
-  #order-app .totrow{display:flex;justify-content:space-between;padding:9px 0;font-size:15px;color:var(--charcoal)}
-  #order-app .totrow.big{font-weight:800;font-size:18px;border-top:1px solid var(--off);margin-top:6px;padding-top:14px}
-  #order-app .terms{display:flex;gap:10px;align-items:center;background:var(--off);border-radius:var(--rs);padding:14px;margin:18px 0;font-size:13px;color:var(--charcoal)}
-  #order-app .terms input{width:18px;height:18px;accent-color:var(--acai)}
-  #order-app .terms a{color:var(--acai);font-weight:700;text-decoration:underline}
-  #order-app .applepay{width:100%;background:#000;color:#fff;border-radius:999px;padding:15px;font-size:16px;font-weight:600;margin-bottom:10px}
-  #order-app .muted{color:var(--medium);font-size:12px;text-align:center;margin-top:10px}
-  @media(max-width:980px){#order-app .oa-grid,#order-app .co-grid{grid-template-columns:1fr}#order-app .rail{position:static}#order-app .cards,#order-app .ups,#order-app .seg2{grid-template-columns:1fr 1fr}}
+  #order-app .pmodal{background:#fff;border-radius:24px;max-width:480px;width:100%;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.3);display:flex;flex-direction:column;max-height:84vh}
+  #order-app .phead{display:flex;align-items:center;justify-content:space-between;padding:22px 24px 12px}
+  #order-app .phead h3{font-size:20px;font-weight:800;color:var(--charcoal)}
+  #order-app .close.dark{position:static;background:var(--off);color:var(--charcoal)}
+  #order-app .psearch{display:flex;align-items:center;gap:10px;margin:0 24px;background:var(--off);border-radius:999px;padding:13px 18px}
+  #order-app .psearch input{border:none;background:none;outline:none;flex:1;font-size:15px;font-family:inherit;color:var(--charcoal)}
+  #order-app .ploc{margin:14px 24px 6px;color:var(--acai);font-weight:700;font-size:14px;text-align:left}
+  #order-app .plist{overflow:auto;padding:6px 12px 18px}
+  #order-app .prow{display:flex;align-items:center;gap:12px;padding:16px 12px;border-bottom:1px solid var(--off);cursor:pointer;border-radius:12px}
+  #order-app .prow:hover{background:var(--off)}
+  #order-app .prow .pn{font-family:var(--font-heading);font-weight:700;font-size:16px;color:var(--charcoal)}
+  #order-app .prow .pa{color:var(--medium);font-size:13px;margin-top:2px}
+  #order-app .prow .ps{font-size:13px;font-weight:700;margin-top:6px}
+  #order-app .prow .pchev{margin-left:auto;color:var(--taupe);font-size:20px;flex:none}
+  #order-app .mbar{display:none}
+  @media(max-width:860px){
+    #order-app .oa-grid{grid-template-columns:1fr;padding:22px 16px 110px}
+    #order-app .oa-wrap{padding:0 16px}
+    #order-app .rail{display:none}
+    #order-app .cards{grid-template-columns:1fr}
+    #order-app .oa-hero h1{font-size:24px}
+    #order-app .co-grid{grid-template-columns:1fr}
+    #order-app .oa-pickup .card{flex-direction:column}
+    #order-app .oa-pickup .seg+.seg{border-left:none;border-top:1px solid var(--sand)}
+    #order-app .mbar.show{display:flex;align-items:center;justify-content:space-between;position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--charcoal);color:#fff;padding:16px 22px;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:14px;box-shadow:0 -6px 24px rgba(0,0,0,.18)}
+    #order-app .scrim{padding:0}
+    #order-app .modal,#order-app .pmodal{max-width:100%;min-height:100vh;border-radius:0;max-height:none}
+  }
 </style>
 
 <script is:inline>
 (function(){
-  // LIVE READ-ONLY wiring: get-locations + load-menu via the publishable anon key.
-  // No writes, no orders, no EPOS changes. Cart/checkout still client-side; pay is a stub.
-  const SUPA='https://vtrsbxqlctmhkjnpdwdy.supabase.co/functions/v1';
-  const ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0cnNieHFsY3RtaGtqbnBkd2R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNjIzNzAsImV4cCI6MjA2MTgzODM3MH0.Nn65Q3E2Ly-j8bvn_SaR1TmKYnzcNye1wAiFu5ciiuk';
-  const IMG='https://connect.poscraft.co.uk';
-  const PLACEHOLDER='var(--off)'; // neutral brand surface when a product has no photo — no off-brand colours
-  const DRINK=/coffee|smooth|juice|matcha|chai|\btea|chocolate|shot|electrolyte|water|wellness/i;
-  const $=id=>document.getElementById(id);
-  const f=v=>'£'+(v||0).toFixed(2);
-  const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  const imgUrl=u=>!u?'':(u.startsWith('http')?u:IMG+u);
-  function emoji(n){n=(n||'').toLowerCase();if(n.includes('bowl'))return'🍇';if(n.includes('coffee'))return'☕';if(n.includes('smooth')||n.includes('juice'))return'🥤';if(n.includes('matcha')||n.includes('tea')||n.includes('chai'))return'🍵';if(n.includes('oat')||n.includes('yog')||n.includes('banana'))return'🥣';if(n.includes('choc'))return'🍫';if(n.includes('water')||n.includes('electrolyte'))return'💧';if(n.includes('pooch'))return'🐶';return'✨';}
+  var SUPA='https://vtrsbxqlctmhkjnpdwdy.supabase.co/functions/v1';
+  var ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0cnNieHFsY3RtaGtqbnBkd2R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNjIzNzAsImV4cCI6MjA2MTgzODM3MH0.Nn65Q3E2Ly-j8bvn_SaR1TmKYnzcNye1wAiFu5ciiuk';
+  var IMG='https://connect.poscraft.co.uk';
+  var DRINK=/coffee|smooth|juice|matcha|chai|\btea|chocolate|shot|electrolyte|water|wellness/i;
+  var $=function(id){return document.getElementById(id);};
+  var f=function(v){return '£'+(v||0).toFixed(2);};
+  var esc=function(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
+  var imgUrl=function(u){return !u?'':(u.indexOf('http')===0?u:IMG+u);};
+  function picStyle(u){return u?("background:url('"+u+"') center/cover, var(--off)"):"background:var(--off)";}
 
-  let LOC=[],store=null,CATS=[],MENU={},activeCat=null,cart=[],modal=null,mq=1;
+  var LOC=[],store=null,sched={},CATS=[],MENU={},activeCat=null,cart=[],modal=null,mGroups=[],mSel={},mq=1;
 
-  async function api(fn,body){const r=await fetch(`${SUPA}/${fn}`,{method:'POST',headers:{'apikey':ANON,'Authorization':'Bearer '+ANON,'Content-Type':'application/json'},body:JSON.stringify(body||{})});if(!r.ok)throw new Error(fn+' '+r.status);return r.json();}
+  function api(fn,body){return fetch(SUPA+'/'+fn,{method:'POST',headers:{'apikey':ANON,'Authorization':'Bearer '+ANON,'Content-Type':'application/json'},body:JSON.stringify(body||{})}).then(function(r){if(!r.ok)throw new Error(fn+' '+r.status);return r.json();});}
+  function shortName(n){return (n||'').replace(/^The Acai Club\s*-\s*/i,'');}
+  function emoji(n){n=(n||'').toLowerCase();if(n.indexOf('bowl')>=0)return'🍇';if(n.indexOf('coffee')>=0)return'☕';if(n.indexOf('smooth')>=0||n.indexOf('juice')>=0)return'🥤';if(n.indexOf('matcha')>=0||n.indexOf('tea')>=0||n.indexOf('chai')>=0)return'🍵';if(n.indexOf('oat')>=0||n.indexOf('yog')>=0||n.indexOf('banana')>=0)return'🥣';if(n.indexOf('choc')>=0)return'🍫';if(n.indexOf('water')>=0||n.indexOf('electrolyte')>=0)return'💧';if(n.indexOf('pooch')>=0)return'🐶';return'✨';}
 
-  function pic(it){const u=imgUrl(it.img);return u?`background:url('${u}') center/cover, ${PLACEHOLDER}`:`background:${PLACEHOLDER}`;}
-
-  function renderCats(){$('catRow').innerHTML=CATS.map(c=>`<button class="pill ${c.id===activeCat?'active':''}" data-cat="${c.id}"><span>${c.e}</span>${esc(c.name)}</button>`).join('');}
-  function renderMenu(){const cat=CATS.find(c=>c.id===activeCat),items=(MENU[activeCat]||[]),feat=CATS[0]&&activeCat===CATS[0].id;
-    $('menu').innerHTML=`<div class="${feat?'feat':'section'}"><h2>${esc(cat.name)}</h2><div class="cards">`+items.map((it,i)=>card(it,i)).join('')+`</div></div>`;}
-  function card(it,i){return `<div class="item" data-i="${i}"><div class="pic" style="${pic(it,i)}"></div><div class="body"><div class="nm">${esc(it.n)}</div><div class="desc">${esc(it.d)}</div><div class="foot"><span class="price">${f(it.p)}</span><span class="add">›</span></div></div></div>`;}
-
-  function openModal(i){modal=(MENU[activeCat]||[])[i];if(!modal)return;mq=1;
-    $('mPh').style.cssText=pic(modal,i);$('mName').textContent=modal.n;$('mDesc').textContent=modal.d||'';
-    $('mPts').textContent=modal.bowl?'Earn 1 berry':(modal.cup?'Earn 1 cup':'Earn points');
-    // real modifiers (milk/extras) wire in next pass — hide option groups + nutrition for now
-    $('mSize').closest('.opt-grp').style.display='none';
-    $('mExtras').closest('.opt-grp').style.display='none';
-    var nu=document.querySelector('#order-app .nutri');if(nu)nu.style.display='none';
-    $('mQ').textContent=1;updMPrice();$('scrim').classList.add('open');}
-  function mUnit(){return modal.p;}
-  function updMPrice(){$('mPrice').textContent=f(mUnit()*mq);}
-  function closeModal(){$('scrim').classList.remove('open');}
-
-  function renderCart(){
-    if(!cart.length)$('cartLines').innerHTML='<div class="empty">Your basket is empty</div>';
-    else $('cartLines').innerHTML=cart.map((c,i)=>`<div class="line"><div class="qty"><button data-cm="${i}">−</button><span class="n">${c.q}</span><button data-cp="${i}">+</button></div><div class="nm">${esc(c.n)}<div class="ex">No extras</div></div><div class="pr">${f(c.unit*c.q)}</div></div>`).join('');
-    const sub=cart.reduce((s,c)=>s+c.unit*c.q,0),n=cart.reduce((s,c)=>s+c.q,0),bowls=cart.reduce((s,c)=>s+(c.bowl?c.q:0),0);
-    $('reviewBtn').className='cta'+(n?'':' disabled');$('reviewBtn').innerHTML=n?`Review order · ${f(sub)}`:'Review order';
-    $('berryBar').innerHTML=bowls?`🫐 You'll earn ${bowls} berr${bowls>1?'ies':'y'} — ${Math.max(0,9-bowls)} more to a free bowl`:'🫐 Add a bowl to earn your next berry';
-    $('coSub').textContent=f(sub);$('coVat').textContent=f(sub-sub/1.2);$('coTotal').textContent=f(sub);$('payTot').textContent=f(sub);
-    $('coCount').textContent=n+' item'+(n!==1?'s':'');
+  function renderCats(){
+    $('catRow').innerHTML=CATS.map(function(c){
+      var thumb=c.img?('<span class="pthumb" style="background-image:url(\''+c.img+'\')"></span>'):('<span>'+c.e+'</span>');
+      return '<button class="pill '+(c.id===activeCat?'active':'')+'" data-cat="'+c.id+'">'+thumb+esc(c.name)+'</button>';
+    }).join('');
+  }
+  function renderMenu(){
+    var cat=CATS.filter(function(c){return c.id===activeCat;})[0];if(!cat)return;
+    var items=MENU[activeCat]||[],feat=CATS[0]&&activeCat===CATS[0].id;
+    $('menu').innerHTML='<div class="'+(feat?'feat':'section')+'"><h2>'+esc(cat.name)+'</h2><div class="cards">'+items.map(card).join('')+'</div></div>';
+  }
+  function card(it,i){
+    return '<div class="item" data-i="'+i+'"><div class="pic" style="'+picStyle(imgUrl(it.img))+'"></div><div class="body"><div class="nm">'+esc(it.n)+'</div><div class="desc">'+esc(it.d)+'</div><div class="foot"><span class="price">'+f(it.p)+'</span><span class="add">›</span></div></div></div>';
   }
 
-  function setStoreLabels(){if(!store)return;
-    document.querySelectorAll('[data-storename]').forEach(el=>el.textContent=store.name.replace(/^The Acai Club\s*-\s*/i,''));}
-
-  async function loadMenu(){
+  function loadMenu(){
     $('menu').innerHTML='<div class="section"><div class="empty">Loading menu…</div></div>';
-    try{
-      const depts=(await api('load-menu',{locationId:store.id}))
-        .filter(d=>d&&d.visibleOnline&&Array.isArray(d.menuItems)&&d.menuItems.length)
-        .sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
+    return api('load-menu',{locationId:store.id}).then(function(depts){
+      depts=depts.filter(function(d){return d&&d.visibleOnline&&Array.isArray(d.menuItems)&&d.menuItems.length;}).sort(function(a,b){return (a.sortOrder||0)-(b.sortOrder||0);});
       CATS=[];MENU={};
-      depts.forEach(d=>{
-        const bowl=/bowl/i.test(d.name)?1:0, cup=DRINK.test(d.name)?1:0;
-        const items=d.menuItems.filter(m=>m&&m.isForSale!==false&&!m.deleted).map(m=>({
-          id:m.id,n:m.name,d:(m.description||'').split('\n')[0],p:m.salePrice||0,img:m.imageUrl,bowl,cup
-        }));
+      depts.forEach(function(d){
+        var bowl=/bowl/i.test(d.name)?1:0,cup=DRINK.test(d.name)?1:0;
+        var items=d.menuItems.filter(function(m){return m&&m.isForSale!==false&&!m.deleted;}).map(function(m){
+          return {id:m.id,n:m.name,d:(m.description||'').split('\n')[0],p:m.salePrice||0,img:m.imageUrl,bowl:bowl,cup:cup};
+        });
         if(!items.length)return;
-        CATS.push({id:String(d.id),name:d.name,e:emoji(d.name)});
+        CATS.push({id:String(d.id),name:d.name,e:emoji(d.name),img:imgUrl(items[0].img)});
         MENU[String(d.id)]=items;
       });
       activeCat=CATS.length?CATS[0].id:null;
-      renderCats();if(activeCat)renderMenu();else $('menu').innerHTML='<div class="section"><div class="empty">No items available for this store.</div></div>';
-    }catch(err){
-      $('menu').innerHTML='<div class="section"><div class="empty">Couldn’t load the live menu ('+esc(err.message)+'). Try refreshing.</div></div>';
-    }
+      renderCats();
+      if(activeCat)renderMenu();else $('menu').innerHTML='<div class="section"><div class="empty">No items available for this store.</div></div>';
+    }).catch(function(err){$('menu').innerHTML='<div class="section"><div class="empty">Could not load the live menu ('+esc(err.message)+'). Try refreshing.</div></div>';});
   }
 
-  async function init(){
-    try{
-      LOC=(await api('get-locations')).filter(l=>l&&l.onlineOrderingActive!==false);
-      store=LOC.find(l=>l.id===1)||LOC[0];
-    }catch(e){store={id:1,name:'The Acai Club - Reading'};}
-    setStoreLabels();
-    var up=document.querySelector('#order-app .uplist');if(up)up.style.display='none'; // upsell wires in next pass
-    await loadMenu();
-    renderCart();
+  function applySchedule(s){
+    var open=s&&s.isAcceptingOrders, hrs=(s&&s.todayOpeningHours)||'';
+    var st=$('openState');st.textContent=open?'Store is open':'Closed';st.className='open'+(open?' is-open':'');
+    $('openHours').textContent=hrs;
+    document.querySelectorAll('[data-costatus]').forEach(function(el){el.textContent=(open?'Open':'Closed')+(hrs?(' · '+hrs):'');el.className='open'+(open?' is-open':'');});
+  }
+  function loadSchedule(){
+    if(sched[store.id]){applySchedule(sched[store.id]);return Promise.resolve();}
+    return api('get-ordering-schedule',{locationId:store.id}).then(function(s){sched[store.id]=s;applySchedule(s);}).catch(function(){});
   }
 
-  // store switcher: cycle through stores on click of the pickup card
-  function cycleStore(){if(LOC.length<2)return;const i=LOC.findIndex(l=>l.id===store.id);store=LOC[(i+1)%LOC.length];setStoreLabels();loadMenu();}
+  function openModal(i){
+    var it=(MENU[activeCat]||[])[i];if(!it)return;modal=it;mq=1;mSel={};mGroups=[];
+    $('mPh').style.cssText=picStyle(imgUrl(it.img));
+    $('mName').textContent=it.n;$('mDesc').textContent=it.d||'';
+    $('mPts').textContent=it.bowl?'Earn 1 berry':(it.cup?'Earn 1 cup':'Earn points');
+    $('mOpts').innerHTML='<div class="empty">Loading options…</div>';
+    $('mQ').textContent=1;updMPrice();$('scrim').classList.add('open');
+    api('get-menu-item-detail',{id:it.id}).then(function(d){
+      mGroups=((d&&d.menuModifierGroups)||[]).filter(function(g){return g.visibileOnline!==false&&(g.modifierItems||[]).length;});
+      renderOpts();
+    }).catch(function(){$('mOpts').innerHTML='';});
+  }
+  function grpItems(g){return (g.modifierItems||[]).filter(function(x){return x.active!==false;});}
+  function renderOpts(){
+    if(!mGroups.length){$('mOpts').innerHTML='';updMPrice();return;}
+    $('mOpts').innerHTML=mGroups.map(function(g,gi){
+      var rows=grpItems(g).map(function(x,xi){
+        var pr=(x.salePrice||0)>0?('<div class="op">+'+f(x.salePrice)+'</div>'):'';
+        var sel=mSel[gi+'_'+xi]?' sel':'';
+        return '<div class="orow'+sel+'" data-g="'+gi+'" data-x="'+xi+'"><div class="ol">'+esc(x.name)+'</div>'+pr+'<div class="mk"></div></div>';
+      }).join('');
+      return '<div class="opt-grp"><div class="gh"><b>'+esc(g.name)+'</b><span>Optional</span></div>'+rows+'</div>';
+    }).join('');
+    updMPrice();
+  }
+  function modUnit(){
+    var extra=0;Object.keys(mSel).forEach(function(k){if(!mSel[k])return;var p=k.split('_'),g=mGroups[+p[0]];if(!g)return;var x=grpItems(g)[+p[1]];if(x)extra+=x.salePrice||0;});
+    return modal.p+extra;
+  }
+  function selectedNames(){
+    var out=[];Object.keys(mSel).forEach(function(k){if(!mSel[k])return;var p=k.split('_'),g=mGroups[+p[0]];if(!g)return;var x=grpItems(g)[+p[1]];if(x)out.push(x.name);});
+    return out;
+  }
+  function updMPrice(){$('mPrice').textContent=f(modUnit()*mq);}
+  function closeModal(){$('scrim').classList.remove('open');}
 
-  document.addEventListener('click',e=>{
-    const t=e.target.closest('[data-cat],[data-i],[data-cm],[data-cp],[data-store]');
+  function renderCart(){
+    var html=cart.length?cart.map(function(c,i){
+      return '<div class="line"><div class="qty"><button data-cm="'+i+'">−</button><span class="n">'+c.q+'</span><button data-cp="'+i+'">+</button></div><div class="nm">'+esc(c.n)+'<div class="ex">'+(c.extras.length?esc(c.extras.join(', ')):'No extras')+'</div></div><div class="pr">'+f(c.unit*c.q)+'</div></div>';
+    }).join(''):'<div class="empty">Your basket is empty</div>';
+    $('cartLines').innerHTML=html;
+    var basket=$('coBasket');if(basket)basket.innerHTML=cart.length?html:'';
+    var sub=cart.reduce(function(s,c){return s+c.unit*c.q;},0),n=cart.reduce(function(s,c){return s+c.q;},0),bowls=cart.reduce(function(s,c){return s+(c.bowl?c.q:0);},0);
+    $('reviewBtn').className='cta'+(n?'':' disabled');$('reviewBtn').innerHTML=n?('Review order · '+f(sub)):'Review order';
+    $('berryBar').innerHTML=bowls?('🫐 You will earn '+bowls+' berr'+(bowls>1?'ies':'y')+'. '+Math.max(0,9-bowls)+' more to a free bowl'):'🫐 Add a bowl to earn your next berry';
+    $('coSub').textContent=f(sub);$('coVat').textContent=f(sub-sub/1.2);$('coTotal').textContent=f(sub);$('payTot').textContent=f(sub);
+    $('coCount').textContent=n+' item'+(n!==1?'s':'');
+    var mb=$('mobileBar');
+    if(n){mb.className='mbar show';mb.innerHTML='<span>'+n+' item'+(n!==1?'s':'')+'</span><span>Review order · '+f(sub)+'</span>';}
+    else mb.className='mbar';
+  }
+
+  function setStoreLabels(){
+    if(!store)return;
+    document.querySelectorAll('[data-storename]').forEach(function(el){el.textContent=shortName(store.name);});
+    document.querySelectorAll('[data-storeaddr]').forEach(function(el){el.textContent=[store.addressLine1,store.postCode].filter(Boolean).join(', ')||'Collection point';});
+  }
+  function renderPicker(q){
+    q=(q||'').toLowerCase();
+    var rows=LOC.filter(function(l){return shortName(l.name).toLowerCase().indexOf(q)>=0||(l.addressLine1||'').toLowerCase().indexOf(q)>=0;}).map(function(l){
+      var s=sched[l.id], st=s?((s.isAcceptingOrders?'Open':'Closed')+(s.todayOpeningHours?(' · '+s.todayOpeningHours):'')):'';
+      var addr=[l.addressLine1,l.countyTown,l.postCode].filter(Boolean).join(', ');
+      return '<div class="prow" data-loc="'+l.id+'"><div><div class="pn">'+esc(shortName(l.name))+'</div><div class="pa">'+esc(addr)+'</div><div class="ps '+(s&&s.isAcceptingOrders?'open is-open':'open')+'">'+esc(st)+'</div></div><div class="pchev">›</div></div>';
+    }).join('');
+    $('pList').innerHTML=rows||'<div class="empty">No stores found</div>';
+  }
+  function openPicker(){
+    $('storePicker').classList.add('open');renderPicker('');
+    Promise.all(LOC.map(function(l){return sched[l.id]?Promise.resolve():api('get-ordering-schedule',{locationId:l.id}).then(function(s){sched[l.id]=s;}).catch(function(){});})).then(function(){renderPicker($('pSearch').value);});
+  }
+  function closePicker(){$('storePicker').classList.remove('open');}
+  function pickStore(id){
+    var l=LOC.filter(function(x){return x.id===id;})[0];if(!l)return;store=l;closePicker();setStoreLabels();loadSchedule();loadMenu();
+  }
+  function useLocation(){
+    if(!navigator.geolocation)return;
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var la=pos.coords.latitude,lo=pos.coords.longitude,best=null,bd=1e9;
+      LOC.forEach(function(l){if(l.latitude==null||l.longitude==null)return;var dx=(l.latitude-la),dy=(l.longitude-lo),d=dx*dx+dy*dy;if(d<bd){bd=d;best=l;}});
+      if(best)pickStore(best.id);
+    });
+  }
+
+  document.addEventListener('click',function(e){
+    var t=e.target.closest('[data-cat],[data-i],[data-cm],[data-cp],[data-g],[data-loc]');
     if(!t)return;
     if(t.dataset.cat!==undefined){activeCat=t.dataset.cat;renderCats();renderMenu();window.scrollTo({top:300,behavior:'smooth'});}
     else if(t.dataset.i!==undefined){openModal(+t.dataset.i);}
-    else if(t.dataset.store!==undefined){cycleStore();}
-    else if(t.dataset.cm!==undefined){const i=+t.dataset.cm;cart[i].q--;if(cart[i].q<1)cart.splice(i,1);renderCart();}
+    else if(t.dataset.g!==undefined){var k=t.dataset.g+'_'+t.dataset.x;mSel[k]=!mSel[k];t.classList.toggle('sel');updMPrice();}
+    else if(t.dataset.loc!==undefined){pickStore(+t.dataset.loc);}
+    else if(t.dataset.cm!==undefined){var i=+t.dataset.cm;cart[i].q--;if(cart[i].q<1)cart.splice(i,1);renderCart();}
     else if(t.dataset.cp!==undefined){cart[+t.dataset.cp].q++;renderCart();}
   });
   $('mClose').onclick=closeModal;
-  $('scrim').onclick=e=>{if(e.target===$('scrim'))closeModal();};
-  $('mMinus').onclick=()=>{mq=Math.max(1,mq-1);$('mQ').textContent=mq;updMPrice();};
-  $('mPlus').onclick=()=>{mq++;$('mQ').textContent=mq;updMPrice();};
-  $('mAdd').onclick=()=>{cart.push({n:modal.n,unit:mUnit(),q:mq,bowl:modal.bowl||0,cup:modal.cup||0});closeModal();renderCart();};
-  $('reviewBtn').onclick=()=>{if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';window.scrollTo(0,0);};
-  $('backBtn').onclick=()=>{$('shop').style.display='block';$('checkout').style.display='none';window.scrollTo(0,0);};
-  $('payBtn').onclick=()=>alert('Demo only — Stripe checkout wires up when we go live.');
+  $('scrim').onclick=function(e){if(e.target===$('scrim'))closeModal();};
+  $('storePicker').onclick=function(e){if(e.target===$('storePicker'))closePicker();};
+  $('mMinus').onclick=function(){mq=Math.max(1,mq-1);$('mQ').textContent=mq;updMPrice();};
+  $('mPlus').onclick=function(){mq++;$('mQ').textContent=mq;updMPrice();};
+  $('mAdd').onclick=function(){cart.push({n:modal.n,unit:modUnit(),q:mq,bowl:modal.bowl||0,cup:modal.cup||0,extras:selectedNames()});closeModal();renderCart();};
+  $('openPicker').onclick=openPicker;
+  $('changeStore2').onclick=openPicker;
+  $('pClose').onclick=closePicker;
+  $('pUseLoc').onclick=useLocation;
+  $('pSearch').oninput=function(){renderPicker(this.value);};
+  function toCheckout(){if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';window.scrollTo(0,0);}
+  $('reviewBtn').onclick=toCheckout;
+  $('mobileBar').onclick=toCheckout;
+  $('backBtn').onclick=function(){$('shop').style.display='block';$('checkout').style.display='none';window.scrollTo(0,0);};
+  $('payBtn').onclick=function(){alert('Demo only. Stripe checkout wires up when we go live.');};
 
-  init();
+  api('get-locations').then(function(l){LOC=l.filter(function(x){return x&&x.onlineOrderingActive!==false;});store=LOC.filter(function(x){return x.id===1;})[0]||LOC[0];})
+   .catch(function(){store={id:1,name:'The Acai Club - Reading'};LOC=[store];})
+   .then(function(){setStoreLabels();renderCart();return Promise.all([loadSchedule(),loadMenu()]);});
 })();
 </script>
