@@ -73,17 +73,10 @@ def make_circle(url, out_path, label=None):
     img = qr.make_image(fill_color=FG, back_color="#f5f1ec").convert("RGBA")
     W, H = img.size
 
-    # logo sized to sit inside a circular plate (a touch smaller when a label rides under it)
-    lk = lk0.resize((int(W * (0.235 if label else 0.26)),
-                     int(lh * (W * (0.235 if label else 0.26) / lw))), Image.LANCZOS)
+    # logo + circle geometry — IDENTICAL to the original (unaffected by the label)
+    lk = lk0.resize((int(W * 0.26), int(lh * (W * 0.26 / lw))), Image.LANCZOS)
     lkw, lkh = lk.size
-
-    row = label_row(label, LOGO_DARK, max_w=int(lkw * 1.05)) if label else None
-    gap = int(lkh * 0.34) if row else 0
-    content_w = max(lkw, row.size[0] if row else 0)
-    content_h = lkh + gap + (row.size[1] if row else 0)
-
-    side = int((content_w**2 + content_h**2) ** 0.5) + int(content_w * 0.12)
+    side = int((lkw**2 + lkh**2) ** 0.5) + int(lkw * 0.10)   # diagonal + margin
     plate = Image.new("RGBA", (side, side), (0, 0, 0, 0))
     mask = Image.new("L", (side, side), 0)
     ImageDraw.Draw(mask).ellipse([0, 0, side - 1, side - 1], fill=255)
@@ -91,10 +84,19 @@ def make_circle(url, out_path, label=None):
 
     px, py = (W - side) // 2, (H - side) // 2
     img.alpha_composite(plate, (px, py))
-    cy = py + (side - content_h) // 2
-    img.alpha_composite(lk, (px + (side - lkw) // 2, cy))
-    if row:
-        img.alpha_composite(row, (px + (side - row.size[0]) // 2, cy + lkh + gap))
+    lx, ly = px + (side - lkw) // 2, py + (side - lkh) // 2   # logo centred (original)
+    img.alpha_composite(lk, (lx, ly))
+
+    # small IG + label line, tucked into the empty space below the centred logo
+    if label:
+        row = label_row(label, LOGO_DARK, max_w=int(lkw * 0.78))
+        target_h = int(lkh * 0.26)                            # small
+        if row.size[1] != target_h:
+            row = row.resize((int(row.size[0] * target_h / row.size[1]), target_h), Image.LANCZOS)
+        band_top, band_bot = ly + lkh, py + side              # logo bottom -> circle bottom
+        ry = band_top + (band_bot - band_top - row.size[1]) // 2
+        img.alpha_composite(row, (px + (side - row.size[0]) // 2, ry))
+
     img.convert("RGB").save(out_path)
     return out_path
 
