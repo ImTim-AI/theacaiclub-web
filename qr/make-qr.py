@@ -54,16 +54,17 @@ def mobile_glyph(size, color):
 
 def label_block(lines, color, icon_fn=instagram_glyph):
     """[icon] + text laid out over one or more lines, as one transparent image.
-    The icon sits inline before the first line; every line is centred."""
+    The icon (if any) sits inline before the first line; every line is centred.
+    Pass icon_fn=None for a text-only label."""
     fsize = 64
     f = ImageFont.truetype(FUT, fsize, index=0)
     tmp = ImageDraw.Draw(Image.new("RGBA", (10, 10)))
     def tsize(t):
         b = tmp.textbbox((0, 0), t, font=f); return b[2]-b[0], b[3]-b[1], b
     th = tsize("RUN CLUB")[1]
-    icon = th + int(th * 0.22)
-    gap = int(th * 0.42)            # icon -> text gap
-    lgap = int(th * 0.45)           # line spacing
+    icon = (th + int(th * 0.22)) if icon_fn else 0
+    gap = int(th * 0.42) if icon_fn else 0    # icon -> text gap
+    lgap = int(th * 0.45)                       # line spacing
 
     widths = []
     for i, ln in enumerate(lines):
@@ -80,7 +81,7 @@ def label_block(lines, color, icon_fn=instagram_glyph):
         tw, _, b = tsize(ln)
         row_w = tw + (icon + gap if i == 0 else 0)
         x = (block_w - row_w) // 2
-        if i == 0:
+        if i == 0 and icon_fn:
             img.alpha_composite(icon_fn(icon, color), (x, y + (line_h - icon) // 2))
             x += icon + gap
         d.text((x, y + (line_h - th) // 2 - b[1]), ln, font=f, fill=color)
@@ -123,7 +124,7 @@ def make_circle(url, out_path, lines=None, icon="instagram"):
     # build the label block (if any), scaled so it never exceeds the logo width
     block = None
     if lines:
-        icon_fn = mobile_glyph if icon == "mobile" else instagram_glyph
+        icon_fn = {"mobile": mobile_glyph, "none": None}.get(icon, instagram_glyph)
         block = label_block(lines, ink, icon_fn)
         max_w = int(lkw * 0.92)
         # extra shrink for multi-line so the centre plate stays small enough to scan
@@ -170,7 +171,7 @@ if __name__ == "__main__":
         print(__doc__ + "\nLabel: use '|' to split lines, '--mobile' for the phone icon.")
         sys.exit(1)
     url, name = sys.argv[1], sys.argv[2]
-    icon = "mobile" if "--mobile" in sys.argv else "instagram"
+    icon = "mobile" if "--mobile" in sys.argv else ("none" if "--no-icon" in sys.argv else "instagram")
     label = next((a for a in sys.argv[3:] if not a.startswith("--")), None)
     lines = label.split("|") if label else None
     out = os.path.join(HERE, name + ".png")
