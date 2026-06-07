@@ -1,0 +1,330 @@
+---
+import Layout from '../../layouts/Layout.astro';
+// WEB ORDERING (web-ordering branch) — JTJ-style flow in Açai brand.
+// MOCK DATA ONLY for now — no DB/EPOS/edge calls. Interactive client island below.
+// Production: swap the MENU/UPSELL mock + add-to-cart for order-quote/order-pay edge calls
+// and a Stripe Express/Payment Element checkout. See theacaiclub/tasks.md.
+---
+<Layout title="Order Online | The Açai Club" description="Order ahead for collection from your local Açai Club. Berry on every bowl, cup on every drink, 9 berries = a free bowl.">
+  <div id="order-app">
+    <!-- ===== SHOP VIEW ===== -->
+    <div id="shop">
+      <section class="oa-hero">
+        <div class="oa-wrap oa-hero-in">
+          <h1>Order ahead. Skip the queue.</h1>
+          <p>Berry on every bowl, cup on every drink — 9 berries unlock a free bowl.</p>
+        </div>
+      </section>
+
+      <div class="oa-wrap oa-pickup">
+        <div class="card">
+          <div class="seg loc">
+            <div class="ic">📍</div>
+            <div><div class="lbl">Pick up from</div><div class="val">Reading — Broad Street Mall</div></div>
+            <div class="chev">›</div>
+          </div>
+          <div class="seg">
+            <div class="ic">🏪</div>
+            <div><div class="lbl"><span class="open">Store is open</span></div><div class="val">08:00 – 18:00</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="oa-cats"><div class="oa-wrap"><div class="row" id="catRow"></div></div></div>
+
+      <div class="oa-wrap oa-grid">
+        <div id="menu"></div>
+        <aside class="rail">
+          <div class="panel">
+            <h3>Your order</h3>
+            <div id="cartLines"></div>
+            <div class="berrybar" id="berryBar"></div>
+            <div class="uplist"><h4>You may also like</h4><div class="ups" id="upsell"></div></div>
+            <button class="cta disabled" id="reviewBtn">Review order</button>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- ===== CHECKOUT VIEW ===== -->
+    <div id="checkout" style="display:none">
+      <div class="oa-wrap">
+        <div class="co-head">
+          <button class="back" id="backBtn">← Back to menu</button>
+        </div>
+        <div class="co-grid">
+          <div class="co-card">
+            <h3>Checkout</h3>
+            <div class="field">
+              <label>Your name</label><div class="hint">How we'll call you at pick-up.</div>
+              <input placeholder="e.g. Jamie Berry" />
+            </div>
+            <div class="field">
+              <label>Email address</label>
+              <div class="hint">We'll send a one-time code to sign you in — no password needed.</div>
+              <input placeholder="you@email.com" />
+              <div class="otp-note">🔒 Passwordless — your berries are linked to this email.</div>
+            </div>
+            <div class="field">
+              <label>Pick-up</label><div class="hint">&nbsp;</div>
+              <div class="storebox">
+                <div>📍 <b>Reading</b><br><span class="sub">Broad Street Mall, Reading</span><br><span class="open">● Open • 08:00–18:00</span></div>
+                <button class="chg">Change</button>
+              </div>
+              <div class="seg2">
+                <div class="choice sel">⚡ ASAP (10–15 min)<div class="mk"></div></div>
+                <div class="choice">🕒 Schedule<div class="mk"></div></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="co-card">
+              <h3>Total</h3>
+              <div class="totrow"><span>Subtotal</span><span id="coSub">£0.00</span></div>
+              <div class="totrow"><span>VAT included</span><span id="coVat">£0.00</span></div>
+              <div class="totrow big"><span>Total</span><span id="coTotal">£0.00</span></div>
+              <div class="terms"><input type="checkbox" checked /> I agree to the <a href="/terms">terms &amp; conditions</a></div>
+              <button class="applepay"> Pay</button>
+              <button class="cta" id="payBtn">Order &amp; pay · <span id="payTot">£0.00</span></button>
+              <div class="muted">Card, Apple&nbsp;Pay &amp; Google&nbsp;Pay · powered by Stripe</div>
+            </div>
+            <div class="co-card" style="margin-top:16px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <h3 style="margin:0">Basket</h3><span id="coCount" class="sub">0 items</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL ===== -->
+    <div class="scrim" id="scrim">
+      <div class="modal">
+        <div class="top">
+          <button class="close" id="mClose">✕</button>
+          <div class="ph" id="mPh"></div>
+          <div class="pts">🫐 <span id="mPts">Earn 1 berry</span></div>
+        </div>
+        <div class="mhead"><h3 id="mName">Item</h3><p id="mDesc">Ingredients</p></div>
+        <div class="opts">
+          <div class="opt-grp"><div class="gh"><b>Size</b><span>Choose 1</span></div><div id="mSize"></div></div>
+          <div class="opt-grp"><div class="gh"><b>Add extras</b><span>Optional</span></div><div id="mExtras"></div></div>
+          <div class="nutri">
+            <div><div class="k">Kcal</div><div class="v">312</div></div>
+            <div><div class="k">Fat</div><div class="v">9g</div></div>
+            <div><div class="k">Carbs</div><div class="v">48g</div></div>
+            <div><div class="k">Protein</div><div class="v">11g</div></div>
+          </div>
+        </div>
+        <div class="mfoot">
+          <div class="qty"><button id="mMinus">−</button><span class="n" id="mQ">1</span><button id="mPlus">+</button></div>
+          <button class="addbtn" id="mAdd">Add to basket · <span id="mPrice">£0.00</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style is:global>
+  #order-app{--cream:#DED9D4;--off:#F2EEEA;--card:#fff;--sand:#CBC8BE;--charcoal:#3A3A38;--medium:#6B6B68;--taupe:#9B9B90;--taupe-dark:#7E7E73;--pink:#E8B4B8;--pink-light:#f0cdd0;--acai:#5B2C6F;--r:18px;--rs:12px;background:var(--cream)}
+  #order-app .oa-wrap{max-width:1320px;margin:0 auto;padding:0 24px}
+  #order-app h1,#order-app h2,#order-app h3,#order-app h4{font-family:var(--font-heading);letter-spacing:-.01em}
+  #order-app button{cursor:pointer;border:none;background:none;color:inherit;font-family:inherit}
+  /* hero */
+  #order-app .oa-hero{background:linear-gradient(120deg,#e7d8e6,#DED9D4 45%,#f0e2dd)}
+  #order-app .oa-hero-in{padding:30px 24px 70px}
+  #order-app .oa-hero h1{font-size:30px;font-weight:800;color:var(--charcoal)}
+  #order-app .oa-hero p{color:var(--medium);margin-top:6px;font-size:15px}
+  #order-app .oa-pickup{margin-top:-48px;position:relative;z-index:5}
+  #order-app .oa-pickup .card{background:#fff;border:1px solid var(--sand);border-radius:var(--r);box-shadow:0 10px 30px rgba(58,58,56,.10);display:flex;overflow:hidden}
+  #order-app .oa-pickup .seg{display:flex;align-items:center;gap:14px;padding:18px 22px}
+  #order-app .oa-pickup .seg.loc{flex:1;cursor:pointer}
+  #order-app .oa-pickup .seg+.seg{border-left:1px solid var(--sand)}
+  #order-app .oa-pickup .ic{width:46px;height:46px;border-radius:50%;background:var(--pink-light);display:grid;place-items:center;font-size:20px;flex:none}
+  #order-app .oa-pickup .lbl{font-size:12px;color:var(--medium);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+  #order-app .oa-pickup .val{font-family:var(--font-heading);font-weight:700;font-size:16px;margin-top:2px;color:var(--charcoal)}
+  #order-app .open{color:#1f8a4c;font-weight:700;font-size:13px}
+  #order-app .oa-pickup .chev{margin-left:auto;color:var(--taupe);font-size:22px}
+  /* cats */
+  #order-app .oa-cats{position:sticky;top:60px;z-index:30;background:var(--cream);padding:16px 0;border-bottom:1px solid var(--sand)}
+  #order-app .oa-cats .row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none}
+  #order-app .oa-cats .row::-webkit-scrollbar{display:none}
+  #order-app .pill{display:flex;align-items:center;gap:9px;padding:11px 18px;border-radius:999px;background:#fff;border:1px solid var(--sand);white-space:nowrap;font-weight:700;font-size:14px;color:var(--medium);transition:.15s}
+  #order-app .pill:hover{border-color:var(--taupe)}
+  #order-app .pill.active{background:var(--charcoal);color:#fff;border-color:var(--charcoal)}
+  /* grid */
+  #order-app .oa-grid{display:grid;grid-template-columns:1fr 372px;gap:30px;align-items:start;padding:30px 24px 80px}
+  #order-app .section{margin-bottom:34px}
+  #order-app .section h2,#order-app .feat h2{font-size:22px;font-weight:800;text-transform:uppercase;margin-bottom:16px;color:var(--charcoal)}
+  #order-app .feat{background:var(--pink-light);border-radius:24px;padding:22px;margin-bottom:34px}
+  #order-app .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  #order-app .item{display:flex;gap:16px;background:#fff;border:1px solid var(--sand);border-radius:var(--r);padding:14px;cursor:pointer;transition:.15s}
+  #order-app .item:hover{box-shadow:0 8px 22px rgba(58,58,56,.10);transform:translateY(-1px)}
+  #order-app .item .pic{width:104px;height:104px;border-radius:var(--rs);flex:none;background-size:cover;background-position:center}
+  #order-app .item .body{flex:1;min-width:0;display:flex;flex-direction:column}
+  #order-app .item .nm{font-family:var(--font-heading);font-weight:700;font-size:16px;color:var(--charcoal)}
+  #order-app .item .desc{color:var(--medium);font-size:13px;line-height:1.45;margin-top:5px}
+  #order-app .item .foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:10px}
+  #order-app .item .price{font-weight:700;font-size:15px;color:var(--charcoal)}
+  #order-app .item .add{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--charcoal);display:grid;place-items:center;font-size:16px;flex:none;color:var(--charcoal)}
+  #order-app .tag{display:inline-block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:4px 9px;border-radius:999px;margin-top:8px;width:fit-content}
+  #order-app .tag.new{background:var(--pink);color:#fff}
+  #order-app .tag.pop{background:var(--charcoal);color:#fff}
+  /* rail */
+  #order-app .rail{position:sticky;top:140px}
+  #order-app .rail .panel{background:#fff;border:1px solid var(--sand);border-radius:var(--r);padding:22px}
+  #order-app .rail h3{font-size:19px;font-weight:800;margin-bottom:6px;color:var(--charcoal)}
+  #order-app .line{display:flex;align-items:flex-start;gap:12px;padding:14px 0;border-bottom:1px solid var(--off)}
+  #order-app .qty{display:flex;align-items:center;gap:9px;background:var(--off);border-radius:999px;padding:4px 6px;flex:none}
+  #order-app .qty button{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:15px;color:var(--medium)}
+  #order-app .qty .n{font-weight:700;font-size:13px;min-width:14px;text-align:center}
+  #order-app .line .nm{font-weight:600;font-size:14px;flex:1;color:var(--charcoal)}
+  #order-app .line .ex{color:var(--medium);font-size:12px;margin-top:2px}
+  #order-app .line .pr{font-weight:700;font-size:14px;white-space:nowrap}
+  #order-app .empty{color:var(--medium);font-size:14px;padding:18px 0;text-align:center}
+  #order-app .uplist{background:#efe7da;border-radius:var(--r);padding:18px;margin-top:18px}
+  #order-app .uplist h4{font-size:15px;font-weight:800;margin-bottom:12px;color:var(--charcoal)}
+  #order-app .ups{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  #order-app .up{background:#fff;border-radius:var(--rs);padding:10px;position:relative}
+  #order-app .up .pic{height:74px;border-radius:8px;background-size:cover;margin-bottom:8px}
+  #order-app .up .nm{font-size:13px;font-weight:600;line-height:1.3;color:var(--charcoal)}
+  #order-app .up .pr{font-size:12px;color:var(--medium);margin-top:3px}
+  #order-app .up .add{position:absolute;right:14px;top:58px;width:30px;height:30px;border-radius:50%;background:var(--charcoal);color:#fff;display:grid;place-items:center;font-size:17px}
+  #order-app .cta{width:100%;background:var(--charcoal);color:#fff;font-family:var(--font-heading);font-weight:700;font-size:15px;letter-spacing:.03em;padding:17px;border-radius:999px;margin-top:20px;text-transform:uppercase;transition:.15s}
+  #order-app .cta:hover{background:#262624}
+  #order-app .cta.disabled{background:var(--sand);cursor:not-allowed}
+  #order-app .berrybar{display:flex;align-items:center;gap:10px;background:#f3e9f1;border-radius:var(--rs);padding:11px 14px;margin-top:16px;font-size:13px;color:var(--acai);font-weight:600}
+  /* modal */
+  #order-app .scrim{position:fixed;inset:0;background:rgba(58,58,56,.45);backdrop-filter:blur(3px);z-index:60;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
+  #order-app .scrim.open{display:flex}
+  #order-app .modal{background:#fff;border-radius:24px;max-width:520px;width:100%;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.3)}
+  #order-app .modal .top{position:relative;background:linear-gradient(135deg,#efe6ee,#f3eae6);padding:34px;text-align:center}
+  #order-app .modal .ph{height:230px;border-radius:16px;background-size:cover;background-position:center;margin:0 auto;max-width:340px}
+  #order-app .modal .close{position:absolute;left:16px;top:16px;width:38px;height:38px;border-radius:50%;background:var(--charcoal);color:#fff;font-size:18px}
+  #order-app .modal .pts{position:absolute;left:50%;bottom:-16px;transform:translateX(-50%);background:#fff;border:1px solid var(--sand);box-shadow:0 6px 18px rgba(0,0,0,.10);border-radius:999px;padding:9px 16px;font-weight:700;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--acai)}
+  #order-app .mhead{background:var(--pink-light);padding:26px}
+  #order-app .mhead h3{font-size:22px;font-weight:800;color:var(--charcoal)}
+  #order-app .mhead p{color:#6a4a55;font-size:13px;margin-top:6px;line-height:1.5}
+  #order-app .opts{padding:22px 26px;max-height:42vh;overflow:auto}
+  #order-app .opt-grp+.opt-grp{margin-top:22px}
+  #order-app .opt-grp .gh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px}
+  #order-app .opt-grp .gh b{font-size:15px;color:var(--charcoal)}
+  #order-app .opt-grp .gh span{font-size:12px;color:var(--medium);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+  #order-app .orow{display:flex;align-items:center;gap:12px;border:1px solid var(--sand);border-radius:var(--rs);padding:12px 14px;margin-bottom:10px;cursor:pointer;transition:.12s}
+  #order-app .orow:hover{border-color:var(--taupe)}
+  #order-app .orow.sel{border-color:var(--acai);background:#faf4f9}
+  #order-app .orow .th{width:34px;height:34px;border-radius:8px;background-size:cover;flex:none;background:var(--off)}
+  #order-app .orow .ol{flex:1;font-weight:600;font-size:14px;color:var(--charcoal)}
+  #order-app .orow .op{font-size:13px;color:var(--medium);font-weight:600}
+  #order-app .orow .mk{width:22px;height:22px;border-radius:50%;border:2px solid var(--sand);flex:none}
+  #order-app .orow.sel .mk{border-color:var(--acai);background:var(--acai);box-shadow:inset 0 0 0 3px #fff}
+  #order-app .nutri{display:flex;border-top:1px solid var(--off);margin-top:14px;padding-top:14px}
+  #order-app .nutri div{flex:1;text-align:center;border-right:1px solid var(--off)}
+  #order-app .nutri div:last-child{border:none}
+  #order-app .nutri .k{font-size:11px;color:var(--medium);text-transform:uppercase}
+  #order-app .nutri .v{font-weight:700;font-size:15px;margin-top:3px;color:var(--charcoal)}
+  #order-app .mfoot{display:flex;align-items:center;gap:14px;padding:18px 26px;border-top:1px solid var(--off)}
+  #order-app .mfoot .qty{transform:scale(1.15);transform-origin:left}
+  #order-app .mfoot .addbtn{flex:1;background:var(--charcoal);color:#fff;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:16px;border-radius:999px;font-size:15px}
+  /* checkout */
+  #order-app .co-head{display:flex;align-items:center;gap:16px;background:#fff;border:1px solid var(--sand);border-radius:var(--r);padding:16px 22px;margin:24px 0}
+  #order-app .co-head .back{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--charcoal)}
+  #order-app .co-grid{display:grid;grid-template-columns:1fr 400px;gap:24px;align-items:start;padding-bottom:80px}
+  #order-app .co-card{background:#fff;border:1px solid var(--sand);border-radius:var(--r);padding:26px}
+  #order-app .co-card h3{font-size:21px;font-weight:800;margin-bottom:20px;color:var(--charcoal)}
+  #order-app .sub{color:var(--medium);font-size:13px;font-weight:600}
+  #order-app .field{margin-bottom:20px}
+  #order-app .field label{font-weight:700;font-size:14px;color:var(--charcoal)}
+  #order-app .field .hint{color:var(--medium);font-size:13px;margin:3px 0 9px}
+  #order-app .field input{width:100%;border:1.5px solid var(--sand);border-radius:var(--rs);padding:14px 16px;font-size:15px;font-family:inherit}
+  #order-app .field input:focus{outline:none;border-color:var(--acai)}
+  #order-app .otp-note{font-size:12px;color:var(--acai);margin-top:8px;font-weight:600}
+  #order-app .seg2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  #order-app .choice{display:flex;align-items:center;gap:10px;border:1.5px solid var(--sand);border-radius:var(--rs);padding:15px 16px;font-weight:700;font-size:14px;cursor:pointer;color:var(--charcoal)}
+  #order-app .choice.sel{border-color:var(--acai);background:#faf4f9}
+  #order-app .choice .mk{margin-left:auto;width:20px;height:20px;border-radius:50%;border:2px solid var(--sand)}
+  #order-app .choice.sel .mk{border-color:var(--acai);background:var(--acai);box-shadow:inset 0 0 0 3px #fff}
+  #order-app .storebox{background:var(--off);border-radius:var(--rs);padding:16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:12px}
+  #order-app .storebox .chg{margin-left:auto;color:var(--acai);font-weight:700;font-size:13px;text-transform:uppercase}
+  #order-app .totrow{display:flex;justify-content:space-between;padding:9px 0;font-size:15px;color:var(--charcoal)}
+  #order-app .totrow.big{font-weight:800;font-size:18px;border-top:1px solid var(--off);margin-top:6px;padding-top:14px}
+  #order-app .terms{display:flex;gap:10px;align-items:center;background:var(--off);border-radius:var(--rs);padding:14px;margin:18px 0;font-size:13px;color:var(--charcoal)}
+  #order-app .terms input{width:18px;height:18px;accent-color:var(--acai)}
+  #order-app .terms a{color:var(--acai);font-weight:700;text-decoration:underline}
+  #order-app .applepay{width:100%;background:#000;color:#fff;border-radius:999px;padding:15px;font-size:16px;font-weight:600;margin-bottom:10px}
+  #order-app .muted{color:var(--medium);font-size:12px;text-align:center;margin-top:10px}
+  @media(max-width:980px){#order-app .oa-grid,#order-app .co-grid{grid-template-columns:1fr}#order-app .rail{position:static}#order-app .cards,#order-app .ups,#order-app .seg2{grid-template-columns:1fr 1fr}}
+</style>
+
+<script is:inline>
+(function(){
+  const GRAD={acai:'radial-gradient(circle at 30% 30%,#7D3C98,#4A235A)',berry:'radial-gradient(circle at 30% 30%,#E8788A,#C0392B)',tropical:'radial-gradient(circle at 30% 30%,#F5B041,#E67E22)',green:'radial-gradient(circle at 30% 30%,#7DCEA0,#1E8449)',coffee:'radial-gradient(circle at 30% 30%,#B58863,#6E4B3A)',pink:'radial-gradient(circle at 30% 30%,#f0cdd0,#E8B4B8)'};
+  const CATS=[{id:'hot',name:'Hot Picks',e:'✨'},{id:'bowls',name:'Açai Bowls',e:'🍇'},{id:'smooth',name:'Smoothies',e:'🥤'},{id:'coffee',name:'Coffee & Drinks',e:'☕'},{id:'snacks',name:'Snacks',e:'🥐'}];
+  const MENU={
+    hot:[{n:'The OG',d:'Açai, banana, granola, strawberry, honey drizzle',p:8.50,g:'acai',tag:'pop',bowl:1},{n:'PB Power Bowl',d:'Açai, peanut butter, banana, cacao nibs, coconut',p:9.00,g:'acai',tag:'new',bowl:1},{n:'Berry Blast',d:'Strawberry, blueberry, banana, oat milk',p:6.50,g:'berry'},{n:'Green Machine',d:'Spinach, mango, pineapple, ginger, coconut water',p:6.50,g:'green'}],
+    bowls:[{n:'The OG',d:'Açai, banana, granola, strawberry, honey drizzle',p:8.50,g:'acai',bowl:1},{n:'Nutty Professor',d:'Açai, peanut butter, banana, granola, cacao',p:9.00,g:'acai',bowl:1},{n:'Tropical',d:'Açai, mango, pineapple, coconut, passionfruit',p:8.75,g:'tropical',bowl:1},{n:'Choc Heaven',d:'Açai, cacao, banana, almond butter, dark choc',p:9.25,g:'acai',bowl:1,tag:'new'}],
+    smooth:[{n:'Berry Blast',d:'Strawberry, blueberry, banana, oat milk',p:6.50,g:'berry'},{n:'Green Machine',d:'Spinach, mango, pineapple, ginger',p:6.50,g:'green'},{n:'Mango Tango',d:'Mango, passionfruit, banana, coconut water',p:6.50,g:'tropical'}],
+    coffee:[{n:'Flat White',d:'Double shot, silky steamed milk',p:3.20,g:'coffee',cup:1},{n:'Cappuccino',d:'Espresso, foam, cocoa dust',p:3.20,g:'coffee',cup:1},{n:'Iced Latte',d:'Double shot over ice, milk of choice',p:3.80,g:'coffee',cup:1},{n:'Matcha Latte',d:'Ceremonial matcha, steamed milk',p:4.20,g:'green',cup:1}],
+    snacks:[{n:'Almond Croissant',d:'Buttery, flaked almonds',p:3.20,g:'tropical'},{n:'Energy Ball x3',d:'Date, oat, cacao, peanut',p:2.80,g:'coffee'}]
+  };
+  const SIZES=[{n:'Regular',p:0},{n:'Large',p:1.50}];
+  const EXTRAS=[{n:'Extra Granola',p:0.80,g:'tropical'},{n:'Peanut Butter',p:0.80,g:'coffee'},{n:'Extra Açai',p:1.50,g:'acai'},{n:'Protein Scoop',p:1.00,g:'pink'}];
+  const UPSELL=[{n:'Iced Latte',p:3.80,g:'coffee'},{n:'Energy Ball x3',p:2.80,g:'coffee'}];
+  const $=id=>document.getElementById(id);
+  const f=v=>'£'+v.toFixed(2);
+  let cart=[],activeCat='hot',modal=null,mq=1,mSizeSel=0,mExtraSel=[];
+
+  function renderCats(){$('catRow').innerHTML=CATS.map(c=>`<button class="pill ${c.id===activeCat?'active':''}" data-cat="${c.id}"><span>${c.e}</span>${c.name}</button>`).join('');}
+  function renderMenu(){const cat=CATS.find(c=>c.id===activeCat),items=MENU[activeCat]||[],feat=activeCat==='hot';
+    $('menu').innerHTML=`<div class="${feat?'feat':'section'}"><h2>${cat.name}</h2><div class="cards">`+items.map((it,i)=>card(it,i)).join('')+`</div></div>`;}
+  function card(it,i){const tag=it.tag?`<span class="tag ${it.tag}">${it.tag==='new'?'New':'Popular'}</span>`:'';
+    return `<div class="item" data-i="${i}"><div class="pic" style="background:${GRAD[it.g]}"></div><div class="body"><div class="nm">${it.n}</div><div class="desc">${it.d}</div>${tag}<div class="foot"><span class="price">${f(it.p)}</span><span class="add">›</span></div></div></div>`;}
+  function renderUpsell(){$('upsell').innerHTML=UPSELL.map((u,i)=>`<div class="up"><div class="pic" style="background:${GRAD[u.g]}"></div><div class="nm">${u.n}</div><div class="pr">${f(u.p)}</div><button class="add" data-up="${i}">+</button></div>`).join('');}
+
+  function openModal(i){modal=MENU[activeCat][i];mq=1;mSizeSel=0;mExtraSel=[];
+    $('mPh').style.background=GRAD[modal.g];$('mName').textContent=modal.n;$('mDesc').textContent=modal.d;
+    $('mPts').textContent=modal.bowl?'Earn 1 berry':(modal.cup?'Earn 1 cup':'Earn points');
+    $('mSize').innerHTML=SIZES.map((s,si)=>`<div class="orow ${si===0?'sel':''}" data-size="${si}"><div class="ol">${s.n}</div>${s.p?`<div class="op">+${f(s.p)}</div>`:''}<div class="mk"></div></div>`).join('');
+    $('mExtras').innerHTML=EXTRAS.map((e,ei)=>`<div class="orow" data-extra="${ei}"><div class="th" style="background:${GRAD[e.g]}"></div><div class="ol">${e.n}</div><div class="op">+${f(e.p)}</div><div class="mk"></div></div>`).join('');
+    $('mQ').textContent=1;updMPrice();$('scrim').classList.add('open');}
+  function mUnit(){return modal.p+SIZES[mSizeSel].p+mExtraSel.reduce((s,i)=>s+EXTRAS[i].p,0);}
+  function updMPrice(){$('mPrice').textContent=f(mUnit()*mq);}
+  function closeModal(){$('scrim').classList.remove('open');}
+
+  function renderCart(){
+    if(!cart.length)$('cartLines').innerHTML='<div class="empty">Your basket is empty</div>';
+    else $('cartLines').innerHTML=cart.map((c,i)=>`<div class="line"><div class="qty"><button data-cm="${i}">−</button><span class="n">${c.q}</span><button data-cp="${i}">+</button></div><div class="nm">${c.n}${c.extras.length?`<div class="ex">${c.extras.join(', ')}</div>`:'<div class="ex">No extras</div>'}</div><div class="pr">${f(c.unit*c.q)}</div></div>`).join('');
+    const sub=cart.reduce((s,c)=>s+c.unit*c.q,0),n=cart.reduce((s,c)=>s+c.q,0),bowls=cart.reduce((s,c)=>s+(c.bowl?c.q:0),0);
+    $('reviewBtn').className='cta'+(n?'':' disabled');$('reviewBtn').innerHTML=n?`Review order · ${f(sub)}`:'Review order';
+    $('berryBar').innerHTML=bowls?`🫐 You'll earn ${bowls} berr${bowls>1?'ies':'y'} — ${Math.max(0,9-bowls)} more to a free bowl`:'🫐 Add a bowl to earn your next berry';
+    $('coSub').textContent=f(sub);$('coVat').textContent=f(sub-sub/1.2);$('coTotal').textContent=f(sub);$('payTot').textContent=f(sub);
+    $('coCount').textContent=n+' item'+(n!==1?'s':'');
+  }
+
+  // event delegation
+  document.addEventListener('click',e=>{
+    const t=e.target.closest('[data-cat],[data-i],[data-up],[data-size],[data-extra],[data-cm],[data-cp]');
+    if(!t)return;
+    if(t.dataset.cat!==undefined){activeCat=t.dataset.cat;renderCats();renderMenu();window.scrollTo({top:300,behavior:'smooth'});}
+    else if(t.dataset.i!==undefined){openModal(+t.dataset.i);}
+    else if(t.dataset.up!==undefined){const u=UPSELL[+t.dataset.up];cart.push({n:u.n,unit:u.p,q:1,extras:[],bowl:0,cup:0});renderCart();}
+    else if(t.dataset.size!==undefined){mSizeSel=+t.dataset.size;[...$('mSize').children].forEach((c,i)=>c.classList.toggle('sel',i===mSizeSel));updMPrice();}
+    else if(t.dataset.extra!==undefined){const ei=+t.dataset.extra,x=mExtraSel.indexOf(ei);x>=0?mExtraSel.splice(x,1):mExtraSel.push(ei);t.classList.toggle('sel');updMPrice();}
+    else if(t.dataset.cm!==undefined){const i=+t.dataset.cm;cart[i].q--;if(cart[i].q<1)cart.splice(i,1);renderCart();}
+    else if(t.dataset.cp!==undefined){cart[+t.dataset.cp].q++;renderCart();}
+  });
+  $('mClose').onclick=closeModal;
+  $('scrim').onclick=e=>{if(e.target===$('scrim'))closeModal();};
+  $('mMinus').onclick=()=>{mq=Math.max(1,mq-1);$('mQ').textContent=mq;updMPrice();};
+  $('mPlus').onclick=()=>{mq++;$('mQ').textContent=mq;updMPrice();};
+  $('mAdd').onclick=()=>{const size=SIZES[mSizeSel].n,ex=mExtraSel.map(i=>EXTRAS[i].n);cart.push({n:modal.n,unit:mUnit(),q:mq,bowl:modal.bowl||0,cup:modal.cup||0,extras:(size!=='Regular'?[size]:[]).concat(ex)});closeModal();renderCart();};
+  $('reviewBtn').onclick=()=>{if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';window.scrollTo(0,0);};
+  $('backBtn').onclick=()=>{$('shop').style.display='block';$('checkout').style.display='none';window.scrollTo(0,0);};
+  $('payBtn').onclick=()=>alert('Demo only — Stripe checkout wires up when we go live.');
+
+  renderCats();renderMenu();renderUpsell();
+  cart.push({n:'The OG',unit:8.50,q:1,bowl:1,cup:0,extras:['Large','Peanut Butter']});
+  renderCart();
+})();
+</script>
