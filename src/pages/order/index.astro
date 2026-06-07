@@ -18,9 +18,9 @@ import Layout from '../../layouts/Layout.astro';
 
       <div class="oa-wrap oa-pickup">
         <div class="card">
-          <div class="seg loc">
+          <div class="seg loc" data-store>
             <div class="ic">📍</div>
-            <div><div class="lbl">Pick up from</div><div class="val">Reading — Broad Street Mall</div></div>
+            <div><div class="lbl">Pick up from</div><div class="val" data-storename>Reading</div></div>
             <div class="chev">›</div>
           </div>
           <div class="seg">
@@ -68,7 +68,7 @@ import Layout from '../../layouts/Layout.astro';
             <div class="field">
               <label>Pick-up</label><div class="hint">&nbsp;</div>
               <div class="storebox">
-                <div>📍 <b>Reading</b><br><span class="sub">Broad Street Mall, Reading</span><br><span class="open">● Open • 08:00–18:00</span></div>
+                <div>📍 <b data-storename>Reading</b><br><span class="sub">Collection point</span><br><span class="open">● Open • 08:00–18:00</span></div>
                 <button class="chg">Change</button>
               </div>
               <div class="seg2">
@@ -259,42 +259,46 @@ import Layout from '../../layouts/Layout.astro';
 
 <script is:inline>
 (function(){
-  const GRAD={acai:'radial-gradient(circle at 30% 30%,#7D3C98,#4A235A)',berry:'radial-gradient(circle at 30% 30%,#E8788A,#C0392B)',tropical:'radial-gradient(circle at 30% 30%,#F5B041,#E67E22)',green:'radial-gradient(circle at 30% 30%,#7DCEA0,#1E8449)',coffee:'radial-gradient(circle at 30% 30%,#B58863,#6E4B3A)',pink:'radial-gradient(circle at 30% 30%,#f0cdd0,#E8B4B8)'};
-  const CATS=[{id:'hot',name:'Hot Picks',e:'✨'},{id:'bowls',name:'Açai Bowls',e:'🍇'},{id:'smooth',name:'Smoothies',e:'🥤'},{id:'coffee',name:'Coffee & Drinks',e:'☕'},{id:'snacks',name:'Snacks',e:'🥐'}];
-  const MENU={
-    hot:[{n:'The OG',d:'Açai, banana, granola, strawberry, honey drizzle',p:8.50,g:'acai',tag:'pop',bowl:1},{n:'PB Power Bowl',d:'Açai, peanut butter, banana, cacao nibs, coconut',p:9.00,g:'acai',tag:'new',bowl:1},{n:'Berry Blast',d:'Strawberry, blueberry, banana, oat milk',p:6.50,g:'berry'},{n:'Green Machine',d:'Spinach, mango, pineapple, ginger, coconut water',p:6.50,g:'green'}],
-    bowls:[{n:'The OG',d:'Açai, banana, granola, strawberry, honey drizzle',p:8.50,g:'acai',bowl:1},{n:'Nutty Professor',d:'Açai, peanut butter, banana, granola, cacao',p:9.00,g:'acai',bowl:1},{n:'Tropical',d:'Açai, mango, pineapple, coconut, passionfruit',p:8.75,g:'tropical',bowl:1},{n:'Choc Heaven',d:'Açai, cacao, banana, almond butter, dark choc',p:9.25,g:'acai',bowl:1,tag:'new'}],
-    smooth:[{n:'Berry Blast',d:'Strawberry, blueberry, banana, oat milk',p:6.50,g:'berry'},{n:'Green Machine',d:'Spinach, mango, pineapple, ginger',p:6.50,g:'green'},{n:'Mango Tango',d:'Mango, passionfruit, banana, coconut water',p:6.50,g:'tropical'}],
-    coffee:[{n:'Flat White',d:'Double shot, silky steamed milk',p:3.20,g:'coffee',cup:1},{n:'Cappuccino',d:'Espresso, foam, cocoa dust',p:3.20,g:'coffee',cup:1},{n:'Iced Latte',d:'Double shot over ice, milk of choice',p:3.80,g:'coffee',cup:1},{n:'Matcha Latte',d:'Ceremonial matcha, steamed milk',p:4.20,g:'green',cup:1}],
-    snacks:[{n:'Almond Croissant',d:'Buttery, flaked almonds',p:3.20,g:'tropical'},{n:'Energy Ball x3',d:'Date, oat, cacao, peanut',p:2.80,g:'coffee'}]
-  };
-  const SIZES=[{n:'Regular',p:0},{n:'Large',p:1.50}];
-  const EXTRAS=[{n:'Extra Granola',p:0.80,g:'tropical'},{n:'Peanut Butter',p:0.80,g:'coffee'},{n:'Extra Açai',p:1.50,g:'acai'},{n:'Protein Scoop',p:1.00,g:'pink'}];
-  const UPSELL=[{n:'Iced Latte',p:3.80,g:'coffee'},{n:'Energy Ball x3',p:2.80,g:'coffee'}];
+  // LIVE READ-ONLY wiring: get-locations + load-menu via the publishable anon key.
+  // No writes, no orders, no EPOS changes. Cart/checkout still client-side; pay is a stub.
+  const SUPA='https://vtrsbxqlctmhkjnpdwdy.supabase.co/functions/v1';
+  const ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0cnNieHFsY3RtaGtqbnBkd2R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNjIzNzAsImV4cCI6MjA2MTgzODM3MH0.Nn65Q3E2Ly-j8bvn_SaR1TmKYnzcNye1wAiFu5ciiuk';
+  const IMG='https://connect.poscraft.co.uk';
+  const FALL=['radial-gradient(circle at 30% 30%,#7D3C98,#4A235A)','radial-gradient(circle at 30% 30%,#E8788A,#C0392B)','radial-gradient(circle at 30% 30%,#F5B041,#E67E22)','radial-gradient(circle at 30% 30%,#7DCEA0,#1E8449)','radial-gradient(circle at 30% 30%,#B58863,#6E4B3A)'];
+  const DRINK=/coffee|smooth|juice|matcha|chai|\btea|chocolate|shot|electrolyte|water|wellness/i;
   const $=id=>document.getElementById(id);
-  const f=v=>'£'+v.toFixed(2);
-  let cart=[],activeCat='hot',modal=null,mq=1,mSizeSel=0,mExtraSel=[];
+  const f=v=>'£'+(v||0).toFixed(2);
+  const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const imgUrl=u=>!u?'':(u.startsWith('http')?u:IMG+u);
+  const grad=i=>FALL[i%FALL.length];
+  function emoji(n){n=(n||'').toLowerCase();if(n.includes('bowl'))return'🍇';if(n.includes('coffee'))return'☕';if(n.includes('smooth')||n.includes('juice'))return'🥤';if(n.includes('matcha')||n.includes('tea')||n.includes('chai'))return'🍵';if(n.includes('oat')||n.includes('yog')||n.includes('banana'))return'🥣';if(n.includes('choc'))return'🍫';if(n.includes('water')||n.includes('electrolyte'))return'💧';if(n.includes('pooch'))return'🐶';return'✨';}
 
-  function renderCats(){$('catRow').innerHTML=CATS.map(c=>`<button class="pill ${c.id===activeCat?'active':''}" data-cat="${c.id}"><span>${c.e}</span>${c.name}</button>`).join('');}
-  function renderMenu(){const cat=CATS.find(c=>c.id===activeCat),items=MENU[activeCat]||[],feat=activeCat==='hot';
-    $('menu').innerHTML=`<div class="${feat?'feat':'section'}"><h2>${cat.name}</h2><div class="cards">`+items.map((it,i)=>card(it,i)).join('')+`</div></div>`;}
-  function card(it,i){const tag=it.tag?`<span class="tag ${it.tag}">${it.tag==='new'?'New':'Popular'}</span>`:'';
-    return `<div class="item" data-i="${i}"><div class="pic" style="background:${GRAD[it.g]}"></div><div class="body"><div class="nm">${it.n}</div><div class="desc">${it.d}</div>${tag}<div class="foot"><span class="price">${f(it.p)}</span><span class="add">›</span></div></div></div>`;}
-  function renderUpsell(){$('upsell').innerHTML=UPSELL.map((u,i)=>`<div class="up"><div class="pic" style="background:${GRAD[u.g]}"></div><div class="nm">${u.n}</div><div class="pr">${f(u.p)}</div><button class="add" data-up="${i}">+</button></div>`).join('');}
+  let LOC=[],store=null,CATS=[],MENU={},activeCat=null,cart=[],modal=null,mq=1;
 
-  function openModal(i){modal=MENU[activeCat][i];mq=1;mSizeSel=0;mExtraSel=[];
-    $('mPh').style.background=GRAD[modal.g];$('mName').textContent=modal.n;$('mDesc').textContent=modal.d;
+  async function api(fn,body){const r=await fetch(`${SUPA}/${fn}`,{method:'POST',headers:{'apikey':ANON,'Authorization':'Bearer '+ANON,'Content-Type':'application/json'},body:JSON.stringify(body||{})});if(!r.ok)throw new Error(fn+' '+r.status);return r.json();}
+
+  function pic(it,i){return `background-image:url('${imgUrl(it.img)}'),${grad(i)};background-size:cover;background-position:center`;}
+
+  function renderCats(){$('catRow').innerHTML=CATS.map(c=>`<button class="pill ${c.id===activeCat?'active':''}" data-cat="${c.id}"><span>${c.e}</span>${esc(c.name)}</button>`).join('');}
+  function renderMenu(){const cat=CATS.find(c=>c.id===activeCat),items=(MENU[activeCat]||[]),feat=CATS[0]&&activeCat===CATS[0].id;
+    $('menu').innerHTML=`<div class="${feat?'feat':'section'}"><h2>${esc(cat.name)}</h2><div class="cards">`+items.map((it,i)=>card(it,i)).join('')+`</div></div>`;}
+  function card(it,i){return `<div class="item" data-i="${i}"><div class="pic" style="${pic(it,i)}"></div><div class="body"><div class="nm">${esc(it.n)}</div><div class="desc">${esc(it.d)}</div><div class="foot"><span class="price">${f(it.p)}</span><span class="add">›</span></div></div></div>`;}
+
+  function openModal(i){modal=(MENU[activeCat]||[])[i];if(!modal)return;mq=1;
+    $('mPh').style.cssText=pic(modal,i);$('mName').textContent=modal.n;$('mDesc').textContent=modal.d||'';
     $('mPts').textContent=modal.bowl?'Earn 1 berry':(modal.cup?'Earn 1 cup':'Earn points');
-    $('mSize').innerHTML=SIZES.map((s,si)=>`<div class="orow ${si===0?'sel':''}" data-size="${si}"><div class="ol">${s.n}</div>${s.p?`<div class="op">+${f(s.p)}</div>`:''}<div class="mk"></div></div>`).join('');
-    $('mExtras').innerHTML=EXTRAS.map((e,ei)=>`<div class="orow" data-extra="${ei}"><div class="th" style="background:${GRAD[e.g]}"></div><div class="ol">${e.n}</div><div class="op">+${f(e.p)}</div><div class="mk"></div></div>`).join('');
+    // real modifiers (milk/extras) wire in next pass — hide option groups + nutrition for now
+    $('mSize').closest('.opt-grp').style.display='none';
+    $('mExtras').closest('.opt-grp').style.display='none';
+    var nu=document.querySelector('#order-app .nutri');if(nu)nu.style.display='none';
     $('mQ').textContent=1;updMPrice();$('scrim').classList.add('open');}
-  function mUnit(){return modal.p+SIZES[mSizeSel].p+mExtraSel.reduce((s,i)=>s+EXTRAS[i].p,0);}
+  function mUnit(){return modal.p;}
   function updMPrice(){$('mPrice').textContent=f(mUnit()*mq);}
   function closeModal(){$('scrim').classList.remove('open');}
 
   function renderCart(){
     if(!cart.length)$('cartLines').innerHTML='<div class="empty">Your basket is empty</div>';
-    else $('cartLines').innerHTML=cart.map((c,i)=>`<div class="line"><div class="qty"><button data-cm="${i}">−</button><span class="n">${c.q}</span><button data-cp="${i}">+</button></div><div class="nm">${c.n}${c.extras.length?`<div class="ex">${c.extras.join(', ')}</div>`:'<div class="ex">No extras</div>'}</div><div class="pr">${f(c.unit*c.q)}</div></div>`).join('');
+    else $('cartLines').innerHTML=cart.map((c,i)=>`<div class="line"><div class="qty"><button data-cm="${i}">−</button><span class="n">${c.q}</span><button data-cp="${i}">+</button></div><div class="nm">${esc(c.n)}<div class="ex">No extras</div></div><div class="pr">${f(c.unit*c.q)}</div></div>`).join('');
     const sub=cart.reduce((s,c)=>s+c.unit*c.q,0),n=cart.reduce((s,c)=>s+c.q,0),bowls=cart.reduce((s,c)=>s+(c.bowl?c.q:0),0);
     $('reviewBtn').className='cta'+(n?'':' disabled');$('reviewBtn').innerHTML=n?`Review order · ${f(sub)}`:'Review order';
     $('berryBar').innerHTML=bowls?`🫐 You'll earn ${bowls} berr${bowls>1?'ies':'y'} — ${Math.max(0,9-bowls)} more to a free bowl`:'🫐 Add a bowl to earn your next berry';
@@ -302,15 +306,52 @@ import Layout from '../../layouts/Layout.astro';
     $('coCount').textContent=n+' item'+(n!==1?'s':'');
   }
 
-  // event delegation
+  function setStoreLabels(){if(!store)return;
+    document.querySelectorAll('[data-storename]').forEach(el=>el.textContent=store.name.replace(/^The Acai Club\s*-\s*/i,''));}
+
+  async function loadMenu(){
+    $('menu').innerHTML='<div class="section"><div class="empty">Loading menu…</div></div>';
+    try{
+      const depts=(await api('load-menu',{locationId:store.id}))
+        .filter(d=>d&&d.visibleOnline&&Array.isArray(d.menuItems)&&d.menuItems.length)
+        .sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0));
+      CATS=[];MENU={};
+      depts.forEach(d=>{
+        const bowl=/bowl/i.test(d.name)?1:0, cup=DRINK.test(d.name)?1:0;
+        const items=d.menuItems.filter(m=>m&&m.isForSale!==false&&!m.deleted).map(m=>({
+          id:m.id,n:m.name,d:(m.description||'').split('\n')[0],p:m.salePrice||0,img:m.imageUrl,bowl,cup
+        }));
+        if(!items.length)return;
+        CATS.push({id:String(d.id),name:d.name,e:emoji(d.name)});
+        MENU[String(d.id)]=items;
+      });
+      activeCat=CATS.length?CATS[0].id:null;
+      renderCats();if(activeCat)renderMenu();else $('menu').innerHTML='<div class="section"><div class="empty">No items available for this store.</div></div>';
+    }catch(err){
+      $('menu').innerHTML='<div class="section"><div class="empty">Couldn’t load the live menu ('+esc(err.message)+'). Try refreshing.</div></div>';
+    }
+  }
+
+  async function init(){
+    try{
+      LOC=(await api('get-locations')).filter(l=>l&&l.onlineOrderingActive!==false);
+      store=LOC.find(l=>l.id===1)||LOC[0];
+    }catch(e){store={id:1,name:'The Acai Club - Reading'};}
+    setStoreLabels();
+    var up=document.querySelector('#order-app .uplist');if(up)up.style.display='none'; // upsell wires in next pass
+    await loadMenu();
+    renderCart();
+  }
+
+  // store switcher: cycle through stores on click of the pickup card
+  function cycleStore(){if(LOC.length<2)return;const i=LOC.findIndex(l=>l.id===store.id);store=LOC[(i+1)%LOC.length];setStoreLabels();loadMenu();}
+
   document.addEventListener('click',e=>{
-    const t=e.target.closest('[data-cat],[data-i],[data-up],[data-size],[data-extra],[data-cm],[data-cp]');
+    const t=e.target.closest('[data-cat],[data-i],[data-cm],[data-cp],[data-store]');
     if(!t)return;
     if(t.dataset.cat!==undefined){activeCat=t.dataset.cat;renderCats();renderMenu();window.scrollTo({top:300,behavior:'smooth'});}
     else if(t.dataset.i!==undefined){openModal(+t.dataset.i);}
-    else if(t.dataset.up!==undefined){const u=UPSELL[+t.dataset.up];cart.push({n:u.n,unit:u.p,q:1,extras:[],bowl:0,cup:0});renderCart();}
-    else if(t.dataset.size!==undefined){mSizeSel=+t.dataset.size;[...$('mSize').children].forEach((c,i)=>c.classList.toggle('sel',i===mSizeSel));updMPrice();}
-    else if(t.dataset.extra!==undefined){const ei=+t.dataset.extra,x=mExtraSel.indexOf(ei);x>=0?mExtraSel.splice(x,1):mExtraSel.push(ei);t.classList.toggle('sel');updMPrice();}
+    else if(t.dataset.store!==undefined){cycleStore();}
     else if(t.dataset.cm!==undefined){const i=+t.dataset.cm;cart[i].q--;if(cart[i].q<1)cart.splice(i,1);renderCart();}
     else if(t.dataset.cp!==undefined){cart[+t.dataset.cp].q++;renderCart();}
   });
@@ -318,13 +359,11 @@ import Layout from '../../layouts/Layout.astro';
   $('scrim').onclick=e=>{if(e.target===$('scrim'))closeModal();};
   $('mMinus').onclick=()=>{mq=Math.max(1,mq-1);$('mQ').textContent=mq;updMPrice();};
   $('mPlus').onclick=()=>{mq++;$('mQ').textContent=mq;updMPrice();};
-  $('mAdd').onclick=()=>{const size=SIZES[mSizeSel].n,ex=mExtraSel.map(i=>EXTRAS[i].n);cart.push({n:modal.n,unit:mUnit(),q:mq,bowl:modal.bowl||0,cup:modal.cup||0,extras:(size!=='Regular'?[size]:[]).concat(ex)});closeModal();renderCart();};
+  $('mAdd').onclick=()=>{cart.push({n:modal.n,unit:mUnit(),q:mq,bowl:modal.bowl||0,cup:modal.cup||0});closeModal();renderCart();};
   $('reviewBtn').onclick=()=>{if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';window.scrollTo(0,0);};
   $('backBtn').onclick=()=>{$('shop').style.display='block';$('checkout').style.display='none';window.scrollTo(0,0);};
   $('payBtn').onclick=()=>alert('Demo only — Stripe checkout wires up when we go live.');
 
-  renderCats();renderMenu();renderUpsell();
-  cart.push({n:'The OG',unit:8.50,q:1,bowl:1,cup:0,extras:['Large','Peanut Butter']});
-  renderCart();
+  init();
 })();
 </script>
