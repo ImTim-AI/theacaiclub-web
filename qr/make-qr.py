@@ -66,6 +66,14 @@ def lockup_rgba():
     out = crop.convert("RGBA"); out.putalpha(alpha)
     return out
 
+def logo_ink(crop_rgba):
+    """Exact logo ink colour = average of the darkest (most-inked) pixels."""
+    rgb = crop_rgba.convert("RGB")
+    px = list(rgb.get_flattened_data() if hasattr(rgb, "get_flattened_data") else rgb.getdata())
+    darks = sorted(px, key=lambda c: sum(c))[:max(50, len(px) // 50)]
+    n = len(darks)
+    return (sum(c[0] for c in darks)//n, sum(c[1] for c in darks)//n, sum(c[2] for c in darks)//n)
+
 def make_circle(url, out_path, label=None):
     lk0 = lockup_rgba(); lw, lh = lk0.size
     qr = qrcode.QRCode(error_correction=ERROR_CORRECT_H, box_size=24, border=4)
@@ -89,7 +97,7 @@ def make_circle(url, out_path, label=None):
 
     # small IG + label line, tucked into the empty space below the centred logo
     if label:
-        row = label_row(label, LOGO_DARK, max_w=int(lkw * 0.55))
+        row = label_row(label, logo_ink(lk0), max_w=int(lkw * 0.55))
         target_h = int(lkh * 0.165)                           # slightly smaller
         if row.size[1] != target_h:
             row = row.resize((int(row.size[0] * target_h / row.size[1]), target_h), Image.LANCZOS)
