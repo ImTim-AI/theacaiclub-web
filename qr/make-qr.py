@@ -89,8 +89,8 @@ def make_circle(url, out_path, label=None):
 
     # small IG + label line, tucked into the empty space below the centred logo
     if label:
-        row = label_row(label, LOGO_DARK, max_w=int(lkw * 0.62))
-        target_h = int(lkh * 0.19)                            # smaller
+        row = label_row(label, LOGO_DARK, max_w=int(lkw * 0.55))
+        target_h = int(lkh * 0.165)                           # slightly smaller
         if row.size[1] != target_h:
             row = row.resize((int(row.size[0] * target_h / row.size[1]), target_h), Image.LANCZOS)
         ry = ly + lkh + int(lkh * 0.12)                       # just below the logo (higher up)
