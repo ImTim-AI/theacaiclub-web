@@ -89,12 +89,11 @@ def make_circle(url, out_path, label=None):
 
     # small IG + label line, tucked into the empty space below the centred logo
     if label:
-        row = label_row(label, LOGO_DARK, max_w=int(lkw * 0.78))
-        target_h = int(lkh * 0.26)                            # small
+        row = label_row(label, LOGO_DARK, max_w=int(lkw * 0.62))
+        target_h = int(lkh * 0.19)                            # smaller
         if row.size[1] != target_h:
             row = row.resize((int(row.size[0] * target_h / row.size[1]), target_h), Image.LANCZOS)
-        band_top, band_bot = ly + lkh, py + side              # logo bottom -> circle bottom
-        ry = band_top + (band_bot - band_top - row.size[1]) // 2
+        ry = ly + lkh + int(lkh * 0.12)                       # just below the logo (higher up)
         img.alpha_composite(row, (px + (side - row.size[0]) // 2, ry))
 
     img.convert("RGB").save(out_path)
