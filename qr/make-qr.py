@@ -101,7 +101,7 @@ def make_circle(url, out_path, label=None):
         target_h = int(lkh * 0.165)                           # slightly smaller
         if row.size[1] != target_h:
             row = row.resize((int(row.size[0] * target_h / row.size[1]), target_h), Image.LANCZOS)
-        ry = ly + lkh + int(lkh * 0.12)                       # just below the logo (higher up)
+        ry = ly + lkh + int(lkh * 0.04)                       # just below the logo (nudged up)
         img.alpha_composite(row, (px + (side - row.size[0]) // 2, ry))
 
     img.convert("RGB").save(out_path)
