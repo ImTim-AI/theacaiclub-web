@@ -36,22 +36,55 @@ def instagram_glyph(size, color):
     d.ellipse([dc[0] - dot, dc[1] - dot, dc[0] + dot, dc[1] + dot], fill=color)
     return img.resize((size, size), Image.LANCZOS)
 
-def label_row(text, color, max_w):
-    """An [IG icon] + text row as one transparent image, scaled to <= max_w wide."""
+def mobile_glyph(size, color):
+    """Draw a simple phone outline (rounded body + speaker + home indicator)."""
+    s = size * 4
+    img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    stroke = max(2, int(s * 0.075))
+    bw = int(s * 0.56)                      # phone is taller than wide
+    x0, x1 = (s - bw) // 2, (s + bw) // 2
+    d.rounded_rectangle([x0, int(s * 0.06), x1, int(s * 0.94)],
+                        radius=int(s * 0.14), outline=color, width=stroke)
+    d.line([s // 2 - int(s * 0.07), int(s * 0.135), s // 2 + int(s * 0.07), int(s * 0.135)],
+           fill=color, width=max(2, int(s * 0.045)))                       # speaker
+    d.line([s // 2 - int(s * 0.09), int(s * 0.875), s // 2 + int(s * 0.09), int(s * 0.875)],
+           fill=color, width=max(2, int(s * 0.05)))                        # home indicator
+    return img.resize((size, size), Image.LANCZOS)
+
+def label_block(lines, color, icon_fn=instagram_glyph):
+    """[icon] + text laid out over one or more lines, as one transparent image.
+    The icon sits inline before the first line; every line is centred."""
     fsize = 64
     f = ImageFont.truetype(FUT, fsize, index=0)
     tmp = ImageDraw.Draw(Image.new("RGBA", (10, 10)))
-    tb = tmp.textbbox((0, 0), text, font=f)
-    tw, th = tb[2] - tb[0], tb[3] - tb[1]
-    icon = th + int(th * 0.25)
-    gap = int(th * 0.4)
-    row_w, row_h = icon + gap + tw, max(icon, th)
-    img = Image.new("RGBA", (row_w, row_h), (0, 0, 0, 0))
-    img.alpha_composite(instagram_glyph(icon, color), (0, (row_h - icon) // 2))
-    ImageDraw.Draw(img).text((icon + gap, (row_h - th) // 2 - tb[1]), text, font=f, fill=color)
-    if row_w > max_w:    # scale down to fit one line in the circle
-        scale = max_w / row_w
-        img = img.resize((int(row_w * scale), int(row_h * scale)), Image.LANCZOS)
+    def tsize(t):
+        b = tmp.textbbox((0, 0), t, font=f); return b[2]-b[0], b[3]-b[1], b
+    th = tsize("RUN CLUB")[1]
+    icon = th + int(th * 0.22)
+    gap = int(th * 0.42)            # icon -> text gap
+    lgap = int(th * 0.45)           # line spacing
+
+    widths = []
+    for i, ln in enumerate(lines):
+        w = tsize(ln)[0] + (icon + gap if i == 0 else 0)
+        widths.append(w)
+    block_w = max(widths)
+    line_h = max(icon, th)
+    block_h = line_h * len(lines) + lgap * (len(lines) - 1)
+
+    img = Image.new("RGBA", (block_w, block_h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    y = 0
+    for i, ln in enumerate(lines):
+        tw, _, b = tsize(ln)
+        row_w = tw + (icon + gap if i == 0 else 0)
+        x = (block_w - row_w) // 2
+        if i == 0:
+            img.alpha_composite(icon_fn(icon, color), (x, y + (line_h - icon) // 2))
+            x += icon + gap
+        d.text((x, y + (line_h - th) // 2 - b[1]), ln, font=f, fill=color)
+        y += line_h + lgap
     return img
 
 def lockup_rgba():
@@ -74,50 +107,72 @@ def logo_ink(crop_rgba):
     n = len(darks)
     return (sum(c[0] for c in darks)//n, sum(c[1] for c in darks)//n, sum(c[2] for c in darks)//n)
 
-def make_circle(url, out_path, label=None):
+def make_circle(url, out_path, lines=None, icon="instagram"):
+    import math
     lk0 = lockup_rgba(); lw, lh = lk0.size
     qr = qrcode.QRCode(error_correction=ERROR_CORRECT_H, box_size=24, border=4)
     qr.add_data(url); qr.make(fit=True)
     img = qr.make_image(fill_color=FG, back_color="#f5f1ec").convert("RGBA")
     W, H = img.size
 
-    # logo + circle geometry — IDENTICAL to the original (unaffected by the label)
+    # logo at its fixed size (never changes)
     lk = lk0.resize((int(W * 0.26), int(lh * (W * 0.26 / lw))), Image.LANCZOS)
     lkw, lkh = lk.size
-    side = int((lkw**2 + lkh**2) ** 0.5) + int(lkw * 0.10)   # diagonal + margin
+    ink = logo_ink(lk0)
+
+    # build the label block (if any), scaled so it never exceeds the logo width
+    block = None
+    if lines:
+        icon_fn = mobile_glyph if icon == "mobile" else instagram_glyph
+        block = label_block(lines, ink, icon_fn)
+        max_w = int(lkw * 0.92)
+        # extra shrink for multi-line so the centre plate stays small enough to scan
+        max_w = int(max_w * (0.78 if len(lines) > 1 else 1.0))
+        if block.size[0] > max_w:
+            sc = max_w / block.size[0]
+            block = block.resize((int(block.size[0] * sc), int(block.size[1] * sc)), Image.LANCZOS)
+        bw, bh = block.size
+        gap = int(lkh * 0.12)
+
+    # logo + label centred as a group -> compact circle that still scans
+    content_w = max(lkw, bw if block else 0)
+    content_h = lkh + (gap + bh if block else 0)
+    margin = int(lkw * 0.09)
+    r = math.hypot(content_w, content_h) / 2 + margin
+    side = int(2 * r)
+
     plate = Image.new("RGBA", (side, side), (0, 0, 0, 0))
     mask = Image.new("L", (side, side), 0)
     ImageDraw.Draw(mask).ellipse([0, 0, side - 1, side - 1], fill=255)
     plate.paste(Image.new("RGBA", (side, side), BG + (255,)), (0, 0), mask)
 
     px, py = (W - side) // 2, (H - side) // 2
+    cx, cy = px + side // 2, py + side // 2
     img.alpha_composite(plate, (px, py))
-    lx, ly = px + (side - lkw) // 2, py + (side - lkh) // 2   # logo centred (original)
-    img.alpha_composite(lk, (lx, ly))
-
-    # small IG + label line, tucked into the empty space below the centred logo
-    if label:
-        row = label_row(label, logo_ink(lk0), max_w=int(lkw * 0.55))
-        target_h = int(lkh * 0.165)                           # slightly smaller
-        if row.size[1] != target_h:
-            row = row.resize((int(row.size[0] * target_h / row.size[1]), target_h), Image.LANCZOS)
-        ry = ly + lkh + int(lkh * 0.04)                       # just below the logo (nudged up)
-        img.alpha_composite(row, (px + (side - row.size[0]) // 2, ry))
+    top = cy - content_h // 2
+    img.alpha_composite(lk, (cx - lkw // 2, top))
+    if block:
+        img.alpha_composite(block, (cx - bw // 2, top + lkh + gap))
 
     img.convert("RGB").save(out_path)
     return out_path
 
-if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print(__doc__); sys.exit(1)
-    url, name = sys.argv[1], sys.argv[2]
-    label = sys.argv[3] if len(sys.argv) > 3 else None
-    out = os.path.join(HERE, name + ".png")
-    make_circle(url, out, label=label)
+def verify(out, url):
     try:
         import cv2
         data, _, _ = cv2.QRCodeDetector().detectAndDecode(cv2.imread(out))
-        ok = ("OK -> " + data) if data == url else f"WARNING decode mismatch: {data!r}"
+        return ("OK -> " + data) if data == url else f"WARNING decode mismatch: {data!r}"
     except Exception as e:
-        ok = f"(decode check skipped: {e})"
-    print("wrote", out, "|", ok)
+        return f"(decode check skipped: {e})"
+
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print(__doc__ + "\nLabel: use '|' to split lines, '--mobile' for the phone icon.")
+        sys.exit(1)
+    url, name = sys.argv[1], sys.argv[2]
+    icon = "mobile" if "--mobile" in sys.argv else "instagram"
+    label = next((a for a in sys.argv[3:] if not a.startswith("--")), None)
+    lines = label.split("|") if label else None
+    out = os.path.join(HERE, name + ".png")
+    make_circle(url, out, lines=lines, icon=icon)
+    print("wrote", out, "|", verify(out, url))
