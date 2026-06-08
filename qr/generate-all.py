@@ -16,14 +16,16 @@ mq = importlib.util.module_from_spec(spec); spec.loader.exec_module(mq)
 GET = "https://theacaiclub.com/get"
 IG = "https://www.instagram.com/channel/AbY12BpE6JQD6QOB/"
 
-# name, url, two-line label
+# name, url, two-line label.
+# Deep-link intent is carried in a single ?target= param (run-club / store slug),
+# read by /get today (download) and by the app's deep-link handler later.
 SET = [
     ("app-download",        GET,                          ["Download", "the App"]),
     ("runclub-instagram",   IG,                           ["Run Club", "Community"]),
-    ("app-runclub",         GET + "?page=run-club",       ["Run Club", "in the App"]),
-    ("order-beaconsfield",  GET + "?location=beaconsfield", ["Order Now", "Beaconsfield"]),
-    ("order-reading",       GET + "?location=reading",    ["Order Now", "Reading"]),
-    ("order-datchet",       GET + "?location=datchet",    ["Order Now", "Datchet"]),
+    ("app-runclub",         GET + "?target=run-club",     ["Run Club", "in the App"]),
+    ("order-beaconsfield",  GET + "?target=beaconsfield", ["Order Now", "Beaconsfield"]),
+    ("order-reading",       GET + "?target=reading",      ["Order Now", "Reading"]),
+    ("order-datchet",       GET + "?target=datchet",      ["Order Now", "Datchet"]),
 ]
 
 if __name__ == "__main__":
