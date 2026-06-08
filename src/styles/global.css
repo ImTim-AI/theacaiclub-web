@@ -23,21 +23,11 @@
   --color-taupe-dark: #7E7E73;    /* CTA hover for brandTaupe */
   --color-charcoal: #4F4F4D;      /* legacy — kept for explicit users */
 
-  /* Brand accents — pink retained for subtle pops */
-  --color-pink: #E8B4B8;
-  --color-pink-light: #f0cdd0;
-
   /* Earth tones retained for explicit use */
   --color-beige: #D9D0C8;
   --color-cream: #EDE8E4;
   --color-sand: #CBC8BE;
   --color-taupe: #9B9B90;
-
-  /* Product accent colours */
-  --color-acai: #5B2C6F;
-  --color-acai-light: #7D3C98;
-  --color-berry: #C0392B;
-  --color-tropical: #E67E22;
 
   --font-heading: "Gotham", "Montserrat", ui-sans-serif, system-ui, sans-serif;
   --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
