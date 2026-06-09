@@ -30,7 +30,8 @@ SET = [
 
 # Stand / menu posters: logo-only QR with the caption BELOW the code (taller image).
 STANDS = [
-    ("menu-datchet",        GET + "?target=datchet",      ["ORDER NOW"]),
+    ("menu-datchet",          GET + "?target=datchet",    ["ORDER NOW"]),
+    ("menu-flipside-datchet", GET + "?target=datchet",    ["JOIN THE CLUB"]),
 ]
 
 if __name__ == "__main__":
