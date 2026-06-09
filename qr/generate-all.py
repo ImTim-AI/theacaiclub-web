@@ -13,28 +13,31 @@ os.makedirs(OUT, exist_ok=True)
 spec = importlib.util.spec_from_file_location("mq", os.path.join(HERE, "make-qr.py"))
 mq = importlib.util.module_from_spec(spec); spec.loader.exec_module(mq)
 
-GET = "https://theacaiclub.com/get"
+# Printed codes encode a STABLE /qr/<slug> handle; the destination is resolved by
+# web/public/_redirects at scan time, so any code can be repointed later WITHOUT
+# reprinting. Keep the slugs here in sync with _redirects. (Instagram stays a
+# direct link — it's not an app-bound code we'd ever repoint.)
+QR = "https://theacaiclub.com/qr"
 IG = "https://www.instagram.com/channel/AbY12BpE6JQD6QOB/"
 
 # name, url, two-line label.
-# Deep-link intent is carried in a single ?target= param (run-club / store slug),
-# read by /get today (download) and by the app's deep-link handler later.
 SET = [
-    ("app-download",        GET,                          ["Download", "the App"]),
-    ("runclub-instagram",   IG,                           ["Run Club", "Community"]),
-    ("app-runclub",         GET + "?target=run-club",     ["Run Club", "in the App"]),
-    ("order-beaconsfield",  GET + "?target=beaconsfield", ["Order Now", "Beaconsfield"]),
-    ("order-reading",       GET + "?target=reading",      ["Order Now", "Reading"]),
-    ("order-datchet",       GET + "?target=datchet",      ["Order Now", "Datchet"]),
+    ("app-download",        QR + "/app",          ["Download", "the App"]),
+    ("runclub-instagram",   IG,                   ["Run Club", "Community"]),
+    ("app-runclub",         QR + "/run-club",     ["Run Club", "in the App"]),
+    ("order-beaconsfield",  QR + "/beaconsfield", ["Order Now", "Beaconsfield"]),
+    ("order-reading",       QR + "/reading",      ["Order Now", "Reading"]),
+    ("order-datchet",       QR + "/datchet",      ["Order Now", "Datchet"]),
 ]
 
 # Stand / menu posters: logo-only QR with the caption BELOW the code (taller image).
 # dark=True -> light QR/logo/text on near-black, for printing on black acrylic.
+# Both Datchet stand faces (and dark variants) resolve to the same /qr/datchet.
 STANDS = [
-    ("menu-datchet",               GET + "?target=datchet", ["ORDER NOW"],     False),
-    ("menu-flipside-datchet",      GET + "?target=datchet", ["JOIN THE CLUB"], False),
-    ("menu-datchet-dark",          GET + "?target=datchet", ["ORDER NOW"],     True),
-    ("menu-flipside-datchet-dark", GET + "?target=datchet", ["JOIN THE CLUB"], True),
+    ("menu-datchet",               QR + "/datchet", ["ORDER NOW"],     False),
+    ("menu-flipside-datchet",      QR + "/datchet", ["JOIN THE CLUB"], False),
+    ("menu-datchet-dark",          QR + "/datchet", ["ORDER NOW"],     True),
+    ("menu-flipside-datchet-dark", QR + "/datchet", ["JOIN THE CLUB"], True),
 ]
 
 if __name__ == "__main__":

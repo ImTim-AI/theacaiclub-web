@@ -1,0 +1,16 @@
+# QR redirect layer (Cloudflare Pages).
+# Printed QR codes encode https://theacaiclub.com/qr/<slug>. The destination is
+# resolved HERE at scan time, so a printed code can be repointed anytime by
+# editing one line and redeploying — the physical print never changes.
+# Use 302 (temporary) so destinations are never cached as permanent.
+#
+# Specific slugs first; the /qr/* fallback below catches any unmapped/future slug
+# so a code can never 404 (it still downloads the app).
+
+/qr/app           /get                      302
+/qr/run-club      /get?target=run-club      302
+/qr/beaconsfield  /get?target=beaconsfield  302
+/qr/reading       /get?target=reading       302
+/qr/datchet       /get?target=datchet       302
+
+/qr/*             /get                      302
