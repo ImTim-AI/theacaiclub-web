@@ -195,18 +195,25 @@ def make_stand(url, out_path, lines, icon="none"):
     mont = load_font(MONT, 64, weight=600) if os.path.exists(MONT) else None
     caption = label_block(lines, ink, icon_fn=None, font=mont)   # text-only, no icon
 
-    # scale caption to a comfortable width under the QR
-    target_w = int(W * 0.66)
-    if caption.size[0] != target_w:
-        sc = target_w / caption.size[0]
-        caption = caption.resize((int(caption.size[0] * sc), int(caption.size[1] * sc)), Image.LANCZOS)
+    # Scale to a fixed letter HEIGHT (not width) so every stand has the same text
+    # size and the same total height regardless of wording — fronts/flipsides match.
+    # Only shrink below that if the text would otherwise exceed the max width.
+    target_h = int(W * 0.105)
+    max_w = int(W * 0.86)
+    sc = target_h / caption.size[1]
+    if caption.size[0] * sc > max_w:
+        sc = max_w / caption.size[0]
+    caption = caption.resize((int(caption.size[0] * sc), int(caption.size[1] * sc)), Image.LANCZOS)
     cw, ch = caption.size
 
-    pad_top = int(W * 0.02)      # gap between QR and caption
+    # Fixed caption band so the canvas height is identical across stands.
+    band_h = int(W * 0.105)
+    pad_top = int(W * 0.04)      # gap between QR and caption band
     pad_bot = int(W * 0.07)      # breathing room under the caption
-    canvas = Image.new("RGB", (W, W + pad_top + ch + pad_bot), BG)
+    canvas = Image.new("RGB", (W, W + pad_top + band_h + pad_bot), BG)
     canvas.paste(qr, (0, 0))
-    canvas.paste(caption, ((W - cw) // 2, W + pad_top), caption)
+    cy = W + pad_top + (band_h - ch) // 2        # centre caption within the fixed band
+    canvas.paste(caption, ((W - cw) // 2, cy), caption)
     canvas.save(out_path)
     return out_path
 
