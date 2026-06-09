@@ -149,24 +149,51 @@ def _compose(url, version, lines, icon):
         img.alpha_composite(block, (cx - bw // 2, top + lkh + gap))
     return img.convert("RGB")
 
-def make_circle(url, out_path, lines=None, icon="instagram"):
-    """Render a circular QR, auto-bumping the QR version until the finished image
-    (centre plate and all) actually decodes — so it's robust regardless of URL
-    length or label size."""
+def _adaptive_qr(url, lines, icon):
+    """Return a circular-QR RGB image, auto-bumping the QR version until the
+    finished image (centre plate and all) actually decodes."""
+    import tempfile
     natural = _compose(url, None, lines, icon)
-    natural.save(out_path)
-    if verify(out_path, url).startswith("OK"):
-        return out_path
-    # natural version too sparse for the centre plate -> densify until it scans
+    tmp = os.path.join(tempfile.gettempdir(), "_qrcheck.png")
+    natural.save(tmp)
+    if verify(tmp, url).startswith("OK"):
+        return natural
     for v in range(2, 21):
         try:
             img = _compose(url, v, lines, icon)
         except qrcode.exceptions.DataOverflowError:
             continue
-        img.save(out_path)
-        if verify(out_path, url).startswith("OK"):
-            return out_path
-    natural.save(out_path)   # fallback: nothing scanned cleanly, keep the natural one
+        img.save(tmp)
+        if verify(tmp, url).startswith("OK"):
+            return img
+    return natural   # fallback: nothing scanned cleanly, keep the natural one
+
+def make_circle(url, out_path, lines=None, icon="instagram"):
+    """Circular QR with the logo (and optional inline label) in the centre."""
+    _adaptive_qr(url, lines, icon).save(out_path)
+    return out_path
+
+def make_stand(url, out_path, lines, icon="none"):
+    """Stand / menu poster: a logo-only circular QR on top, with the caption text
+    BELOW the code (not inside it). Taller canvas. `lines` = caption under the QR."""
+    qr = _adaptive_qr(url, None, icon)          # logo-only centre (original style)
+    W, _ = qr.size
+    ink = logo_ink(lockup_rgba())
+    caption = label_block(lines, ink, icon_fn=None)   # text-only, no icon
+
+    # scale caption to a comfortable width under the QR
+    target_w = int(W * 0.66)
+    if caption.size[0] != target_w:
+        sc = target_w / caption.size[0]
+        caption = caption.resize((int(caption.size[0] * sc), int(caption.size[1] * sc)), Image.LANCZOS)
+    cw, ch = caption.size
+
+    pad_top = int(W * 0.02)      # gap between QR and caption
+    pad_bot = int(W * 0.07)      # breathing room under the caption
+    canvas = Image.new("RGB", (W, W + pad_top + ch + pad_bot), BG)
+    canvas.paste(qr, (0, 0))
+    canvas.paste(caption, ((W - cw) // 2, W + pad_top), caption)
+    canvas.save(out_path)
     return out_path
 
 def verify(out, url):

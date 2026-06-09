@@ -28,8 +28,17 @@ SET = [
     ("order-datchet",       GET + "?target=datchet",      ["Order Now", "Datchet"]),
 ]
 
+# Stand / menu posters: logo-only QR with the caption BELOW the code (taller image).
+STANDS = [
+    ("menu-datchet",        GET + "?target=datchet",      ["ORDER NOW"]),
+]
+
 if __name__ == "__main__":
     for name, url, lines in SET:
         out = os.path.join(OUT, name + ".png")
         mq.make_circle(url, out, lines=lines, icon="none")
+        print(f"{name:20s} {mq.verify(out, url)}")
+    for name, url, lines in STANDS:
+        out = os.path.join(OUT, name + ".png")
+        mq.make_stand(url, out, lines=lines)
         print(f"{name:20s} {mq.verify(out, url)}")
