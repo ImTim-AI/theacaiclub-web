@@ -69,9 +69,15 @@ import Layout from '../../layouts/Layout.astro';
                 <button class="chg" id="changeStore2">Change</button>
               </div>
               <div class="seg2">
-                <div class="choice sel">⚡ ASAP (10-15 min)<div class="mk"></div></div>
-                <div class="choice">🕒 Schedule<div class="mk"></div></div>
+                <button class="choice" data-mode="in_store">In store<div class="mk"></div></button>
+                <button class="choice sel" data-mode="takeaway">Takeaway<div class="mk"></div></button>
               </div>
+              <button class="timefield" id="timeField"><span class="tf-ic">🕒</span><span id="timeText">ASAP in 15 mins</span><span class="tf-chev">›</span></button>
+              <div class="closednote" id="closedNote"></div>
+            </div>
+            <div class="field">
+              <label>Notes</label><div class="hint">&nbsp;</div>
+              <textarea id="orderNotes" rows="3" placeholder="Allergies, dietary requirements, etc."></textarea>
             </div>
           </div>
           <div>
@@ -125,6 +131,35 @@ import Layout from '../../layouts/Layout.astro';
         <div class="plist" id="pList"></div>
       </div>
     </div>
+
+    <!-- ===== PICKUP TIME PICKER ===== -->
+    <div class="scrim picker" id="timePicker">
+      <div class="pmodal">
+        <div class="phead">
+          <h3>Select a pickup time</h3>
+          <button class="close dark" id="tClose">✕</button>
+        </div>
+        <div class="tdays" id="tDays"></div>
+        <div class="plist" id="tSlots"></div>
+        <button class="cta" id="tDone" style="margin:0 24px 24px">DONE</button>
+      </div>
+    </div>
+
+    <!-- ===== CONFIRM DIALOG ===== -->
+    <div class="scrim" id="confirmDlg">
+      <div class="cmodal">
+        <div class="cic">⚠️</div>
+        <h3 id="cTitle">Clear cart?</h3>
+        <p id="cBody"></p>
+        <div class="cbtns">
+          <button class="cbtn cancel" id="cCancel">Cancel</button>
+          <button class="cbtn go" id="cGo">Continue</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TOAST ===== -->
+    <div class="toast" id="toast"></div>
 
     <!-- ===== MOBILE ORDER BAR ===== -->
     <button class="mbar" id="mobileBar"></button>
@@ -258,6 +293,39 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .applepay{width:100%;background:#000;color:#fff;border-radius:999px;padding:15px;font-size:16px;font-weight:600;margin-bottom:10px}
   #order-app .muted{color:var(--medium);font-size:12px;text-align:center;margin-top:10px}
   #order-app #coBasket .line:last-child{border-bottom:none}
+  #order-app .field textarea{width:100%;border:1.5px solid var(--sand);border-radius:var(--rs);padding:14px 16px;font-size:15px;font-family:inherit;color:var(--charcoal);resize:vertical}
+  #order-app .field textarea:focus{outline:none;border-color:var(--acai)}
+  #order-app .choice[disabled]{opacity:.45;cursor:not-allowed}
+  /* time field */
+  #order-app .timefield{width:100%;display:flex;align-items:center;gap:10px;border:1.5px solid var(--sand);border-radius:var(--rs);padding:15px 16px;margin-top:12px;font-weight:700;font-size:14px;color:var(--charcoal);text-align:left}
+  #order-app .timefield .tf-ic{font-size:16px}
+  #order-app .timefield .tf-chev{margin-left:auto;color:var(--taupe);font-size:20px}
+  #order-app .timefield[disabled]{opacity:.7;cursor:default}
+  #order-app .timefield[disabled] .tf-chev{display:none}
+  #order-app .closednote{display:none;color:var(--acai);font-size:13px;font-weight:600;margin-top:10px}
+  #order-app .closednote.show{display:block}
+  /* pickup-time picker */
+  #order-app .tdays{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:6px 24px 14px}
+  #order-app .tdays::-webkit-scrollbar{display:none}
+  #order-app .tchip{padding:9px 16px;border-radius:999px;background:#fff;border:1px solid var(--sand);white-space:nowrap;font-weight:700;font-size:13px;color:var(--medium)}
+  #order-app .tchip.active{background:var(--charcoal);color:#fff;border-color:var(--charcoal)}
+  #order-app .tslot{display:flex;align-items:center;gap:12px;padding:14px 12px;border-bottom:1px solid var(--off);cursor:pointer;border-radius:12px;font-weight:600;font-size:15px;color:var(--charcoal)}
+  #order-app .tslot:hover{background:var(--off)}
+  #order-app .tslot .mk{margin-left:auto;width:20px;height:20px;border-radius:50%;border:2px solid var(--sand);flex:none}
+  #order-app .tslot.sel .mk{border-color:var(--acai);background:var(--acai);box-shadow:inset 0 0 0 3px #fff}
+  /* confirm dialog */
+  #order-app #confirmDlg{align-items:center}
+  #order-app .cmodal{background:#fff;border-radius:24px;max-width:380px;width:100%;padding:30px 26px 24px;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.3)}
+  #order-app .cmodal .cic{font-size:34px}
+  #order-app .cmodal h3{font-size:20px;font-weight:800;color:var(--charcoal);margin-top:10px}
+  #order-app .cmodal p{color:var(--medium);font-size:14px;line-height:1.5;margin-top:8px}
+  #order-app .cbtns{display:flex;gap:12px;margin-top:22px}
+  #order-app .cbtn{flex:1;padding:14px;border-radius:999px;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.03em}
+  #order-app .cbtn.cancel{background:var(--off);color:var(--charcoal)}
+  #order-app .cbtn.go{background:var(--charcoal);color:#fff}
+  /* toast */
+  #order-app .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:var(--charcoal);color:#fff;padding:14px 22px;border-radius:999px;font-size:14px;font-weight:600;z-index:80;opacity:0;pointer-events:none;transition:.25s}
+  #order-app .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   #order-app .mbar{display:none}
   @media(max-width:860px){
     #order-app .oa-grid{grid-template-columns:1fr;padding:22px 16px 110px}
@@ -287,8 +355,28 @@ import Layout from '../../layouts/Layout.astro';
   function picStyle(u){return u?("background:url('"+u+"') center/cover, var(--off)"):"background:var(--off)";}
 
   var LOC=[],store=null,sched={},CATS=[],MENU={},activeCat=null,cart=[],modal=null,mGroups=[],mSel={},mq=1;
+  var pickupMode='takeaway', scheduled=null; // scheduled = {label, iso} or null (ASAP)
+  var tSelDay=0, tSelSlot=null, tSlotsByDay=[];
 
   function api(fn,body){return fetch(SUPA+'/'+fn,{method:'POST',headers:{'apikey':ANON,'Authorization':'Bearer '+ANON,'Content-Type':'application/json'},body:JSON.stringify(body||{})}).then(function(r){if(!r.ok)throw new Error(fn+' '+r.status);return r.json();});}
+
+  // ---- UK-time helpers (slots generated in Europe/London, fixing the app's device-tz bug) ----
+  function ukNow(){ return new Date(new Date().toLocaleString('en-US',{timeZone:'Europe/London'})); }
+  function parseClock(s){ // "8AM" / "7:30PM" -> {h,m}
+    var m=(s||'').trim().match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i); if(!m)return null;
+    var h=+m[1]%12; if(/pm/i.test(m[3]))h+=12; return {h:h,m:m[2]?+m[2]:0};
+  }
+  function fmtSlot(d){ var h=d.getHours(),m=d.getMinutes(),ap=h<12?'AM':'PM',hh=h%12;if(hh===0)hh=12;return hh+':'+(m<10?'0'+m:m)+' '+ap; }
+  function dayChipLabel(dateStr,idx){ if(idx===0)return 'Today'; if(idx===1)return 'Tomorrow';
+    var d=new Date(dateStr+'T00:00:00'); return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]; }
+  function fmtScheduled(dateStr,d){ // "Mon, 5:30 PM" (app format EEE, h:mm a)
+    var wd=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(dateStr+'T00:00:00').getDay()];
+    return wd+', '+fmtSlot(d); }
+
+  function toast(msg){ var t=$('toast'); t.textContent=msg; t.className='toast show'; setTimeout(function(){t.className='toast';},3000); }
+  var _confirmCb=null;
+  function confirmDialog(title,body,cb){ $('cTitle').textContent=title; $('cBody').textContent=body; _confirmCb=cb; $('confirmDlg').classList.add('open'); }
+  function closeConfirm(){ $('confirmDlg').classList.remove('open'); _confirmCb=null; }
   function shortName(n){return (n||'').replace(/^The Acai Club\s*-\s*/i,'');}
   function emoji(n){n=(n||'').toLowerCase();if(n.indexOf('bowl')>=0)return'🍇';if(n.indexOf('coffee')>=0)return'☕';if(n.indexOf('smooth')>=0||n.indexOf('juice')>=0)return'🥤';if(n.indexOf('matcha')>=0||n.indexOf('tea')>=0||n.indexOf('chai')>=0)return'🍵';if(n.indexOf('oat')>=0||n.indexOf('yog')>=0||n.indexOf('banana')>=0)return'🥣';if(n.indexOf('choc')>=0)return'🍫';if(n.indexOf('water')>=0||n.indexOf('electrolyte')>=0)return'💧';if(n.indexOf('pooch')>=0)return'🐶';return'✨';}
 
@@ -332,10 +420,84 @@ import Layout from '../../layouts/Layout.astro';
     var st=$('openState');st.textContent=open?'Store is open':'Closed';st.className='open'+(open?' is-open':'');
     $('openHours').textContent=hrs;
     document.querySelectorAll('[data-costatus]').forEach(function(el){el.textContent=(open?'Open':'Closed')+(hrs?(' · '+hrs):'');el.className='open'+(open?' is-open':'');});
+    refreshCheckoutState();
   }
   function loadSchedule(){
     if(sched[store.id]){applySchedule(sched[store.id]);return Promise.resolve();}
     return api('get-ordering-schedule',{locationId:store.id}).then(function(s){sched[store.id]=s;applySchedule(s);}).catch(function(){});
+  }
+
+  // ---- order mode + pickup time + closed gating (parity with app) ----
+  function isAccepting(){ var s=sched[store&&store.id]; return !!(s&&s.isAcceptingOrders); }
+  function canOrder(){ return isAccepting() || !!scheduled; }
+  function setMode(mode){
+    pickupMode=mode;
+    document.querySelectorAll('[data-mode]').forEach(function(b){b.classList.toggle('sel',b.dataset.mode===mode);});
+    if(mode==='in_store') scheduled=null; // in store is always ASAP (5 mins), like the app
+    refreshCheckoutState();
+  }
+  function refreshCheckoutState(){
+    var tf=$('timeField'), tt=$('timeText'); if(!tf||!tt)return;
+    if(pickupMode==='in_store'){ tt.textContent='ASAP in 5 mins'; tf.setAttribute('disabled','disabled'); }
+    else { tf.removeAttribute('disabled'); tt.textContent= scheduled ? scheduled.label : 'ASAP in 15 mins'; }
+    // closed note + pay gating
+    var s=sched[store&&store.id], note=$('closedNote'), pay=$('payBtn');
+    var ok=canOrder();
+    if(note){
+      if(!isAccepting() && !scheduled){
+        var mins=s&&s.timeUntilOrdersAccepted;
+        note.textContent= mins!=null ? ('Pick a later time to pre-order, opens in '+mins+' mins') : 'Store is closed. Pick a later time to pre-order.';
+        note.className='closednote show';
+      } else { note.className='closednote'; }
+    }
+    if(pay){ pay.className='cta'+(ok?'':' disabled'); pay.disabled=!ok; }
+  }
+
+  // ---- pickup-time picker (slots in Europe/London) ----
+  function buildSlots(){
+    tSlotsByDay=[];
+    var s=sched[store&&store.id]; if(!s||!Array.isArray(s.days))return;
+    var now=ukNow();
+    s.days.forEach(function(day,idx){
+      var hrs=(day.openingHours||'').split('-'); var slots=[];
+      if(hrs.length===2){
+        var o=parseClock(hrs[0]), c=parseClock(hrs[1]);
+        if(o&&c){
+          var base=new Date(day.date+'T00:00:00');
+          var open=new Date(base); open.setHours(o.h,o.m,0,0);
+          var close=new Date(base); close.setHours(c.h,c.m,0,0);
+          var start=open;
+          if(idx===0){ var earliest=new Date(now.getTime()+15*60000); if(earliest>start)start=new Date(earliest); }
+          var mp=start.getMinutes()%15; if(mp!==0)start=new Date(start.getTime()+(15-mp)*60000);
+          var slot=new Date(start);
+          while(slot<close && slots.length<50){ slots.push({label:fmtSlot(slot),sched:fmtScheduled(day.date,slot),iso:slot.toISOString()}); slot=new Date(slot.getTime()+15*60000); }
+        }
+      }
+      tSlotsByDay.push({date:day.date, label:dayChipLabel(day.date,idx), slots:slots, idx:idx});
+    });
+  }
+  function renderDays(){
+    $('tDays').innerHTML=tSlotsByDay.map(function(d,i){return '<button class="tchip '+(i===tSelDay?'active':'')+'" data-tday="'+i+'">'+esc(d.label)+'</button>';}).join('');
+  }
+  function renderSlots(){
+    var d=tSlotsByDay[tSelDay]; if(!d){$('tSlots').innerHTML='<div class="empty">Closed on this day.</div>';return;}
+    var rows='';
+    var s=sched[store&&store.id];
+    if(d.idx===0 && s && s.isAcceptingOrders){ rows+='<div class="tslot '+(tSelSlot==='asap'?'sel':'')+'" data-tslot="asap"><span>ASAP</span><div class="mk"></div></div>'; }
+    if(!d.slots.length && !rows){ $('tSlots').innerHTML='<div class="empty">'+(d.idx===0?'No more pickup slots today.':'Closed on this day.')+'</div>'; return; }
+    rows+=d.slots.map(function(sl,i){return '<div class="tslot '+(tSelSlot===d.idx+'_'+i?'sel':'')+'" data-tslot="'+d.idx+'_'+i+'"><span>'+esc(sl.label)+'</span><div class="mk"></div></div>';}).join('');
+    $('tSlots').innerHTML=rows;
+  }
+  function openTimePicker(){
+    if(pickupMode==='in_store')return;
+    buildSlots(); tSelDay=0; tSelSlot=null; renderDays(); renderSlots();
+    $('timePicker').classList.add('open');
+  }
+  function closeTimePicker(){ $('timePicker').classList.remove('open'); }
+  function applyTimeSelection(){
+    if(tSelSlot==='asap'){ scheduled=null; }
+    else if(tSelSlot){ var p=tSelSlot.split('_'),d=tSlotsByDay[+p[0]],sl=d&&d.slots[+p[1]]; if(sl)scheduled={label:sl.sched,iso:sl.iso}; }
+    closeTimePicker(); refreshCheckoutState();
   }
 
   function openModal(i){
@@ -409,8 +571,15 @@ import Layout from '../../layouts/Layout.astro';
     Promise.all(LOC.map(function(l){return sched[l.id]?Promise.resolve():api('get-ordering-schedule',{locationId:l.id}).then(function(s){sched[l.id]=s;}).catch(function(){});})).then(function(){renderPicker($('pSearch').value);});
   }
   function closePicker(){$('storePicker').classList.remove('open');}
+  function doPickStore(l){ store=l; closePicker(); scheduled=null; setMode(pickupMode); setStoreLabels(); loadSchedule(); loadMenu(); }
   function pickStore(id){
-    var l=LOC.filter(function(x){return x.id===id;})[0];if(!l)return;store=l;closePicker();setStoreLabels();loadSchedule();loadMenu();
+    var l=LOC.filter(function(x){return x.id===id;})[0];if(!l)return;
+    if(l.id===(store&&store.id)){ closePicker(); return; } // same store, no-op
+    if(cart.length){ // app shows confirm + clears basket on store change
+      confirmDialog('Clear cart?','Switching stores will clear your current cart. Do you want to continue?',function(){
+        cart=[]; renderCart(); doPickStore(l); toast('Basket cleared due to store change');
+      });
+    } else { doPickStore(l); }
   }
   function useLocation(){
     if(!navigator.geolocation)return;
@@ -422,12 +591,15 @@ import Layout from '../../layouts/Layout.astro';
   }
 
   document.addEventListener('click',function(e){
-    var t=e.target.closest('[data-cat],[data-i],[data-cm],[data-cp],[data-g],[data-loc]');
+    var t=e.target.closest('[data-cat],[data-i],[data-cm],[data-cp],[data-g],[data-loc],[data-mode],[data-tday],[data-tslot]');
     if(!t)return;
     if(t.dataset.cat!==undefined){activeCat=t.dataset.cat;renderCats();renderMenu();window.scrollTo({top:300,behavior:'smooth'});}
     else if(t.dataset.i!==undefined){openModal(+t.dataset.i);}
     else if(t.dataset.g!==undefined){var k=t.dataset.g+'_'+t.dataset.x;mSel[k]=!mSel[k];t.classList.toggle('sel');updMPrice();}
     else if(t.dataset.loc!==undefined){pickStore(+t.dataset.loc);}
+    else if(t.dataset.mode!==undefined){setMode(t.dataset.mode);}
+    else if(t.dataset.tday!==undefined){tSelDay=+t.dataset.tday;tSelSlot=null;renderDays();renderSlots();}
+    else if(t.dataset.tslot!==undefined){tSelSlot=t.dataset.tslot;renderSlots();}
     else if(t.dataset.cm!==undefined){var i=+t.dataset.cm;cart[i].q--;if(cart[i].q<1)cart.splice(i,1);renderCart();}
     else if(t.dataset.cp!==undefined){cart[+t.dataset.cp].q++;renderCart();}
   });
@@ -442,11 +614,18 @@ import Layout from '../../layouts/Layout.astro';
   $('pClose').onclick=closePicker;
   $('pUseLoc').onclick=useLocation;
   $('pSearch').oninput=function(){renderPicker(this.value);};
-  function toCheckout(){if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';window.scrollTo(0,0);}
+  $('timeField').onclick=openTimePicker;
+  $('tClose').onclick=closeTimePicker;
+  $('tDone').onclick=applyTimeSelection;
+  $('timePicker').onclick=function(e){if(e.target===$('timePicker'))closeTimePicker();};
+  $('cCancel').onclick=closeConfirm;
+  $('cGo').onclick=function(){var cb=_confirmCb;closeConfirm();if(cb)cb();};
+  $('confirmDlg').onclick=function(e){if(e.target===$('confirmDlg'))closeConfirm();};
+  function toCheckout(){if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';refreshCheckoutState();window.scrollTo(0,0);}
   $('reviewBtn').onclick=toCheckout;
   $('mobileBar').onclick=toCheckout;
   $('backBtn').onclick=function(){$('shop').style.display='block';$('checkout').style.display='none';window.scrollTo(0,0);};
-  $('payBtn').onclick=function(){alert('Demo only. Stripe checkout wires up when we go live.');};
+  $('payBtn').onclick=function(){if(!canOrder())return;alert('Demo only. Stripe checkout wires up when we go live.');};
 
   api('get-locations').then(function(l){LOC=l.filter(function(x){return x&&x.onlineOrderingActive!==false;});store=LOC.filter(function(x){return x.id===1;})[0]||LOC[0];})
    .catch(function(){store={id:1,name:'The Acai Club - Reading'};LOC=[store];})
