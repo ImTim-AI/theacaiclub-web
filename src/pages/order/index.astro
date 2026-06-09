@@ -78,8 +78,8 @@ import Layout from '../../layouts/Layout.astro';
             <div class="co-card">
               <h3>Total</h3>
               <div class="totrow"><span>Subtotal</span><span id="coSub">£0.00</span></div>
-              <div class="totrow"><span>VAT included</span><span id="coVat">£0.00</span></div>
               <div class="totrow big"><span>Total</span><span id="coTotal">£0.00</span></div>
+              <div class="muted" style="text-align:left;margin:6px 0 0">Prices include VAT where applicable.</div>
               <div class="terms"><input type="checkbox" checked /> I agree to the <a href="/terms">terms &amp; conditions</a></div>
               <button class="applepay"> Pay</button>
               <button class="cta" id="payBtn">Order &amp; pay · <span id="payTot">£0.00</span></button>
@@ -228,6 +228,36 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .prow .pa{color:var(--medium);font-size:13px;margin-top:2px}
   #order-app .prow .ps{font-size:13px;font-weight:700;margin-top:6px}
   #order-app .prow .pchev{margin-left:auto;color:var(--taupe);font-size:20px;flex:none}
+  /* checkout */
+  #order-app #checkout{padding-top:24px}
+  #order-app .co-head{display:flex;align-items:center;gap:16px;background:#fff;border:1px solid var(--sand);border-radius:var(--r);padding:16px 22px;margin-bottom:24px}
+  #order-app .co-head .back{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--charcoal)}
+  #order-app .co-grid{display:grid;grid-template-columns:1fr 400px;gap:24px;align-items:start;padding-bottom:80px}
+  #order-app .co-card{background:#fff;border:1px solid var(--sand);border-radius:var(--r);padding:26px}
+  #order-app .co-card h3{font-size:21px;font-weight:800;margin-bottom:20px;color:var(--charcoal)}
+  #order-app .sub{color:var(--medium);font-size:13px;font-weight:600}
+  #order-app .field{margin-bottom:20px}
+  #order-app .field label{font-weight:700;font-size:14px;color:var(--charcoal)}
+  #order-app .field .hint{color:var(--medium);font-size:13px;margin:3px 0 9px}
+  #order-app .field input{width:100%;border:1.5px solid var(--sand);border-radius:var(--rs);padding:14px 16px;font-size:15px;font-family:inherit;color:var(--charcoal)}
+  #order-app .field input:focus{outline:none;border-color:var(--acai)}
+  #order-app .otp-note{font-size:12px;color:var(--acai);margin-top:8px;font-weight:600}
+  #order-app .storebox{background:var(--off);border-radius:var(--rs);padding:16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:12px}
+  #order-app .storebox b{color:var(--charcoal)}
+  #order-app .storebox .chg{margin-left:auto;color:var(--acai);font-weight:700;font-size:13px;text-transform:uppercase}
+  #order-app .seg2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  #order-app .choice{display:flex;align-items:center;gap:10px;border:1.5px solid var(--sand);border-radius:var(--rs);padding:15px 16px;font-weight:700;font-size:14px;cursor:pointer;color:var(--charcoal)}
+  #order-app .choice.sel{border-color:var(--acai);background:var(--off)}
+  #order-app .choice .mk{margin-left:auto;width:20px;height:20px;border-radius:50%;border:2px solid var(--sand)}
+  #order-app .choice.sel .mk{border-color:var(--acai);background:var(--acai);box-shadow:inset 0 0 0 3px #fff}
+  #order-app .totrow{display:flex;justify-content:space-between;padding:9px 0;font-size:15px;color:var(--charcoal)}
+  #order-app .totrow.big{font-weight:800;font-size:18px;border-top:1px solid var(--off);margin-top:6px;padding-top:14px}
+  #order-app .terms{display:flex;gap:10px;align-items:center;background:var(--off);border-radius:var(--rs);padding:14px;margin:18px 0;font-size:13px;color:var(--charcoal)}
+  #order-app .terms input{width:18px;height:18px;accent-color:var(--acai);flex:none}
+  #order-app .terms a{color:var(--acai);font-weight:700;text-decoration:underline}
+  #order-app .applepay{width:100%;background:#000;color:#fff;border-radius:999px;padding:15px;font-size:16px;font-weight:600;margin-bottom:10px}
+  #order-app .muted{color:var(--medium);font-size:12px;text-align:center;margin-top:10px}
+  #order-app #coBasket .line:last-child{border-bottom:none}
   #order-app .mbar{display:none}
   @media(max-width:860px){
     #order-app .oa-grid{grid-template-columns:1fr;padding:22px 16px 110px}
@@ -353,7 +383,7 @@ import Layout from '../../layouts/Layout.astro';
     var sub=cart.reduce(function(s,c){return s+c.unit*c.q;},0),n=cart.reduce(function(s,c){return s+c.q;},0),bowls=cart.reduce(function(s,c){return s+(c.bowl?c.q:0);},0);
     $('reviewBtn').className='cta'+(n?'':' disabled');$('reviewBtn').innerHTML=n?('Review order · '+f(sub)):'Review order';
     $('berryBar').innerHTML=bowls?('🫐 You will earn '+bowls+' berr'+(bowls>1?'ies':'y')+'. '+Math.max(0,9-bowls)+' more to a free bowl'):'🫐 Add a bowl to earn your next berry';
-    $('coSub').textContent=f(sub);$('coVat').textContent=f(sub-sub/1.2);$('coTotal').textContent=f(sub);$('payTot').textContent=f(sub);
+    $('coSub').textContent=f(sub);$('coTotal').textContent=f(sub);$('payTot').textContent=f(sub);
     $('coCount').textContent=n+' item'+(n!==1?'s':'');
     var mb=$('mobileBar');
     if(n){mb.className='mbar show';mb.innerHTML='<span>'+n+' item'+(n!==1?'s':'')+'</span><span>Review order · '+f(sub)+'</span>';}
