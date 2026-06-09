@@ -13,8 +13,10 @@ from qrcode.constants import ERROR_CORRECT_H
 from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-BG = (245, 241, 236)   # #f5f1ec
-FG = "#1a1a1a"
+BG = (245, 241, 236)   # #f5f1ec  light background / module-on-light
+FG = "#1a1a1a"         # dark modules
+DARK_BG = (26, 26, 26)     # #1a1a1a  near-black (for black-acrylic / dark prints)
+LIGHT = (245, 241, 236)    # #f5f1ec  brand cream — the "white" on dark versions
 LOGO_DARK = (58, 58, 56)   # #3A3A38 — the wordmark/logo dark tone (app primaryColor)
 FUT = "/System/Library/Fonts/Supplemental/Futura.ttc"   # 0 = Medium
 # Montserrat = the brand's declared Gotham fallback (Gotham is licensed/not installed).
@@ -118,18 +120,35 @@ def logo_ink(crop_rgba):
     n = len(darks)
     return (sum(c[0] for c in darks)//n, sum(c[1] for c in darks)//n, sum(c[2] for c in darks)//n)
 
-def _compose(url, version, lines, icon):
-    """Render one circular QR at a specific version. Returns the RGB image."""
+def tint(rgba, color):
+    """Recolour an RGBA glyph to `color`, preserving its alpha (used to make the
+    dark-ink wordmark light for dark/black-acrylic versions)."""
+    solid = Image.new("RGBA", rgba.size, color + (255,))
+    solid.putalpha(rgba.getchannel("A"))
+    return solid
+
+def _compose(url, version, lines, icon, dark=False):
+    """Render one circular QR at a specific version. Returns the RGB image.
+    dark=True -> light modules/logo/text on a near-black background (black acrylic)."""
     import math
+    bg = DARK_BG if dark else BG            # canvas / plate colour
+    fg = LIGHT if dark else FG              # qr module colour (a tuple or hex both work)
+    fg_hex = "#%02x%02x%02x" % fg if isinstance(fg, tuple) else fg
+    bg_hex = "#%02x%02x%02x" % bg
+    ink = LIGHT if dark else None          # logo/text colour (None = sample from logo)
+
     lk0 = lockup_rgba(); lw, lh = lk0.size
     qr = qrcode.QRCode(version=version, error_correction=ERROR_CORRECT_H, box_size=24, border=4)
     qr.add_data(url); qr.make(fit=(version is None))
-    img = qr.make_image(fill_color=FG, back_color="#f5f1ec").convert("RGBA")
+    img = qr.make_image(fill_color=fg_hex, back_color=bg_hex).convert("RGBA")
     W, H = img.size
 
     lk = lk0.resize((int(W * 0.26), int(lh * (W * 0.26 / lw))), Image.LANCZOS)
     lkw, lkh = lk.size
-    ink = logo_ink(lk0)
+    if ink is None:
+        ink = logo_ink(lk0)
+    else:
+        lk = tint(lk, ink)                 # recolour the wordmark light for dark mode
 
     block = bw = bh = gap = None
     if lines:
@@ -150,7 +169,7 @@ def _compose(url, version, lines, icon):
     plate = Image.new("RGBA", (side, side), (0, 0, 0, 0))
     mask = Image.new("L", (side, side), 0)
     ImageDraw.Draw(mask).ellipse([0, 0, side - 1, side - 1], fill=255)
-    plate.paste(Image.new("RGBA", (side, side), BG + (255,)), (0, 0), mask)
+    plate.paste(Image.new("RGBA", (side, side), bg + (255,)), (0, 0), mask)
 
     px, py = (W - side) // 2, (H - side) // 2
     cx, cy = px + side // 2, py + side // 2
@@ -161,18 +180,18 @@ def _compose(url, version, lines, icon):
         img.alpha_composite(block, (cx - bw // 2, top + lkh + gap))
     return img.convert("RGB")
 
-def _adaptive_qr(url, lines, icon):
+def _adaptive_qr(url, lines, icon, dark=False):
     """Return a circular-QR RGB image, auto-bumping the QR version until the
     finished image (centre plate and all) actually decodes."""
     import tempfile
-    natural = _compose(url, None, lines, icon)
+    natural = _compose(url, None, lines, icon, dark)
     tmp = os.path.join(tempfile.gettempdir(), "_qrcheck.png")
     natural.save(tmp)
     if verify(tmp, url).startswith("OK"):
         return natural
     for v in range(2, 21):
         try:
-            img = _compose(url, v, lines, icon)
+            img = _compose(url, v, lines, icon, dark)
         except qrcode.exceptions.DataOverflowError:
             continue
         img.save(tmp)
@@ -180,17 +199,19 @@ def _adaptive_qr(url, lines, icon):
             return img
     return natural   # fallback: nothing scanned cleanly, keep the natural one
 
-def make_circle(url, out_path, lines=None, icon="instagram"):
+def make_circle(url, out_path, lines=None, icon="instagram", dark=False):
     """Circular QR with the logo (and optional inline label) in the centre."""
-    _adaptive_qr(url, lines, icon).save(out_path)
+    _adaptive_qr(url, lines, icon, dark).save(out_path)
     return out_path
 
-def make_stand(url, out_path, lines, icon="none"):
+def make_stand(url, out_path, lines, icon="none", dark=False):
     """Stand / menu poster: a logo-only circular QR on top, with the caption text
-    BELOW the code (not inside it). Taller canvas. `lines` = caption under the QR."""
-    qr = _adaptive_qr(url, None, icon)          # logo-only centre (original style)
+    BELOW the code (not inside it). Taller canvas. `lines` = caption under the QR.
+    dark=True -> light QR/logo/text on near-black (for black acrylic)."""
+    qr = _adaptive_qr(url, None, icon, dark)    # logo-only centre (original style)
     W, _ = qr.size
-    ink = logo_ink(lockup_rgba())
+    canvas_bg = DARK_BG if dark else BG
+    ink = LIGHT if dark else logo_ink(lockup_rgba())
     # Stand caption uses the brand font (Gotham → Montserrat fallback), SemiBold.
     mont = load_font(MONT, 64, weight=600) if os.path.exists(MONT) else None
     caption = label_block(lines, ink, icon_fn=None, font=mont)   # text-only, no icon
@@ -210,7 +231,7 @@ def make_stand(url, out_path, lines, icon="none"):
     band_h = int(W * 0.105)
     pad_top = int(W * 0.04)      # gap between QR and caption band
     pad_bot = int(W * 0.07)      # breathing room under the caption
-    canvas = Image.new("RGB", (W, W + pad_top + band_h + pad_bot), BG)
+    canvas = Image.new("RGB", (W, W + pad_top + band_h + pad_bot), canvas_bg)
     canvas.paste(qr, (0, 0))
     cy = W + pad_top + (band_h - ch) // 2        # centre caption within the fixed band
     canvas.paste(caption, ((W - cw) // 2, cy), caption)
@@ -220,8 +241,18 @@ def make_stand(url, out_path, lines, icon="none"):
 def verify(out, url):
     try:
         import cv2
-        data, _, _ = cv2.QRCodeDetector().detectAndDecode(cv2.imread(out))
-        return ("OK -> " + data) if data == url else f"WARNING decode mismatch: {data!r}"
+        det = cv2.QRCodeDetector()
+        img = cv2.imread(out)
+        data, _, _ = det.detectAndDecode(img)
+        if data == url:
+            return "OK -> " + data
+        # dark/inverted prints: OpenCV needs dark-on-light, so try the inverse.
+        # A pass here means the code is structurally valid; phone cameras (iOS 11+,
+        # Android/Lens) read inverted QR natively.
+        data2, _, _ = det.detectAndDecode(cv2.bitwise_not(img))
+        if data2 == url:
+            return "OK (inverted) -> " + data2
+        return f"WARNING decode mismatch: {data!r}"
     except Exception as e:
         return f"(decode check skipped: {e})"
 

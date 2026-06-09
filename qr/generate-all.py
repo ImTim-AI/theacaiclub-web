@@ -29,17 +29,20 @@ SET = [
 ]
 
 # Stand / menu posters: logo-only QR with the caption BELOW the code (taller image).
+# dark=True -> light QR/logo/text on near-black, for printing on black acrylic.
 STANDS = [
-    ("menu-datchet",          GET + "?target=datchet",    ["ORDER NOW"]),
-    ("menu-flipside-datchet", GET + "?target=datchet",    ["JOIN THE CLUB"]),
+    ("menu-datchet",               GET + "?target=datchet", ["ORDER NOW"],     False),
+    ("menu-flipside-datchet",      GET + "?target=datchet", ["JOIN THE CLUB"], False),
+    ("menu-datchet-dark",          GET + "?target=datchet", ["ORDER NOW"],     True),
+    ("menu-flipside-datchet-dark", GET + "?target=datchet", ["JOIN THE CLUB"], True),
 ]
 
 if __name__ == "__main__":
     for name, url, lines in SET:
         out = os.path.join(OUT, name + ".png")
         mq.make_circle(url, out, lines=lines, icon="none")
-        print(f"{name:20s} {mq.verify(out, url)}")
-    for name, url, lines in STANDS:
+        print(f"{name:28s} {mq.verify(out, url)}")
+    for name, url, lines, dark in STANDS:
         out = os.path.join(OUT, name + ".png")
-        mq.make_stand(url, out, lines=lines)
-        print(f"{name:20s} {mq.verify(out, url)}")
+        mq.make_stand(url, out, lines=lines, dark=dark)
+        print(f"{name:28s} {mq.verify(out, url)}")
