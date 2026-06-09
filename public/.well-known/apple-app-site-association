@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "W6UV7756S4.com.epostechnologies.theacaiclub",
+        "paths": ["/qr/*", "/get", "/get/*"]
+      }
+    ]
+  }
+}

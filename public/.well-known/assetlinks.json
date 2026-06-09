@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.epostechnologies.theacaiclub",
+      "sha256_cert_fingerprints": [
+        "A5:F1:A2:03:A3:9F:0B:DE:13:15:8C:2F:65:6C:D0:07:1E:65:07:29:D5:19:28:D1:89:7E:04:CB:9F:63:C6:A3"
+      ]
+    }
+  }
+]
