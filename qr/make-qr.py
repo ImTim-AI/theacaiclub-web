@@ -17,7 +17,19 @@ BG = (245, 241, 236)   # #f5f1ec
 FG = "#1a1a1a"
 LOGO_DARK = (58, 58, 56)   # #3A3A38 — the wordmark/logo dark tone (app primaryColor)
 FUT = "/System/Library/Fonts/Supplemental/Futura.ttc"   # 0 = Medium
+# Montserrat = the brand's declared Gotham fallback (Gotham is licensed/not installed).
+# Bundled OFL font so renders are reproducible on any machine.
+MONT = os.path.join(HERE, "fonts", "Montserrat.ttf")
 SPLASH = os.path.join(HERE, "..", "..", "app", "assets", "images", "splash-screen.png")
+
+def load_font(path, size, index=0, weight=None):
+    f = ImageFont.truetype(path, size, index=index)
+    if weight is not None:
+        try:
+            f.set_variation_by_axes([weight])
+        except Exception:
+            pass
+    return f
 
 def instagram_glyph(size, color):
     """Draw a simple Instagram camera glyph (rounded square + lens + dot)."""
@@ -52,12 +64,12 @@ def mobile_glyph(size, color):
            fill=color, width=max(2, int(s * 0.05)))                        # home indicator
     return img.resize((size, size), Image.LANCZOS)
 
-def label_block(lines, color, icon_fn=instagram_glyph):
+def label_block(lines, color, icon_fn=instagram_glyph, font=None):
     """[icon] + text laid out over one or more lines, as one transparent image.
     The icon (if any) sits inline before the first line; every line is centred.
-    Pass icon_fn=None for a text-only label."""
+    Pass icon_fn=None for a text-only label. `font` overrides the default Futura."""
     fsize = 64
-    f = ImageFont.truetype(FUT, fsize, index=0)
+    f = font if font is not None else ImageFont.truetype(FUT, fsize, index=0)
     tmp = ImageDraw.Draw(Image.new("RGBA", (10, 10)))
     _, descent = f.getmetrics()                 # max descender depth below baseline (g, p, y)
     cap_h = tmp.textbbox((0, 0), "RUN CLUB", font=f)[3]   # caps height
@@ -179,7 +191,9 @@ def make_stand(url, out_path, lines, icon="none"):
     qr = _adaptive_qr(url, None, icon)          # logo-only centre (original style)
     W, _ = qr.size
     ink = logo_ink(lockup_rgba())
-    caption = label_block(lines, ink, icon_fn=None)   # text-only, no icon
+    # Stand caption uses the brand font (Gotham → Montserrat fallback), SemiBold.
+    mont = load_font(MONT, 64, weight=600) if os.path.exists(MONT) else None
+    caption = label_block(lines, ink, icon_fn=None, font=mont)   # text-only, no icon
 
     # scale caption to a comfortable width under the QR
     target_w = int(W * 0.66)
