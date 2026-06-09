@@ -141,7 +141,7 @@ import Layout from '../../layouts/Layout.astro';
         </div>
         <div class="tdays" id="tDays"></div>
         <div class="plist" id="tSlots"></div>
-        <button class="cta" id="tDone" style="margin:0 24px 24px">DONE</button>
+        <div class="tfoot"><button class="cta" id="tDone">DONE</button></div>
       </div>
     </div>
 
@@ -168,6 +168,7 @@ import Layout from '../../layouts/Layout.astro';
 
 <style is:global>
   #order-app{--cream:#DED9D4;--off:#F2EEEA;--card:#fff;--sand:#CBC8BE;--charcoal:#3A3A38;--medium:#6B6B68;--taupe:#9B9B90;--taupe-dark:#7E7E73;--pink:#E8B4B8;--pink-light:#f0cdd0;--acai:#5B2C6F;--r:18px;--rs:12px;background:var(--cream)}
+  #order-app *{box-sizing:border-box}
   #order-app .oa-wrap{max-width:1320px;margin:0 auto;padding:0 24px}
   #order-app h1,#order-app h2,#order-app h3,#order-app h4{font-family:var(--font-heading);letter-spacing:-.01em}
   #order-app button{cursor:pointer;border:none;background:none;color:inherit;font-family:inherit}
@@ -256,7 +257,9 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .psearch{display:flex;align-items:center;gap:10px;margin:0 24px;background:var(--off);border-radius:999px;padding:13px 18px}
   #order-app .psearch input{border:none;background:none;outline:none;flex:1;font-size:15px;font-family:inherit;color:var(--charcoal)}
   #order-app .ploc{margin:14px 24px 6px;color:var(--acai);font-weight:700;font-size:14px;text-align:left}
-  #order-app .plist{overflow:auto;padding:6px 12px 18px}
+  #order-app .plist{flex:1;min-height:0;overflow:auto;padding:6px 12px 18px}
+  #order-app .tfoot{padding:0 24px 24px;flex:none}
+  #order-app .tfoot .cta{margin-top:0}
   #order-app .prow{display:flex;align-items:center;gap:12px;padding:16px 12px;border-bottom:1px solid var(--off);cursor:pointer;border-radius:12px}
   #order-app .prow:hover{background:var(--off)}
   #order-app .prow .pn{font-family:var(--font-heading);font-weight:700;font-size:16px;color:var(--charcoal)}
@@ -337,8 +340,20 @@ import Layout from '../../layouts/Layout.astro';
     #order-app .oa-pickup .card{flex-direction:column}
     #order-app .oa-pickup .seg+.seg{border-left:none;border-top:1px solid var(--sand)}
     #order-app .mbar.show{display:flex;align-items:center;justify-content:space-between;position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--charcoal);color:#fff;padding:16px 22px;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:14px;box-shadow:0 -6px 24px rgba(0,0,0,.18)}
-    #order-app .scrim{padding:0}
-    #order-app .modal,#order-app .pmodal{max-width:100%;min-height:100vh;border-radius:0;max-height:none}
+    #order-app .scrim{padding:0;align-items:stretch}
+    /* full-screen modals on mobile: header + scrollable middle + PINNED footer
+       so 'Add to basket' / 'DONE' are always reachable without scrolling */
+    #order-app .modal,#order-app .pmodal{max-width:100%;height:100vh;height:100dvh;border-radius:0;max-height:none}
+    #order-app .modal{display:flex;flex-direction:column}
+    #order-app .modal .top{flex:none;padding:20px}
+    #order-app .modal .ph{height:150px}
+    #order-app .modal .mhead{flex:none}
+    #order-app .modal .opts{flex:1;max-height:none}
+    #order-app .modal .mfoot{flex:none}
+    /* comfortable tap targets for text controls */
+    #order-app .ploc{padding:10px 24px}
+    #order-app .co-head .back{padding:6px 0}
+    #order-app .storebox .chg{padding:6px 0}
   }
 </style>
 
@@ -548,7 +563,8 @@ import Layout from '../../layouts/Layout.astro';
     $('coSub').textContent=f(sub);$('coTotal').textContent=f(sub);$('payTot').textContent=f(sub);
     $('coCount').textContent=n+' item'+(n!==1?'s':'');
     var mb=$('mobileBar');
-    if(n){mb.className='mbar show';mb.innerHTML='<span>'+n+' item'+(n!==1?'s':'')+'</span><span>Review order · '+f(sub)+'</span>';}
+    var onShop = $('checkout').style.display !== 'block'; // hide the review bar once in checkout
+    if(n && onShop){mb.className='mbar show';mb.innerHTML='<span>'+n+' item'+(n!==1?'s':'')+'</span><span>Review order · '+f(sub)+'</span>';}
     else mb.className='mbar';
   }
 
@@ -621,10 +637,10 @@ import Layout from '../../layouts/Layout.astro';
   $('cCancel').onclick=closeConfirm;
   $('cGo').onclick=function(){var cb=_confirmCb;closeConfirm();if(cb)cb();};
   $('confirmDlg').onclick=function(e){if(e.target===$('confirmDlg'))closeConfirm();};
-  function toCheckout(){if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';refreshCheckoutState();window.scrollTo(0,0);}
+  function toCheckout(){if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';$('mobileBar').className='mbar';refreshCheckoutState();window.scrollTo(0,0);}
   $('reviewBtn').onclick=toCheckout;
   $('mobileBar').onclick=toCheckout;
-  $('backBtn').onclick=function(){$('shop').style.display='block';$('checkout').style.display='none';window.scrollTo(0,0);};
+  $('backBtn').onclick=function(){$('shop').style.display='block';$('checkout').style.display='none';renderCart();window.scrollTo(0,0);};
   $('payBtn').onclick=function(){if(!canOrder())return;alert('Demo only. Stripe checkout wires up when we go live.');};
 
   api('get-locations').then(function(l){LOC=l.filter(function(x){return x&&x.onlineOrderingActive!==false;});store=LOC.filter(function(x){return x.id===1;})[0]||LOC[0];})
