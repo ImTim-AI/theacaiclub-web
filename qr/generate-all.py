@@ -24,6 +24,7 @@ IG = "https://www.instagram.com/channel/AbY12BpE6JQD6QOB/"
 SET = [
     ("app-download",        QR + "/app",          ["Download", "the App"]),
     ("runclub-instagram",   IG,                   ["Run Club", "Community"]),
+    ("runclub-instagram-logo", IG,                None),  # logo-only (no inner label) — for poster composites w/ external caption
     ("app-runclub",         QR + "/run-club",     ["Run Club", "in the App"]),
     ("order-beaconsfield",  QR + "/beaconsfield", ["Order Now", "Beaconsfield"]),
     ("order-reading",       QR + "/reading",      ["Order Now", "Reading"]),
