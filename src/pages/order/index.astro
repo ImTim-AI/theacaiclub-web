@@ -57,7 +57,11 @@ import Layout from '../../layouts/Layout.astro';
             <h3>Checkout</h3>
             <div class="field">
               <label>Your name</label><div class="hint">How we'll call you at pick-up.</div>
-              <input placeholder="e.g. Jamie Berry" />
+              <input id="custName" placeholder="e.g. Jamie Berry" />
+            </div>
+            <div class="field" id="guestPhoneField">
+              <label>Mobile number</label><div class="hint">In case the store needs to reach you about your order.</div>
+              <input id="guestPhone" type="tel" inputmode="tel" placeholder="07…" />
             </div>
             <div class="field">
               <label>Email address</label>
@@ -113,9 +117,12 @@ import Layout from '../../layouts/Layout.astro';
               <div id="quoteRows"></div>
               <div class="totrow big"><span>Total</span><span id="coTotal">£0.00</span></div>
               <div class="muted" style="text-align:left;margin:6px 0 0">Prices include VAT where applicable.</div>
-              <div class="terms"><input type="checkbox" checked /> I agree to the <a href="/terms">terms &amp; conditions</a></div>
-              <button class="applepay"> Pay</button>
+              <div class="terms"><input type="checkbox" id="termsChk" checked /> I agree to the <a href="/terms">terms &amp; conditions</a></div>
+              <!-- Stripe Payment Element mounts here once order-pay returns a clientSecret -->
+              <div id="payElement" style="display:none"></div>
+              <div class="authmsg" id="payMsg"></div>
               <button class="cta" id="payBtn">Order &amp; pay · <span id="payTot">£0.00</span></button>
+              <button class="cta" id="confirmPayBtn" style="display:none">Pay · <span id="confirmTot">£0.00</span></button>
               <div class="muted">Card, Apple&nbsp;Pay &amp; Google&nbsp;Pay · powered by Stripe</div>
             </div>
             <div class="co-card" style="margin-top:16px">
@@ -386,6 +393,8 @@ import Layout from '../../layouts/Layout.astro';
   /* toast */
   #order-app .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:var(--charcoal);color:#fff;padding:14px 22px;border-radius:999px;font-size:14px;font-weight:600;z-index:80;opacity:0;pointer-events:none;transition:.25s}
   #order-app .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  #order-app #payElement{margin:14px 0 4px}
+  #order-app #guestPhoneField.hide{display:none}
   #order-app .mbar{display:none}
   @media(max-width:860px){
     #order-app .oa-grid{grid-template-columns:1fr;padding:22px 16px 110px}
@@ -414,9 +423,12 @@ import Layout from '../../layouts/Layout.astro';
   }
 </style>
 
+<script is:inline src="https://js.stripe.com/v3/"></script>
 <script is:inline>
 (function(){
   var SUPA='https://vtrsbxqlctmhkjnpdwdy.supabase.co/functions/v1';
+  // Stripe PUBLISHABLE key — public by design (ships in the app binary too).
+  var STRIPE_PK='pk_live_51IldPUGhY98XvWg6AWuEcFVQKjnJlhUhEKz7FtLHpGzKNUNWtC1pAOOJdDR5MxUbpxadbyphZ227MYXONw5TEhjM007TiGWv3f';
   var ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0cnNieHFsY3RtaGtqbnBkd2R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNjIzNzAsImV4cCI6MjA2MTgzODM3MH0.Nn65Q3E2Ly-j8bvn_SaR1TmKYnzcNye1wAiFu5ciiuk';
   var IMG='https://connect.poscraft.co.uk';
   var DRINK=/coffee|smooth|juice|matcha|chai|\btea|chocolate|shot|electrolyte|water|wellness/i;
@@ -472,6 +484,9 @@ import Layout from '../../layouts/Layout.astro';
     var out=$('authOut'),inn=$('authIn'); if(!out||!inn)return;
     if(sess){ out.style.display='none'; inn.style.display='block'; $('authWho').textContent=sess.email||''; }
     else { out.style.display='block'; inn.style.display='none'; $('codeRow').style.display='none'; $('balanceNote')&&($('balanceNote').textContent=''); }
+    // guests supply a phone on the order; members come from their POSCRAFT record
+    var gp=$('guestPhoneField'); if(gp)gp.className='field'+(sess?' hide':'');
+    resetPayUI(); // identity change invalidates any mounted PaymentElement
   }
 
   // ---- UK-time helpers (slots generated in Europe/London, fixing the app's device-tz bug) ----
@@ -878,11 +893,139 @@ import Layout from '../../layouts/Layout.astro';
   $('cCancel').onclick=closeConfirm;
   $('cGo').onclick=function(){var cb=_confirmCb;closeConfirm();if(cb)cb();};
   $('confirmDlg').onclick=function(e){if(e.target===$('confirmDlg'))closeConfirm();};
-  function toCheckout(){if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';$('mobileBar').className='mbar';refreshCheckoutState();if(!lastQuote)requestQuote();window.scrollTo(0,0);}
+  function toCheckout(){if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';$('mobileBar').className='mbar';newCheckoutId();resetPayUI();refreshCheckoutState();if(!lastQuote)requestQuote();window.scrollTo(0,0);}
   $('reviewBtn').onclick=toCheckout;
   $('mobileBar').onclick=toCheckout;
   $('backBtn').onclick=function(){$('shop').style.display='block';$('checkout').style.display='none';renderCart();window.scrollTo(0,0);};
-  $('payBtn').onclick=function(){if(!canOrder())return;alert('Demo only. Stripe checkout wires up when we go live.');};
+  // ---- payment (Stripe Payment Element, driven by order-pay) ----
+  // Flow: "Order & pay" -> order-pay (server creates the pending order + PI) ->
+  //   free order  -> process-order -> success
+  //   paid order  -> mount Payment Element with the returned clientSecret ->
+  //                  "Pay" -> stripe.confirmPayment (redirect:'if_required').
+  // checkoutId is the order-pay idempotency key: one per checkout session, so a
+  // retried "Order & pay" reuses the same PaymentIntent (never double-charges).
+  var checkoutId=null, stripe=null, elements=null, paySubmitting=false;
+  function uuid(){ return (crypto.randomUUID?crypto.randomUUID():(Date.now()+'-'+Math.random().toString(16).slice(2))); }
+  function newCheckoutId(){ checkoutId=uuid(); }
+  function setPayMsg(t,cls){ var m=$('payMsg'); if(m){m.textContent=t||'';m.className='authmsg'+(cls?' '+cls:'');} }
+  function resetPayUI(){
+    elements=null; paySubmitting=false;
+    var pe=$('payElement'); if(pe){pe.style.display='none';pe.innerHTML='';}
+    var cb=$('confirmPayBtn'); if(cb)cb.style.display='none';
+    var pb=$('payBtn'); if(pb)pb.style.display='';
+    setPayMsg('');
+  }
+  function stripeJs(){ return (typeof Stripe!=='undefined')?Stripe:null; }
+
+  // Collect guest details (members are resolved server-side from their JWT).
+  function guestDetails(){
+    var name=($('custName').value||'').trim();
+    var sp=name.split(/\s+/);
+    var firstName=sp[0]||'', lastName=sp.slice(1).join(' ')||'';
+    var email=($('authEmail').value||'').trim().toLowerCase();
+    var phone=($('guestPhone').value||'').trim();
+    return {firstName:firstName,lastName:lastName,email:email,phone:phone,optIn:false};
+  }
+  function intentItems(){
+    return cart.filter(function(c){return c.pid!=null;}).map(function(c){return {productId:c.pid,quantity:c.q,modifierIds:c.modIds||[]};});
+  }
+
+  $('payBtn').onclick=function(){
+    if(!canOrder()||paySubmitting)return;
+    if(!$('termsChk').checked){ setPayMsg('Please accept the terms & conditions to continue.','err'); return; }
+    if(!cart.length)return;
+    var items=intentItems();
+    if(items.length!==cart.length){ setPayMsg('Something is off with your basket. Please reload.','err'); return; }
+    var g=null;
+    if(!sess){
+      g=guestDetails();
+      if(!g.firstName||!g.lastName){ setPayMsg('Please enter your name for pick-up.','err'); $('custName').focus(); return; }
+      if(!EMAIL_RE.test(g.email)){ setPayMsg('Please enter a valid email for your receipt.','err'); $('authEmail').focus(); return; }
+    }
+    paySubmitting=true; var btn=this; btn.disabled=true; setPayMsg('Setting up your order…');
+    var body={
+      locationId:store.id, items:items, checkoutId:checkoutId,
+      notes:($('orderNotes').value||'').trim(),
+      pickup: scheduled?{slotIso:scheduled.iso}:{mode:pickupMode},
+    };
+    if(redeem.freeBowls||redeem.freeDrinks)body.redeem=redeem;
+    if(couponCode)body.couponCode=couponCode;
+    if(g)body.guest=g;
+    freshToken().then(function(tok){
+      return ensureLinked(tok).then(function(){ return api('order-pay',body,tok); });
+    }).then(function(r){
+      if(r&&r.free){ return finishFreeOrder(r.orderToken); }
+      if(r&&r.clientSecret){ return mountPayment(r.clientSecret); }
+      throw new Error('Unexpected response');
+    }).catch(function(e){
+      paySubmitting=false; btn.disabled=false;
+      if(e&&e.code==='EMAIL_REGISTERED'){ setPayMsg('That email already has an account. Sign in with a one-time code (your berries will count).','err'); return; }
+      if(e&&e.code==='AUTH_REQUIRED'){ setPayMsg('Please sign in to redeem rewards.','err'); return; }
+      if(e&&e.code==='BAD_PICKUP_TIME'){ setPayMsg('That pickup time is no longer available. Please pick a new time.','err'); return; }
+      // show a structured server message; hide raw network errors behind a generic line
+      var msg=(e&&e.code&&e.message)?e.message:'Could not start checkout. Please check your connection and try again.';
+      setPayMsg(msg,'err');
+    });
+  };
+
+  function finishFreeOrder(orderToken){
+    setPayMsg('Placing your order…');
+    return api('process-order',{orderToken:orderToken}).then(function(){
+      orderPlaced();
+    }).catch(function(){
+      paySubmitting=false; $('payBtn').disabled=false;
+      setPayMsg('Could not place your free order. Please try again.','err');
+    });
+  }
+
+  function mountPayment(clientSecret){
+    var S=stripeJs();
+    if(!S){ paySubmitting=false; $('payBtn').disabled=false; setPayMsg('Payment failed to load. Please reload the page.','err'); return; }
+    stripe=stripe||S(STRIPE_PK);
+    elements=stripe.elements({clientSecret:clientSecret, appearance:{theme:'flat', variables:{colorPrimary:'#5B2C6F', borderRadius:'12px'}}});
+    var pe=elements.create('payment',{layout:'tabs'});
+    var box=$('payElement'); box.innerHTML=''; box.style.display='block'; pe.mount(box);
+    $('payBtn').style.display='none';
+    var cb=$('confirmPayBtn'); cb.style.display=''; cb.disabled=false;
+    $('confirmTot').textContent=$('coTotal').textContent;
+    setPayMsg('Enter your card details to finish.');
+    paySubmitting=false;
+    box.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+
+  $('confirmPayBtn').onclick=function(){
+    if(!elements||!stripe||paySubmitting)return;
+    paySubmitting=true; var cb=this; cb.disabled=true; setPayMsg('Confirming payment…');
+    stripe.confirmPayment({
+      elements:elements,
+      confirmParams:{ return_url: location.origin+'/order?paid=1' },
+      redirect:'if_required',
+    }).then(function(res){
+      if(res.error){
+        paySubmitting=false; cb.disabled=false;
+        setPayMsg(res.error.message||'Payment was not completed. Please try again.','err');
+        return;
+      }
+      // Paid. stripe-webhook pushes the order to the store on
+      // payment_intent.succeeded; nothing else for the client to call.
+      orderPlaced();
+    }).catch(function(){
+      paySubmitting=false; cb.disabled=false;
+      setPayMsg('Something went wrong confirming payment. Please try again.','err');
+    });
+  };
+
+  function orderPlaced(){
+    // success state: clear basket + show confirmation
+    cart=[]; redeem={freeBowls:0,freeDrinks:0}; couponCode='';
+    var co=$('checkout');
+    co.innerHTML='<div class="oa-wrap" style="padding:60px 24px;text-align:center">'+
+      '<div style="font-size:42px">🥥</div>'+
+      '<h2 style="font-size:24px;font-weight:800;color:var(--charcoal);margin-top:10px">Order placed!</h2>'+
+      '<p style="color:var(--medium);margin-top:8px;max-width:420px;margin-left:auto;margin-right:auto">Thanks — the store has your order and will have it ready for pick-up. A receipt is on its way to your email.</p>'+
+      '<a href="/order" class="cta" style="display:inline-block;max-width:260px;margin-top:24px;text-decoration:none">Start a new order</a></div>';
+    window.scrollTo(0,0);
+  }
 
   // ---- auth handlers ----
   var EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
