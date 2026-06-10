@@ -61,9 +61,26 @@ import Layout from '../../layouts/Layout.astro';
             </div>
             <div class="field">
               <label>Email address</label>
-              <div class="hint">We'll send a one-time code to sign you in, no password needed.</div>
-              <input placeholder="you@email.com" />
-              <div class="otp-note">🔒 Passwordless. Your berries are linked to this email.</div>
+              <div class="hint">Sign in with a one-time code to earn berries on this order. No password needed.</div>
+              <div id="authOut">
+                <div class="authrow">
+                  <input id="authEmail" type="email" placeholder="you@email.com" />
+                  <button class="authbtn" id="sendCode">Send code</button>
+                </div>
+                <div class="authrow" id="codeRow" style="display:none">
+                  <input id="authCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6-digit code" />
+                  <button class="authbtn" id="verifyCode">Verify</button>
+                </div>
+                <div class="authmsg" id="authMsg"></div>
+                <div class="otp-note">🔒 Passwordless. Your berries are linked to this email.</div>
+              </div>
+              <div id="authIn" style="display:none">
+                <div class="signedbox">
+                  <span>✅ Signed in as <b id="authWho"></b></span>
+                  <button class="chg" id="signOut">Sign out</button>
+                </div>
+                <div class="otp-note" id="balanceNote"></div>
+              </div>
             </div>
             <div class="field">
               <label>Pick-up</label><div class="hint">&nbsp;</div>
@@ -86,7 +103,14 @@ import Layout from '../../layouts/Layout.astro';
           <div>
             <div class="co-card">
               <h3>Total</h3>
+              <div id="redeemBox"></div>
+              <div class="authrow couponrow">
+                <input id="couponInput" placeholder="Discount code" />
+                <button class="authbtn" id="couponApply">Apply</button>
+              </div>
+              <div class="authmsg" id="couponMsg"></div>
               <div class="totrow"><span>Subtotal</span><span id="coSub">£0.00</span></div>
+              <div id="quoteRows"></div>
               <div class="totrow big"><span>Total</span><span id="coTotal">£0.00</span></div>
               <div class="muted" style="text-align:left;margin:6px 0 0">Prices include VAT where applicable.</div>
               <div class="terms"><input type="checkbox" checked /> I agree to the <a href="/terms">terms &amp; conditions</a></div>
@@ -297,6 +321,22 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .field input{width:100%;border:1.5px solid var(--sand);border-radius:var(--rs);padding:14px 16px;font-size:15px;font-family:inherit;color:var(--charcoal)}
   #order-app .field input:focus{outline:none;border-color:var(--acai)}
   #order-app .otp-note{font-size:12px;color:var(--acai);margin-top:8px;font-weight:600}
+  #order-app .authrow{display:flex;gap:10px;align-items:stretch}
+  #order-app .authrow+.authrow{margin-top:10px}
+  #order-app .authrow input{flex:1;min-width:0}
+  #order-app .authbtn{flex:none;background:var(--charcoal);color:#fff;font-weight:700;font-size:13px;padding:0 18px;border-radius:var(--rs);text-transform:uppercase;letter-spacing:.03em}
+  #order-app .authbtn[disabled]{opacity:.5;cursor:not-allowed}
+  #order-app .authmsg{font-size:13px;font-weight:600;margin-top:8px;color:var(--medium)}
+  #order-app .authmsg.err{color:#b04a4a}
+  #order-app .authmsg.ok{color:var(--acai)}
+  #order-app .signedbox{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--off);border-radius:var(--rs);padding:14px 16px;font-size:14px;color:var(--charcoal)}
+  #order-app .signedbox .chg{color:var(--acai);font-weight:700;font-size:13px;text-transform:uppercase}
+  #order-app .couponrow{margin-bottom:6px}
+  #order-app .couponrow input{border:1.5px solid var(--sand);border-radius:var(--rs);padding:12px 14px;font-size:14px;font-family:inherit;color:var(--charcoal)}
+  #order-app .couponrow input:focus{outline:none;border-color:var(--acai)}
+  #order-app .redeemcard{display:flex;align-items:center;gap:10px;background:var(--off);border-radius:var(--rs);padding:12px 14px;margin-bottom:10px;font-size:13px;font-weight:600;color:var(--acai);cursor:pointer}
+  #order-app .redeemcard input{width:18px;height:18px;accent-color:var(--acai);flex:none}
+  #order-app .totrow.disc span:last-child{color:var(--acai);font-weight:700}
   #order-app .storebox{background:var(--off);border-radius:var(--rs);padding:16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:12px}
   #order-app .storebox b{color:var(--charcoal)}
   #order-app .storebox .chg{margin-left:auto;color:var(--acai);font-weight:700;font-size:13px;text-transform:uppercase}
@@ -389,8 +429,50 @@ import Layout from '../../layouts/Layout.astro';
   var LOC=[],store=null,sched={},CATS=[],MENU={},activeCat=null,cart=[],modal=null,mGroups=[],mSel={},mq=1;
   var pickupMode='takeaway', scheduled=null; // scheduled = {label, iso} or null (ASAP)
   var tSelDay=0, tSelSlot=null, tSlotsByDay=[];
+  var redeem={freeBowls:0,freeDrinks:0}, couponCode='';
 
-  function api(fn,body){return fetch(SUPA+'/'+fn,{method:'POST',headers:{'apikey':ANON,'Authorization':'Bearer '+ANON,'Content-Type':'application/json'},body:JSON.stringify(body||{})}).then(function(r){if(!r.ok)throw new Error(fn+' '+r.status);return r.json();});}
+  function api(fn,body,userTok){
+    var tok=userTok||ANON;
+    return fetch(SUPA+'/'+fn,{method:'POST',headers:{'apikey':ANON,'Authorization':'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify(body||{})})
+      .then(function(r){return r.json().catch(function(){return {};}).then(function(j){ if(!r.ok){var e=new Error(j.error||fn+' '+r.status);e.code=j.code;e.status=r.status;throw e;} return j; });});
+  }
+
+  // ---- passwordless auth (Supabase email OTP; session in localStorage) ----
+  var AUTH=SUPA.replace('/functions/v1','/auth/v1');
+  var sess=null; // {access_token, refresh_token, expires_at(sec), email}
+  function aapi(path,body){
+    return fetch(AUTH+path,{method:'POST',headers:{'apikey':ANON,'Content-Type':'application/json'},body:JSON.stringify(body||{})})
+      .then(function(r){return r.json().catch(function(){return {};}).then(function(j){ if(!r.ok){var e=new Error(j.msg||j.error_description||j.error||('auth '+r.status));e.status=r.status;throw e;} return j; });});
+  }
+  function saveSess(){ try{ sess?localStorage.setItem('acai_session',JSON.stringify(sess)):localStorage.removeItem('acai_session'); }catch(_e){} }
+  function loadSess(){ try{ var s=JSON.parse(localStorage.getItem('acai_session')||'null'); if(s&&s.refresh_token)sess=s; }catch(_e){} }
+  // Resolve a fresh access token (refreshing if within 60s of expiry); null = guest.
+  function freshToken(){
+    if(!sess)return Promise.resolve(null);
+    if(sess.expires_at && (sess.expires_at-60)*1000 > Date.now())return Promise.resolve(sess.access_token);
+    return aapi('/token?grant_type=refresh_token',{refresh_token:sess.refresh_token}).then(function(r){
+      sess={access_token:r.access_token,refresh_token:r.refresh_token,expires_at:r.expires_at||Math.floor(Date.now()/1000)+(r.expires_in||3600),email:sess.email};
+      saveSess(); return sess.access_token;
+    }).catch(function(){ sess=null; saveSess(); renderAuth(); return null; });
+  }
+  // link-profile is SINGLE-FLIGHT per session (concurrent first-time calls can
+  // race POSCRAFT into duplicate customers; see web-auth-setup.md).
+  var _linkP=null;
+  function ensureLinked(tok){
+    if(!tok)return Promise.resolve(null);
+    if(_linkP)return _linkP;
+    _linkP=api('link-profile',{},tok).catch(function(e){ _linkP=null;
+      if(e.code==='AMBIGUOUS_CUSTOMER'){ setAuthMsg('Your account needs a hand. Contact us and your berries will be linked.','err'); }
+      return null;
+    });
+    return _linkP;
+  }
+  function setAuthMsg(t,cls){ var m=$('authMsg'); if(m){m.textContent=t||'';m.className='authmsg'+(cls?' '+cls:'');} }
+  function renderAuth(){
+    var out=$('authOut'),inn=$('authIn'); if(!out||!inn)return;
+    if(sess){ out.style.display='none'; inn.style.display='block'; $('authWho').textContent=sess.email||''; }
+    else { out.style.display='block'; inn.style.display='none'; $('codeRow').style.display='none'; $('balanceNote')&&($('balanceNote').textContent=''); }
+  }
 
   // ---- UK-time helpers (slots generated in Europe/London, fixing the app's device-tz bug) ----
   function ukNow(){ return new Date(new Date().toLocaleString('en-US',{timeZone:'Europe/London'})); }
@@ -663,22 +745,55 @@ import Layout from '../../layouts/Layout.astro';
     var seq=++qSeq;
     var items=cart.filter(function(c){return c.pid!=null;}).map(function(c){return {productId:c.pid,quantity:c.q,modifierIds:c.modIds||[]};});
     if(items.length!==cart.length){console.warn('order-quote skipped: cart line without productId');return;}
-    api('order-quote',{locationId:store.id,items:items}).then(function(q){
+    freshToken().then(function(tok){
+      return ensureLinked(tok).then(function(){
+        var intent={locationId:store.id,items:items};
+        if(redeem.freeBowls||redeem.freeDrinks)intent.redeem=redeem;
+        if(couponCode)intent.couponCode=couponCode;
+        return api('order-quote',intent,tok);
+      });
+    }).then(function(q){
       if(seq!==qSeq||!q||typeof q.total!=='number')return; // stale response or bad shape
-      lastQuote=q;applyQuote(q);
+      lastQuote=q;setCouponMsg('');applyQuote(q);
     }).catch(function(err){
       if(seq!==qSeq)return;
+      // coupon/redeem rejections come back as EngineError codes; surface + retry clean
+      if(err&&(String(err.code||'').indexOf('COUPON')===0)){ setCouponMsg(err.message||'Code not valid','err'); couponCode=''; scheduleQuote(); return; }
+      if(err&&err.status===401&&(redeem.freeBowls||redeem.freeDrinks)){ redeem={freeBowls:0,freeDrinks:0}; scheduleQuote(); return; }
       console.warn('order-quote failed, showing client preview',err);
     });
   }
+  function setCouponMsg(t,cls){ var m=$('couponMsg'); if(m){m.textContent=t||'';m.className='authmsg'+(cls?' '+cls:'');} }
   function applyQuote(q){
     $('coSub').textContent=f(q.subtotal);$('coTotal').textContent=f(q.total);$('payTot').textContent=f(q.total);
     var n=cart.reduce(function(s,c){return s+c.q;},0);
     var onShop = $('checkout').style.display !== 'block';
     if(n && onShop){var mb=$('mobileBar');mb.innerHTML='<span>'+n+' item'+(n!==1?'s':'')+'</span><span>Review order · '+f(q.total)+'</span>';}
     $('reviewBtn').innerHTML=n?('Review order · '+f(q.total)):'Review order';
+    // discount rows between subtotal and total
+    var rows='';
+    if(q.rewardDiscount>0)rows+='<div class="totrow disc"><span>Reward redeemed</span><span>−'+f(q.rewardDiscount)+'</span></div>';
+    if(q.couponDiscount>0)rows+='<div class="totrow disc"><span>Discount'+(q.coupon&&q.coupon.code?' ('+esc(q.coupon.code)+')':'')+'</span><span>−'+f(q.couponDiscount)+'</span></div>';
+    $('quoteRows').innerHTML=rows;
+    if(q.couponDiscount>0)setCouponMsg('Code applied','ok');
+    var bal=q.loyalty&&q.loyalty.balance;
+    // redemption offers (signed-in with available rewards, or an active redemption)
+    var rb='';
+    if(bal){
+      if(bal.freeBowlsAvailable>0||redeem.freeBowls)rb+='<label class="redeemcard"><input type="checkbox" id="redeemBowl" '+(redeem.freeBowls?'checked':'')+'/> 🫐 Free bowl available — redeem it on this order</label>';
+      if(bal.freeDrinksAvailable>0||redeem.freeDrinks)rb+='<label class="redeemcard"><input type="checkbox" id="redeemDrink" '+(redeem.freeDrinks?'checked':'')+'/> ☕ Free drink available — redeem it on this order</label>';
+    }
+    $('redeemBox').innerHTML=rb;
+    var rbow=$('redeemBowl'); if(rbow)rbow.onchange=function(){redeem.freeBowls=this.checked?1:0;scheduleQuote();};
+    var rdr=$('redeemDrink'); if(rdr)rdr.onchange=function(){redeem.freeDrinks=this.checked?1:0;scheduleQuote();};
+    // berry bar + signed-in balance note
     var earned=(q.loyalty&&q.loyalty.berriesEarned)||0;
-    $('berryBar').innerHTML=earned?('🫐 You will earn '+earned+' berr'+(earned>1?'ies':'y')+'. '+Math.max(0,9-earned)+' more to a free bowl'):'🫐 Add a bowl to earn your next berry';
+    if(bal){
+      $('berryBar').innerHTML='🫐 '+bal.berriesProgress+'/9 berries · ☕ '+bal.cupsProgress+'/9 cups'+(earned?(' · +'+earned+' berr'+(earned>1?'ies':'y')+' on this order'):'');
+      var bn=$('balanceNote'); if(bn)bn.textContent='🫐 '+bal.berriesProgress+'/9 berries · ☕ '+bal.cupsProgress+'/9 cups'+(bal.freeBowlsAvailable?(' · '+bal.freeBowlsAvailable+' free bowl'+(bal.freeBowlsAvailable>1?'s':'')+' available'):'');
+    } else {
+      $('berryBar').innerHTML=earned?('🫐 You will earn '+earned+' berr'+(earned>1?'ies':'y')+'. '+Math.max(0,9-earned)+' more to a free bowl'):'🫐 Add a bowl to earn your next berry';
+    }
   }
 
   function setStoreLabels(){
@@ -769,6 +884,43 @@ import Layout from '../../layouts/Layout.astro';
   $('backBtn').onclick=function(){$('shop').style.display='block';$('checkout').style.display='none';renderCart();window.scrollTo(0,0);};
   $('payBtn').onclick=function(){if(!canOrder())return;alert('Demo only. Stripe checkout wires up when we go live.');};
 
+  // ---- auth handlers ----
+  var EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  $('sendCode').onclick=function(){
+    var em=($('authEmail').value||'').trim().toLowerCase();
+    if(!EMAIL_RE.test(em)){setAuthMsg('Enter a valid email address','err');return;}
+    var b=this; b.disabled=true; setAuthMsg('Sending code…');
+    aapi('/otp',{email:em,create_user:true}).then(function(){
+      $('codeRow').style.display='flex'; setAuthMsg('Code sent. Check your email (it can take a minute).','ok'); $('authCode').focus();
+    }).catch(function(e){
+      setAuthMsg(e.status===429?'Too many codes requested. Try again in a few minutes.':'Could not send the code. Try again.','err');
+    }).then(function(){ b.disabled=false; });
+  };
+  $('verifyCode').onclick=function(){
+    var em=($('authEmail').value||'').trim().toLowerCase();
+    var code=($('authCode').value||'').trim();
+    if(!/^\d{6}$/.test(code)){setAuthMsg('Enter the 6-digit code from the email','err');return;}
+    var b=this; b.disabled=true; setAuthMsg('Checking…');
+    aapi('/verify',{type:'email',email:em,token:code}).then(function(r){
+      sess={access_token:r.access_token,refresh_token:r.refresh_token,expires_at:r.expires_at||Math.floor(Date.now()/1000)+(r.expires_in||3600),email:(r.user&&r.user.email)||em};
+      saveSess(); _linkP=null; renderAuth(); setAuthMsg('');
+      if(cart.length)requestQuote(); // re-quote signed-in: balance + redemption offers appear
+    }).catch(function(){
+      setAuthMsg('That code didn\'t work. Check it or request a new one.','err');
+    }).then(function(){ b.disabled=false; });
+  };
+  $('signOut').onclick=function(){
+    sess=null; saveSess(); _linkP=null; redeem={freeBowls:0,freeDrinks:0};
+    renderAuth(); $('redeemBox').innerHTML=''; renderCart();
+  };
+  $('couponApply').onclick=function(){
+    var c=($('couponInput').value||'').trim();
+    if(!c){couponCode='';setCouponMsg('');scheduleQuote();return;}
+    if(!cart.length){setCouponMsg('Add something to your basket first','err');return;}
+    couponCode=c; setCouponMsg('Checking code…'); requestQuote();
+  };
+
+  loadSess(); renderAuth();
   api('get-locations').then(function(l){LOC=l.filter(function(x){return x&&x.onlineOrderingActive!==false;});store=LOC.filter(function(x){return x.id===1;})[0]||LOC[0];})
    .catch(function(){store={id:1,name:'The Acai Club - Reading'};LOC=[store];})
    .then(function(){setStoreLabels();renderCart();return Promise.all([loadSchedule(),loadMenu()]);});
