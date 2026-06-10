@@ -1,8 +1,11 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 // WEB ORDERING (web-ordering branch). JTJ-style flow in Acai brand.
-// LIVE READ-ONLY: get-locations, get-ordering-schedule, load-menu, get-menu-item-detail.
-// No writes/orders/EPOS changes. Cart + checkout client-side; pay is a stub until order-pay + Stripe.
+// LIVE READ-ONLY: get-locations, get-ordering-schedule, load-menu, get-menu-item-detail,
+// order-quote (server-authoritative totals; client math is only the instant preview),
+// get-timeslots (server-generated UK pickup slots; render `label` only, `iso` is the
+// POSCRAFT wall-clock convention and passes through opaquely to order-pay later).
+// No writes/orders/EPOS changes. Pay is a stub until order-pay + Stripe.
 // Brand colours only (app_theme.dart / global.css). No em-dashes anywhere.
 ---
 <Layout title="Order Online | The Acai Club" description="Order ahead for collection from your local Acai Club. Berry on every bowl, cup on every drink, 9 berries unlock a free bowl.">
@@ -398,9 +401,9 @@ import Layout from '../../layouts/Layout.astro';
   function fmtSlot(d){ var h=d.getHours(),m=d.getMinutes(),ap=h<12?'AM':'PM',hh=h%12;if(hh===0)hh=12;return hh+':'+(m<10?'0'+m:m)+' '+ap; }
   function dayChipLabel(dateStr,idx){ if(idx===0)return 'Today'; if(idx===1)return 'Tomorrow';
     var d=new Date(dateStr+'T00:00:00'); return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]; }
-  function fmtScheduled(dateStr,d){ // "Mon, 5:30 PM" (app format EEE, h:mm a)
+  function fmtScheduled(dateStr,label){ // "Mon, 5:30 PM" (app format EEE, h:mm a)
     var wd=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date(dateStr+'T00:00:00').getDay()];
-    return wd+', '+fmtSlot(d); }
+    return wd+', '+label; }
 
   function toast(msg){ var t=$('toast'); t.textContent=msg; t.className='toast show'; setTimeout(function(){t.className='toast';},3000); }
   var _confirmCb=null;
@@ -482,8 +485,19 @@ import Layout from '../../layouts/Layout.astro';
     if(pay){ pay.className='cta'+(ok?'':' disabled'); pay.disabled=!ok; }
   }
 
-  // ---- pickup-time picker (slots in Europe/London) ----
-  function buildSlots(){
+  // ---- pickup-time picker ----
+  // Slots come from get-timeslots (server-generated in Europe/London from the
+  // POSCRAFT schedule). Render slot.label ONLY; slot.iso is the POSCRAFT
+  // wall-clock-as-UTC convention, kept opaque and passed through to order-pay.
+  // The old client-side parser (openingHours string) stays as a fallback if the
+  // function is unreachable.
+  function buildSlotsFromServer(days){
+    tSlotsByDay=days.map(function(day,idx){
+      return {date:day.date, label:dayChipLabel(day.date,idx), idx:idx,
+        slots:(day.slots||[]).map(function(sl){return {label:sl.label, sched:fmtScheduled(day.date,sl.label), iso:sl.iso};})};
+    });
+  }
+  function buildSlotsLocal(){
     tSlotsByDay=[];
     var s=sched[store&&store.id]; if(!s||!Array.isArray(s.days))return;
     var now=ukNow();
@@ -499,7 +513,7 @@ import Layout from '../../layouts/Layout.astro';
           if(idx===0){ var earliest=new Date(now.getTime()+15*60000); if(earliest>start)start=new Date(earliest); }
           var mp=start.getMinutes()%15; if(mp!==0)start=new Date(start.getTime()+(15-mp)*60000);
           var slot=new Date(start);
-          while(slot<close && slots.length<50){ slots.push({label:fmtSlot(slot),sched:fmtScheduled(day.date,slot),iso:slot.toISOString()}); slot=new Date(slot.getTime()+15*60000); }
+          while(slot<close && slots.length<50){ var lb=fmtSlot(slot); slots.push({label:lb,sched:fmtScheduled(day.date,lb),iso:slot.toISOString()}); slot=new Date(slot.getTime()+15*60000); }
         }
       }
       tSlotsByDay.push({date:day.date, label:dayChipLabel(day.date,idx), slots:slots, idx:idx});
@@ -519,8 +533,18 @@ import Layout from '../../layouts/Layout.astro';
   }
   function openTimePicker(){
     if(pickupMode==='in_store')return;
-    buildSlots(); tSelDay=0; tSelSlot=null; renderDays(); renderSlots();
+    tSelDay=0; tSelSlot=null; tSlotsByDay=[];
+    $('tDays').innerHTML=''; $('tSlots').innerHTML='<div class="empty">Loading pickup times…</div>';
     $('timePicker').classList.add('open');
+    var sid=store&&store.id;
+    api('get-timeslots',{locationId:sid}).then(function(r){
+      if((store&&store.id)!==sid || !$('timePicker').classList.contains('open'))return; // store changed / closed meanwhile
+      if(r&&Array.isArray(r.days)){ buildSlotsFromServer(r.days); } else { buildSlotsLocal(); }
+      renderDays(); renderSlots();
+    }).catch(function(){
+      if((store&&store.id)!==sid || !$('timePicker').classList.contains('open'))return;
+      buildSlotsLocal(); renderDays(); renderSlots();
+    });
   }
   function closeTimePicker(){ $('timePicker').classList.remove('open'); }
   function applyTimeSelection(){
@@ -597,6 +621,10 @@ import Layout from '../../layouts/Layout.astro';
     var out=[];Object.keys(mSel).forEach(function(k){if(!mSel[k])return;var p=k.split('_'),g=mGroups[+p[0]];if(!g)return;var x=grpItems(g)[+p[1]];if(x)out.push(x.name);});
     return out;
   }
+  function selectedModIds(){
+    var out=[];Object.keys(mSel).forEach(function(k){if(!mSel[k])return;var p=k.split('_'),g=mGroups[+p[0]];if(!g)return;var x=grpItems(g)[+p[1]];if(x&&x.id!=null)out.push(x.id);});
+    return out;
+  }
   function updMPrice(){$('mPrice').textContent=f(modUnit()*mq);}
   function closeModal(){$('scrim').classList.remove('open');}
 
@@ -609,12 +637,48 @@ import Layout from '../../layouts/Layout.astro';
     var sub=cart.reduce(function(s,c){return s+c.unit*c.q;},0),n=cart.reduce(function(s,c){return s+c.q;},0),bowls=cart.reduce(function(s,c){return s+(c.bowl?c.q:0);},0);
     $('reviewBtn').className='cta'+(n?'':' disabled');$('reviewBtn').innerHTML=n?('Review order · '+f(sub)):'Review order';
     $('berryBar').innerHTML=bowls?('🫐 You will earn '+bowls+' berr'+(bowls>1?'ies':'y')+'. '+Math.max(0,9-bowls)+' more to a free bowl'):'🫐 Add a bowl to earn your next berry';
+    // client math is the INSTANT PREVIEW only; order-quote (server-authoritative)
+    // overwrites these as soon as it returns (see applyQuote).
     $('coSub').textContent=f(sub);$('coTotal').textContent=f(sub);$('payTot').textContent=f(sub);
     $('coCount').textContent=n+' item'+(n!==1?'s':'');
     var mb=$('mobileBar');
     var onShop = $('checkout').style.display !== 'block'; // hide the review bar once in checkout
     if(n && onShop){mb.className='mbar show';mb.innerHTML='<span>'+n+' item'+(n!==1?'s':'')+'</span><span>Review order · '+f(sub)+'</span>';}
     else mb.className='mbar';
+    scheduleQuote();
+  }
+
+  // ---- server-authoritative totals (order-quote) ----
+  // The client never computes the money the customer is asked to pay: every
+  // cart change re-quotes server-side (debounced). Client math above is only
+  // the instant preview while the quote is in flight.
+  var qTimer=null,qSeq=0,lastQuote=null;
+  function scheduleQuote(){
+    lastQuote=null;
+    if(qTimer)clearTimeout(qTimer);
+    if(!cart.length||!store)return;
+    qTimer=setTimeout(requestQuote,400);
+  }
+  function requestQuote(){
+    var seq=++qSeq;
+    var items=cart.filter(function(c){return c.pid!=null;}).map(function(c){return {productId:c.pid,quantity:c.q,modifierIds:c.modIds||[]};});
+    if(items.length!==cart.length){console.warn('order-quote skipped: cart line without productId');return;}
+    api('order-quote',{locationId:store.id,items:items}).then(function(q){
+      if(seq!==qSeq||!q||typeof q.total!=='number')return; // stale response or bad shape
+      lastQuote=q;applyQuote(q);
+    }).catch(function(err){
+      if(seq!==qSeq)return;
+      console.warn('order-quote failed, showing client preview',err);
+    });
+  }
+  function applyQuote(q){
+    $('coSub').textContent=f(q.subtotal);$('coTotal').textContent=f(q.total);$('payTot').textContent=f(q.total);
+    var n=cart.reduce(function(s,c){return s+c.q;},0);
+    var onShop = $('checkout').style.display !== 'block';
+    if(n && onShop){var mb=$('mobileBar');mb.innerHTML='<span>'+n+' item'+(n!==1?'s':'')+'</span><span>Review order · '+f(q.total)+'</span>';}
+    $('reviewBtn').innerHTML=n?('Review order · '+f(q.total)):'Review order';
+    var earned=(q.loyalty&&q.loyalty.berriesEarned)||0;
+    $('berryBar').innerHTML=earned?('🫐 You will earn '+earned+' berr'+(earned>1?'ies':'y')+'. '+Math.max(0,9-earned)+' more to a free bowl'):'🫐 Add a bowl to earn your next berry';
   }
 
   function setStoreLabels(){
@@ -683,7 +747,7 @@ import Layout from '../../layouts/Layout.astro';
   $('storePicker').onclick=function(e){if(e.target===$('storePicker'))closePicker();};
   $('mMinus').onclick=function(){mq=Math.max(1,mq-1);$('mQ').textContent=mq;updMPrice();};
   $('mPlus').onclick=function(){mq++;$('mQ').textContent=mq;updMPrice();};
-  $('mAdd').onclick=function(){cart.push({n:modal.n,unit:modUnit(),q:mq,bowl:modal.bowl||0,cup:modal.cup||0,extras:selectedNames()});closeModal();renderCart();};
+  $('mAdd').onclick=function(){cart.push({pid:modal.id,n:modal.n,unit:modUnit(),q:mq,bowl:modal.bowl||0,cup:modal.cup||0,extras:selectedNames(),modIds:selectedModIds()});closeModal();renderCart();};
   $('openPicker').onclick=openPicker;
   $('changeStore2').onclick=openPicker;
   $('pClose').onclick=closePicker;
@@ -699,7 +763,7 @@ import Layout from '../../layouts/Layout.astro';
   $('cCancel').onclick=closeConfirm;
   $('cGo').onclick=function(){var cb=_confirmCb;closeConfirm();if(cb)cb();};
   $('confirmDlg').onclick=function(e){if(e.target===$('confirmDlg'))closeConfirm();};
-  function toCheckout(){if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';$('mobileBar').className='mbar';refreshCheckoutState();window.scrollTo(0,0);}
+  function toCheckout(){if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';$('mobileBar').className='mbar';refreshCheckoutState();if(!lastQuote)requestQuote();window.scrollTo(0,0);}
   $('reviewBtn').onclick=toCheckout;
   $('mobileBar').onclick=toCheckout;
   $('backBtn').onclick=function(){$('shop').style.display='block';$('checkout').style.display='none';renderCart();window.scrollTo(0,0);};
