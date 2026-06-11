@@ -26,6 +26,8 @@ SET = [
     ("runclub-instagram",   IG,                   ["Run Club", "Community"]),
     ("runclub-instagram-logo", IG,                None),  # logo-only (no inner label) — for poster composites w/ external caption
     ("app-runclub",         QR + "/run-club",     ["Run Club", "in the App"]),
+    ("app-runclub-logo",    QR + "/run-club",     None),  # logo-only, repointable via _redirects (/qr/run-club)
+    ("app-get-logo",        QR + "/app",          None),  # logo-only, repointable via _redirects (/qr/app -> /get)
     ("order-beaconsfield",  QR + "/beaconsfield", ["Order Now", "Beaconsfield"]),
     ("order-reading",       QR + "/reading",      ["Order Now", "Reading"]),
     ("order-datchet",       QR + "/datchet",      ["Order Now", "Datchet"]),
@@ -39,6 +41,10 @@ STANDS = [
     ("menu-flipside-datchet",      QR + "/datchet", ["JOIN THE CLUB"], False),
     ("menu-datchet-dark",          QR + "/datchet", ["ORDER NOW"],     True),
     ("menu-flipside-datchet-dark", QR + "/datchet", ["JOIN THE CLUB"], True),
+    ("menu-beaconsfield-dark",          QR + "/beaconsfield", ["ORDER NOW"],     True),
+    ("menu-flipside-beaconsfield-dark", QR + "/beaconsfield", ["JOIN THE CLUB"], True),
+    ("menu-reading-dark",          QR + "/reading", ["ORDER NOW"],     True),
+    ("menu-flipside-reading-dark", QR + "/reading", ["JOIN THE CLUB"], True),
 ]
 
 if __name__ == "__main__":
