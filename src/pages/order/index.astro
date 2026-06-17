@@ -427,7 +427,7 @@ import Layout from '../../layouts/Layout.astro';
 <script is:inline>
 (function(){
   var SUPA='https://vtrsbxqlctmhkjnpdwdy.supabase.co/functions/v1';
-  // Stripe PUBLISHABLE key — public by design (ships in the app binary too).
+  // Stripe PUBLISHABLE key, public by design (ships in the app binary too).
   var STRIPE_PK='pk_live_51IldPUGhY98XvWg6AWuEcFVQKjnJlhUhEKz7FtLHpGzKNUNWtC1pAOOJdDR5MxUbpxadbyphZ227MYXONw5TEhjM007TiGWv3f';
   var ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0cnNieHFsY3RtaGtqbnBkd2R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNjIzNzAsImV4cCI6MjA2MTgzODM3MH0.Nn65Q3E2Ly-j8bvn_SaR1TmKYnzcNye1wAiFu5ciiuk';
   var IMG='https://connect.poscraft.co.uk';
@@ -763,6 +763,9 @@ import Layout from '../../layouts/Layout.astro';
     freshToken().then(function(tok){
       return ensureLinked(tok).then(function(){
         var intent={locationId:store.id,items:items};
+        // drop a redemption the basket no longer supports, so the quote never errors
+        if(!cart.some(function(c){return c.bowl;}))redeem.freeBowls=0;
+        if(!cart.some(function(c){return c.cup;}))redeem.freeDrinks=0;
         if(redeem.freeBowls||redeem.freeDrinks)intent.redeem=redeem;
         if(couponCode)intent.couponCode=couponCode;
         return api('order-quote',intent,tok);
@@ -795,8 +798,12 @@ import Layout from '../../layouts/Layout.astro';
     // redemption offers (signed-in with available rewards, or an active redemption)
     var rb='';
     if(bal){
-      if(bal.freeBowlsAvailable>0||redeem.freeBowls)rb+='<label class="redeemcard"><input type="checkbox" id="redeemBowl" '+(redeem.freeBowls?'checked':'')+'/> 🫐 Free bowl available — redeem it on this order</label>';
-      if(bal.freeDrinksAvailable>0||redeem.freeDrinks)rb+='<label class="redeemcard"><input type="checkbox" id="redeemDrink" '+(redeem.freeDrinks?'checked':'')+'/> ☕ Free drink available — redeem it on this order</label>';
+      // Only offer a free-bowl/-drink redemption when the basket actually has an
+      // eligible item to apply it to (a water bottle is neither, so no offer).
+      var hasBowl=cart.some(function(i){return i.bowl;});
+      var hasDrink=cart.some(function(i){return i.cup;});
+      if(hasBowl&&(bal.freeBowlsAvailable>0||redeem.freeBowls))rb+='<label class="redeemcard"><input type="checkbox" id="redeemBowl" '+(redeem.freeBowls?'checked':'')+'/> 🫐 Free bowl available. Redeem it on this order</label>';
+      if(hasDrink&&(bal.freeDrinksAvailable>0||redeem.freeDrinks))rb+='<label class="redeemcard"><input type="checkbox" id="redeemDrink" '+(redeem.freeDrinks?'checked':'')+'/> ☕ Free drink available. Redeem it on this order</label>';
     }
     $('redeemBox').innerHTML=rb;
     var rbow=$('redeemBowl'); if(rbow)rbow.onchange=function(){redeem.freeBowls=this.checked?1:0;scheduleQuote();};
@@ -1022,7 +1029,7 @@ import Layout from '../../layouts/Layout.astro';
     co.innerHTML='<div class="oa-wrap" style="padding:60px 24px;text-align:center">'+
       '<div style="font-size:42px">🥥</div>'+
       '<h2 style="font-size:24px;font-weight:800;color:var(--charcoal);margin-top:10px">Order placed!</h2>'+
-      '<p style="color:var(--medium);margin-top:8px;max-width:420px;margin-left:auto;margin-right:auto">Thanks — the store has your order and will have it ready for pick-up. A receipt is on its way to your email.</p>'+
+      '<p style="color:var(--medium);margin-top:8px;max-width:420px;margin-left:auto;margin-right:auto">Thanks. The store has your order and will have it ready for pick-up. A receipt is on its way to your email.</p>'+
       '<a href="/order" class="cta" style="display:inline-block;max-width:260px;margin-top:24px;text-decoration:none">Start a new order</a></div>';
     window.scrollTo(0,0);
   }
