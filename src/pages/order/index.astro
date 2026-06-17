@@ -142,13 +142,13 @@ import Layout from '../../layouts/Layout.astro';
         <div class="top">
           <button class="close" id="mClose">✕</button>
           <div class="ph" id="mPh"></div>
-          <div class="pts">🫐 <span id="mPts">Earn 1 berry</span></div>
+          <div class="pts"><span id="mPtsIco"></span><span id="mPts">Earn 1 berry</span></div>
         </div>
         <div class="mhead"><h3 id="mName">Item</h3><p id="mDesc"></p></div>
         <div class="opts" id="mOpts"></div>
         <div class="mfoot">
-          <div class="qty"><button id="mMinus">−</button><span class="n" id="mQ">1</span><button id="mPlus">+</button></div>
-          <button class="addbtn" id="mAdd">Add to basket · <span id="mPrice">£0.00</span></button>
+          <div class="mprice" id="mPrice">£0.00</div>
+          <button class="addbtn" id="mAdd">Add to basket</button>
         </div>
       </div>
     </div>
@@ -257,6 +257,7 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .catrw{display:inline-flex;align-items:center;gap:3px;flex:none;white-space:nowrap}
   #order-app .catrw .rwic{height:24px;width:auto;filter:brightness(0);opacity:.82}
   #order-app .catrw .rwp{font-weight:700;font-size:13px;color:#2D3436}
+  #order-app .ico{height:1.15em;width:auto;vertical-align:-3px;filter:brightness(0);opacity:.82}
   #order-app .feat{background:var(--off);border-radius:24px;padding:22px;margin-bottom:34px}
   #order-app .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   #order-app .item{display:flex;gap:16px;background:#fff;border:1px solid #E0E0E0;border-radius:15px;padding:12px 10px;cursor:pointer;transition:.15s}
@@ -306,9 +307,9 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .orow.sel .mk{border-color:var(--acai);background:var(--acai);box-shadow:inset 0 0 0 3px #fff}
   #order-app .showmore{display:inline-flex;align-items:center;gap:6px;color:var(--acai);font-weight:700;font-size:14px;padding:6px 2px;margin-top:2px}
   #order-app .showmore .sm-arrow{font-size:15px}
-  #order-app .mfoot{display:flex;align-items:center;gap:14px;padding:18px 26px;border-top:1px solid var(--off)}
-  #order-app .mfoot .qty{transform:scale(1.15);transform-origin:left}
-  #order-app .mfoot .addbtn{flex:1;background:var(--charcoal);color:#fff;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:16px;border-radius:999px;font-size:15px}
+  #order-app .mfoot{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 26px;border-top:1px solid var(--off)}
+  #order-app .mfoot .mprice{font-family:var(--font-heading);font-weight:800;font-size:22px;color:var(--charcoal);flex:none}
+  #order-app .mfoot .addbtn{background:var(--charcoal);color:#fff;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:16px 34px;border-radius:999px;font-size:15px;flex:none}
   #order-app .pmodal{background:#fff;border-radius:24px;max-width:480px;width:100%;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.3);display:flex;flex-direction:column;max-height:84vh}
   #order-app .phead{display:flex;align-items:center;justify-content:space-between;padding:22px 24px 12px}
   #order-app .phead h3{font-size:20px;font-weight:800;color:var(--charcoal)}
@@ -525,6 +526,8 @@ import Layout from '../../layouts/Layout.astro';
   function confirmDialog(title,body,cb){ $('cTitle').textContent=title; $('cBody').textContent=body; _confirmCb=cb; $('confirmDlg').classList.add('open'); }
   function closeConfirm(){ $('confirmDlg').classList.remove('open'); _confirmCb=null; }
   function shortName(n){return (n||'').replace(/^The Acai Club\s*-\s*/i,'');}
+  // berry/cup loyalty icons: the actual app assets, not emoji
+  function rwImg(kind){return '<img class="ico" src="/images/'+(kind==='cup'?'cup-icon':'berry_outlined')+'.png" alt="'+(kind==='cup'?'cup':'berry')+'" />';}
   function emoji(n){n=(n||'').toLowerCase();if(n.indexOf('bowl')>=0)return'🍇';if(n.indexOf('coffee')>=0)return'☕';if(n.indexOf('smooth')>=0||n.indexOf('juice')>=0)return'🥤';if(n.indexOf('matcha')>=0||n.indexOf('tea')>=0||n.indexOf('chai')>=0)return'🍵';if(n.indexOf('oat')>=0||n.indexOf('yog')>=0||n.indexOf('banana')>=0)return'🥣';if(n.indexOf('choc')>=0)return'🍫';if(n.indexOf('water')>=0||n.indexOf('electrolyte')>=0)return'💧';if(n.indexOf('pooch')>=0)return'🐶';return'✨';}
 
   function renderCats(){
@@ -674,9 +677,10 @@ import Layout from '../../layouts/Layout.astro';
     var it=(MENU[activeCat]||[])[i];if(!it)return;modal=it;mq=1;mSel={};mGroups=[];
     $('mPh').style.cssText=picStyle(imgUrl(it.img));
     $('mName').textContent=it.n;$('mDesc').textContent=it.d||'';
+    $('mPtsIco').innerHTML=it.bowl?rwImg('berry'):(it.cup?rwImg('cup'):'');
     $('mPts').textContent=it.bowl?'Earn 1 berry':(it.cup?'Earn 1 cup':'Earn points');
     $('mOpts').innerHTML='<div class="empty">Loading options…</div>';
-    $('mQ').textContent=1;updMPrice();$('scrim').classList.add('open');
+    updMPrice();$('scrim').classList.add('open');
     api('get-menu-item-detail',{id:it.id}).then(function(d){
       mGroups=((d&&d.menuModifierGroups)||[]).filter(function(g){return g.visibileOnline!==false&&(g.modifierItems||[]).length;});
       renderOpts();
@@ -754,7 +758,7 @@ import Layout from '../../layouts/Layout.astro';
     var basket=$('coBasket');if(basket)basket.innerHTML=cart.length?html:'';
     var sub=cart.reduce(function(s,c){return s+c.unit*c.q;},0),n=cart.reduce(function(s,c){return s+c.q;},0),bowls=cart.reduce(function(s,c){return s+(c.bowl?c.q:0);},0);
     $('reviewBtn').className='cta'+(n?'':' disabled');$('reviewBtn').innerHTML=n?('Review order · '+f(sub)):'Review order';
-    $('berryBar').innerHTML=bowls?('🫐 You will earn '+bowls+' berr'+(bowls>1?'ies':'y')+'. '+Math.max(0,9-bowls)+' more to a free bowl'):'🫐 Add a bowl to earn your next berry';
+    $('berryBar').innerHTML=bowls?(rwImg('berry')+' You will earn '+bowls+' berr'+(bowls>1?'ies':'y')+'. '+Math.max(0,9-bowls)+' more to a free bowl'):(rwImg('berry')+' Add a bowl to earn your next berry');
     // client math is the INSTANT PREVIEW only; order-quote (server-authoritative)
     // overwrites these as soon as it returns (see applyQuote).
     $('coSub').textContent=f(sub);$('coTotal').textContent=f(sub);$('payTot').textContent=f(sub);
@@ -827,8 +831,8 @@ import Layout from '../../layouts/Layout.astro';
       // eligible item to apply it to (a water bottle is neither, so no offer).
       var hasBowl=cart.some(function(i){return i.bowl;});
       var hasDrink=cart.some(function(i){return i.cup;});
-      if(hasBowl&&(bal.freeBowlsAvailable>0||redeem.freeBowls))rb+='<label class="redeemcard"><input type="checkbox" id="redeemBowl" '+(redeem.freeBowls?'checked':'')+'/> 🫐 Free bowl available. Redeem it on this order</label>';
-      if(hasDrink&&(bal.freeDrinksAvailable>0||redeem.freeDrinks))rb+='<label class="redeemcard"><input type="checkbox" id="redeemDrink" '+(redeem.freeDrinks?'checked':'')+'/> ☕ Free drink available. Redeem it on this order</label>';
+      if(hasBowl&&(bal.freeBowlsAvailable>0||redeem.freeBowls))rb+='<label class="redeemcard"><input type="checkbox" id="redeemBowl" '+(redeem.freeBowls?'checked':'')+'/> '+rwImg('berry')+' Free bowl available. Redeem it on this order</label>';
+      if(hasDrink&&(bal.freeDrinksAvailable>0||redeem.freeDrinks))rb+='<label class="redeemcard"><input type="checkbox" id="redeemDrink" '+(redeem.freeDrinks?'checked':'')+'/> '+rwImg('cup')+' Free drink available. Redeem it on this order</label>';
     }
     $('redeemBox').innerHTML=rb;
     var rbow=$('redeemBowl'); if(rbow)rbow.onchange=function(){redeem.freeBowls=this.checked?1:0;scheduleQuote();};
@@ -836,10 +840,10 @@ import Layout from '../../layouts/Layout.astro';
     // berry bar + signed-in balance note
     var earned=(q.loyalty&&q.loyalty.berriesEarned)||0;
     if(bal){
-      $('berryBar').innerHTML='🫐 '+bal.berriesProgress+'/9 berries · ☕ '+bal.cupsProgress+'/9 cups'+(earned?(' · +'+earned+' berr'+(earned>1?'ies':'y')+' on this order'):'');
-      var bn=$('balanceNote'); if(bn)bn.textContent='🫐 '+bal.berriesProgress+'/9 berries · ☕ '+bal.cupsProgress+'/9 cups'+(bal.freeBowlsAvailable?(' · '+bal.freeBowlsAvailable+' free bowl'+(bal.freeBowlsAvailable>1?'s':'')+' available'):'');
+      $('berryBar').innerHTML=rwImg('berry')+' '+bal.berriesProgress+'/9 berries · '+rwImg('cup')+' '+bal.cupsProgress+'/9 cups'+(earned?(' · +'+earned+' berr'+(earned>1?'ies':'y')+' on this order'):'');
+      var bn=$('balanceNote'); if(bn)bn.innerHTML=rwImg('berry')+' '+bal.berriesProgress+'/9 berries · '+rwImg('cup')+' '+bal.cupsProgress+'/9 cups'+(bal.freeBowlsAvailable?(' · '+bal.freeBowlsAvailable+' free bowl'+(bal.freeBowlsAvailable>1?'s':'')+' available'):'');
     } else {
-      $('berryBar').innerHTML=earned?('🫐 You will earn '+earned+' berr'+(earned>1?'ies':'y')+'. '+Math.max(0,9-earned)+' more to a free bowl'):'🫐 Add a bowl to earn your next berry';
+      $('berryBar').innerHTML=earned?(rwImg('berry')+' You will earn '+earned+' berr'+(earned>1?'ies':'y')+'. '+Math.max(0,9-earned)+' more to a free bowl'):(rwImg('berry')+' Add a bowl to earn your next berry');
     }
   }
 
@@ -907,8 +911,6 @@ import Layout from '../../layouts/Layout.astro';
   $('mClose').onclick=closeModal;
   $('scrim').onclick=function(e){if(e.target===$('scrim'))closeModal();};
   $('storePicker').onclick=function(e){if(e.target===$('storePicker'))closePicker();};
-  $('mMinus').onclick=function(){mq=Math.max(1,mq-1);$('mQ').textContent=mq;updMPrice();};
-  $('mPlus').onclick=function(){mq++;$('mQ').textContent=mq;updMPrice();};
   $('mAdd').onclick=function(){cart.push({pid:modal.id,n:modal.n,unit:modUnit(),q:mq,bowl:modal.bowl||0,cup:modal.cup||0,extras:selectedNames(),modIds:selectedModIds()});closeModal();renderCart();};
   $('openPicker').onclick=openPicker;
   $('changeStore2').onclick=openPicker;
