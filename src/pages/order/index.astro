@@ -142,7 +142,7 @@ import Layout from '../../layouts/Layout.astro';
         <div class="top">
           <button class="close" id="mClose">✕</button>
           <div class="ph" id="mPh"></div>
-          <div class="pts"><span id="mPtsIco"></span><span id="mPts">Earn 1 berry</span></div>
+          <div class="pts" id="mPtsBox"><span id="mPtsIco"></span><span id="mPts">Earn 1 berry</span></div>
         </div>
         <div class="mhead"><h3 id="mName">Item</h3><p id="mDesc"></p></div>
         <div class="opts" id="mOpts"></div>
@@ -577,12 +577,15 @@ import Layout from '../../layouts/Layout.astro';
       depts=depts.filter(function(d){return d&&d.visibleOnline&&Array.isArray(d.menuItems)&&d.menuItems.length;}).sort(function(a,b){return (a.sortOrder||0)-(b.sortOrder||0);});
       CATS=[];MENU={};
       depts.forEach(function(d){
-        var bowl=RW.bowl.indexOf(+d.id)>=0?1:0,cup=RW.drink.indexOf(+d.id)>=0?1:0;
+        // reward eligibility is per PRODUCT (m.departmentId), not the menu group id:
+        // that's how regular bowls (dept 97) earn a berry but minis don't.
         var items=d.menuItems.filter(function(m){return m&&m.isForSale!==false&&!m.deleted;}).map(function(m){
-          return {id:m.id,n:m.name,d:(m.description||'').split('\n')[0],p:m.salePrice||0,img:m.imageUrl,bowl:bowl,cup:cup};
+          var ib=RW.bowl.indexOf(+m.departmentId)>=0?1:0,ic=RW.drink.indexOf(+m.departmentId)>=0?1:0;
+          return {id:m.id,n:m.name,d:(m.description||'').split('\n')[0],p:m.salePrice||0,img:m.imageUrl,bowl:ib,cup:ic};
         });
         if(!items.length)return;
-        CATS.push({id:String(d.id),name:d.name,e:emoji(d.name),img:imgUrl(items[0].img),bowl:bowl,cup:cup});
+        var cbowl=items.some(function(x){return x.bowl;})?1:0,ccup=items.some(function(x){return x.cup;})?1:0;
+        CATS.push({id:String(d.id),name:d.name,e:emoji(d.name),img:imgUrl(items[0].img),bowl:cbowl,cup:ccup});
         MENU[String(d.id)]=items;
       });
       activeCat=CATS.length?CATS[0].id:null;
@@ -701,8 +704,10 @@ import Layout from '../../layouts/Layout.astro';
     var it=(MENU[activeCat]||[])[i];if(!it)return;modal=it;mq=1;mSel={};mGroups=[];
     $('mPh').style.cssText=picStyle(imgUrl(it.img));
     $('mName').textContent=it.n;$('mDesc').textContent=it.d||'';
-    $('mPtsIco').innerHTML=it.bowl?rwImg('berry'):(it.cup?rwImg('cup'):'');
-    $('mPts').textContent=it.bowl?'Earn 1 berry':(it.cup?'Earn 1 cup':'Earn points');
+    // no reward pill at all for items that earn neither (there's no "points")
+    var rk=it.bowl?'berry':(it.cup?'cup':'');
+    $('mPtsBox').style.display=rk?'':'none';
+    if(rk){$('mPtsIco').innerHTML=rwImg(rk);$('mPts').textContent=it.bowl?'Earn 1 berry':'Earn 1 cup';}
     $('mOpts').innerHTML='<div class="empty">Loading options…</div>';
     updMPrice();$('scrim').classList.add('open');
     api('get-menu-item-detail',{id:it.id}).then(function(d){
