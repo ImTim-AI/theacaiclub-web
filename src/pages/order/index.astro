@@ -783,6 +783,10 @@ import Layout from '../../layouts/Layout.astro';
   }
   function setCouponMsg(t,cls){ var m=$('couponMsg'); if(m){m.textContent=t||'';m.className='authmsg'+(cls?' '+cls:'');} }
   function applyQuote(q){
+    // If a Payment Element is already mounted, the order just changed (redeem,
+    // coupon, etc.), so the locked PaymentIntent amount is now stale. Tear it
+    // down and make the customer re-tap Order & pay for a fresh, correct charge.
+    if(elements){ resetPayUI(); setPayMsg('Your order changed. Tap Order & pay again.'); }
     $('coSub').textContent=f(q.subtotal);$('coTotal').textContent=f(q.total);$('payTot').textContent=f(q.total);
     var n=cart.reduce(function(s,c){return s+c.q;},0);
     var onShop = $('checkout').style.display !== 'block';
