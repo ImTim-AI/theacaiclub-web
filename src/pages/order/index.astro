@@ -219,8 +219,8 @@ import Layout from '../../layouts/Layout.astro';
   #order-app h1,#order-app h2,#order-app h3,#order-app h4{font-family:var(--font-heading);letter-spacing:-.01em}
   #order-app button{cursor:pointer;border:none;background:none;color:inherit;font-family:inherit}
   #order-app .oa-hero{background:var(--off)}
-  #order-app .oa-hero-in{padding:30px 24px 70px}
-  #order-app .oa-hero h1{font-size:30px;font-weight:800;color:var(--charcoal)}
+  #order-app .oa-hero-in{padding:40px 24px 72px}
+  #order-app .oa-hero h1{font-size:clamp(22px,4.5vw,30px);font-weight:800;color:var(--charcoal);line-height:1.2}
   #order-app .oa-hero p{color:var(--medium);margin-top:6px;font-size:15px}
   #order-app .oa-pickup{margin-top:-48px;position:relative;z-index:5}
   #order-app .oa-pickup .card{background:#fff;border:1px solid var(--sand);border-radius:var(--r);box-shadow:0 10px 30px rgba(58,58,56,.10);display:flex;overflow:hidden}
@@ -236,7 +236,7 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .open.is-open{color:var(--acai)}
   #order-app .oa-pickup .chev{margin-left:auto;color:var(--taupe);font-size:22px}
   #order-app .oa-cats{position:sticky;top:60px;z-index:30;background:var(--cream);padding:16px 0;border-bottom:1px solid var(--sand)}
-  #order-app .oa-cats .row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none}
+  #order-app .oa-cats .row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-right:16px}
   #order-app .oa-cats .row::-webkit-scrollbar{display:none}
   #order-app .pill{display:flex;align-items:center;gap:9px;padding:8px 16px 8px 8px;border-radius:999px;background:#fff;border:1px solid var(--sand);white-space:nowrap;font-weight:700;font-size:14px;color:var(--medium);transition:.15s}
   #order-app .pill .pthumb{width:30px;height:30px;border-radius:50%;background-size:cover;background-position:center;background-color:var(--off);flex:none}
@@ -401,7 +401,7 @@ import Layout from '../../layouts/Layout.astro';
     #order-app .oa-wrap{padding:0 16px}
     #order-app .rail{display:none}
     #order-app .cards{grid-template-columns:1fr}
-    #order-app .oa-hero h1{font-size:24px}
+    #order-app .oa-hero-in{padding:44px 16px 84px}
     #order-app .co-grid{grid-template-columns:1fr}
     #order-app .oa-pickup .card{flex-direction:column}
     #order-app .oa-pickup .seg+.seg{border-left:none;border-top:1px solid var(--sand)}
@@ -1064,8 +1064,15 @@ import Layout from '../../layouts/Layout.astro';
   };
 
   loadSess(); renderAuth();
-  api('get-locations').then(function(l){LOC=l.filter(function(x){return x&&x.onlineOrderingActive!==false;});store=LOC.filter(function(x){return x.id===1;})[0]||LOC[0];})
-   .catch(function(){store={id:1,name:'The Acai Club - Reading'};LOC=[store];})
-   .then(function(){setStoreLabels();renderCart();return Promise.all([loadSchedule(),loadMenu()]);});
+  api('get-locations').then(function(l){LOC=l.filter(function(x){return x&&x.onlineOrderingActive!==false;});})
+   .catch(function(){LOC=[{id:1,name:'The Acai Club - Reading'},{id:3,name:'The Acai Club - Beaconsfield'},{id:4,name:'The Acai Club - Datchet'}];})
+   .then(function(){
+     renderCart();
+     // No default store (parity with the app): require an explicit choice first
+     // so a customer can never accidentally order from the wrong location.
+     document.querySelectorAll('[data-storename]').forEach(function(el){el.textContent='Select store';});
+     $('menu').innerHTML='<div class="section"><div class="empty">Choose your store above to see the menu.</div></div>';
+     openPicker();
+   });
 })();
 </script>
