@@ -807,7 +807,7 @@ import Layout from '../../layouts/Layout.astro';
     var basket=$('coBasket');if(basket)basket.innerHTML=cart.length?html:'';
     var sub=cart.reduce(function(s,c){return s+c.unit*c.q;},0),n=cart.reduce(function(s,c){return s+c.q;},0),bowls=cart.reduce(function(s,c){return s+(c.bowl?c.q:0);},0);
     $('reviewBtn').className='cta'+(n?'':' disabled');$('reviewBtn').innerHTML=n?('Review order · '+f(sub)):'Review order';
-    $('berryBar').innerHTML=bowls?(rwImg('berry')+' You will earn '+bowls+' berr'+(bowls>1?'ies':'y')+'. '+Math.max(0,9-bowls)+' more to a free bowl'):(rwImg('berry')+' Add a bowl to earn your next berry');
+    $('berryBar').innerHTML=bowls?(rwImg('berry')+' '+(sess?('You will earn '+bowls+' berr'+(bowls>1?'ies':'y')+'. '+Math.max(0,9-bowls)+' more to a free bowl'):('Sign in to earn '+bowls+' berr'+(bowls>1?'ies':'y')+' on this order'))):(rwImg('berry')+' Add a bowl to earn your next berry');
     // client math is the INSTANT PREVIEW only; order-quote (server-authoritative)
     // overwrites these as soon as it returns (see applyQuote).
     $('coSub').textContent=f(sub);$('coTotal').textContent=f(sub);$('payTot').textContent=f(sub);
@@ -892,7 +892,7 @@ import Layout from '../../layouts/Layout.astro';
       $('berryBar').innerHTML=rwImg('berry')+' '+bal.berriesProgress+'/9 berries · '+rwImg('cup')+' '+bal.cupsProgress+'/9 cups'+(earned?(' · +'+earned+' berr'+(earned>1?'ies':'y')+' on this order'):'');
       var bn=$('balanceNote'); if(bn)bn.innerHTML=rwImg('berry')+' '+bal.berriesProgress+'/9 berries · '+rwImg('cup')+' '+bal.cupsProgress+'/9 cups'+(bal.freeBowlsAvailable?(' · '+bal.freeBowlsAvailable+' free bowl'+(bal.freeBowlsAvailable>1?'s':'')+' available'):'');
     } else {
-      $('berryBar').innerHTML=earned?(rwImg('berry')+' You will earn '+earned+' berr'+(earned>1?'ies':'y')+'. '+Math.max(0,9-earned)+' more to a free bowl'):(rwImg('berry')+' Add a bowl to earn your next berry');
+      $('berryBar').innerHTML=earned?(rwImg('berry')+' '+(sess?('You will earn '+earned+' berr'+(earned>1?'ies':'y')+'. '+Math.max(0,9-earned)+' more to a free bowl'):('Sign in to earn '+earned+' berr'+(earned>1?'ies':'y')+' on this order'))):(rwImg('berry')+' Add a bowl to earn your next berry');
     }
   }
 
