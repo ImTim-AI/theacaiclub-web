@@ -450,7 +450,17 @@ import Layout from '../../layouts/Layout.astro';
   var STRIPE_PK='pk_live_51IldPUGhY98XvWg6AWuEcFVQKjnJlhUhEKz7FtLHpGzKNUNWtC1pAOOJdDR5MxUbpxadbyphZ227MYXONw5TEhjM007TiGWv3f';
   var ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0cnNieHFsY3RtaGtqbnBkd2R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNjIzNzAsImV4cCI6MjA2MTgzODM3MH0.Nn65Q3E2Ly-j8bvn_SaR1TmKYnzcNye1wAiFu5ciiuk';
   var IMG='https://connect.poscraft.co.uk';
-  var DRINK=/coffee|smooth|juice|matcha|chai|\btea|chocolate|shot|electrolyte|water|wellness/i;
+  // Which DEPARTMENTS actually earn a reward is store-specific config (Supabase
+  // rewards_config), NOT a name guess: a berry only on regular bowls (not minis),
+  // a cup only on certain drinks. Loaded per store in loadMenu.
+  var REST=SUPA.replace('/functions/v1','/rest/v1');
+  var RW={bowl:[],drink:[]};
+  function loadRewards(locId){
+    return fetch(REST+'/rewards_config?location_id=eq.'+locId+'&select=config',{headers:{'apikey':ANON,'Authorization':'Bearer '+ANON}})
+      .then(function(r){return r.ok?r.json():[];})
+      .then(function(rows){var c=(rows&&rows[0]&&rows[0].config)||{};RW={bowl:c.bowlDepartments||[],drink:c.drinkDepartments||[]};})
+      .catch(function(){RW={bowl:[],drink:[]};});
+  }
   var $=function(id){return document.getElementById(id);};
   var f=function(v){return '£'+(v||0).toFixed(2);};
   var esc=function(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
@@ -563,11 +573,11 @@ import Layout from '../../layouts/Layout.astro';
 
   function loadMenu(){
     $('menu').innerHTML='<div class="section"><div class="empty">Loading menu…</div></div>';
-    return api('load-menu',{locationId:store.id}).then(function(depts){
+    return loadRewards(store.id).then(function(){return api('load-menu',{locationId:store.id});}).then(function(depts){
       depts=depts.filter(function(d){return d&&d.visibleOnline&&Array.isArray(d.menuItems)&&d.menuItems.length;}).sort(function(a,b){return (a.sortOrder||0)-(b.sortOrder||0);});
       CATS=[];MENU={};
       depts.forEach(function(d){
-        var bowl=/bowl/i.test(d.name)?1:0,cup=DRINK.test(d.name)?1:0;
+        var bowl=RW.bowl.indexOf(+d.id)>=0?1:0,cup=RW.drink.indexOf(+d.id)>=0?1:0;
         var items=d.menuItems.filter(function(m){return m&&m.isForSale!==false&&!m.deleted;}).map(function(m){
           return {id:m.id,n:m.name,d:(m.description||'').split('\n')[0],p:m.salePrice||0,img:m.imageUrl,bowl:bowl,cup:cup};
         });
