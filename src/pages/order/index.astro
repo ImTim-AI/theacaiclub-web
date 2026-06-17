@@ -87,7 +87,7 @@ import Layout from '../../layouts/Layout.astro';
               </div>
             </div>
             <div class="field">
-              <label>Pick-up</label><div class="hint">&nbsp;</div>
+              <label class="lblsp">Pick-up</label>
               <div class="storebox">
                 <div>📍 <b data-storename>Reading</b><br><span class="sub" data-storeaddr>Collection point</span><br><span class="open" data-costatus>&nbsp;</span></div>
                 <button class="chg" id="changeStore2">Change</button>
@@ -100,7 +100,7 @@ import Layout from '../../layouts/Layout.astro';
               <div class="closednote" id="closedNote"></div>
             </div>
             <div class="field">
-              <label>Notes</label><div class="hint">&nbsp;</div>
+              <label class="lblsp">Notes</label>
               <textarea id="orderNotes" rows="3" placeholder="Allergies, dietary requirements, etc."></textarea>
             </div>
           </div>
@@ -262,7 +262,26 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .catrw{display:inline-flex;align-items:center;gap:3px;flex:none;white-space:nowrap}
   #order-app .catrw .rwic{height:24px;width:auto;filter:brightness(0);opacity:.82}
   #order-app .catrw .rwp{font-weight:700;font-size:13px;color:#2D3436}
-  #order-app .ico{height:1.15em;width:auto;vertical-align:-3px;filter:brightness(0);opacity:.82}
+  #order-app .ico{display:inline-block;height:1.05em;width:auto;vertical-align:-0.16em;filter:brightness(0);opacity:.82}
+  /* order confirmation screen */
+  #order-app .cf-wrap{max-width:480px;margin:0 auto;padding:48px 20px 90px;text-align:center}
+  #order-app .cf-emoji{font-size:46px}
+  #order-app .cf-h{font-size:26px;font-weight:800;color:var(--charcoal);margin-top:8px}
+  #order-app .cf-sub2{color:var(--medium);font-size:14px;margin:8px auto 24px;max-width:380px;line-height:1.5}
+  #order-app .cf-card{background:#fff;border:1px solid #E0E0E0;border-radius:15px;padding:20px;text-align:left}
+  #order-app .cf-line{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+  #order-app .cf-lbl{color:var(--medium);font-size:13px;flex:none}
+  #order-app .cf-val{font-family:var(--font-heading);font-weight:700;color:var(--charcoal);font-size:15px;text-align:right}
+  #order-app .cf-addr{color:var(--medium);font-size:13px;margin-top:2px}
+  #order-app .cf-div{height:1px;background:var(--off);margin:14px 0}
+  #order-app .cf-item{display:flex;align-items:baseline;gap:8px;padding:5px 0}
+  #order-app .cf-q{font-weight:700;color:var(--charcoal);font-size:14px;flex:none}
+  #order-app .cf-n{flex:1;color:var(--charcoal);font-size:14px}
+  #order-app .cf-ex{display:block;color:var(--medium);font-size:12px;margin-top:1px}
+  #order-app .cf-p{font-weight:700;color:var(--charcoal);font-size:14px;flex:none}
+  #order-app .cf-tot .cf-val{font-size:18px}
+  #order-app .cf-reward{margin-top:14px;background:var(--off);border-radius:10px;padding:11px 12px;font-weight:700;font-size:13px;color:var(--charcoal);text-align:center}
+  #order-app .cf-cta{display:inline-block;max-width:260px;margin-top:24px;text-decoration:none}
   #order-app .feat{background:var(--off);border-radius:24px;padding:22px;margin-bottom:34px}
   #order-app .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   #order-app .item{display:flex;gap:16px;background:#fff;border:1px solid #E0E0E0;border-radius:15px;padding:12px 10px;cursor:pointer;transition:.15s}
@@ -341,6 +360,7 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .sub{color:var(--medium);font-size:13px;font-weight:600}
   #order-app .field{margin-bottom:20px}
   #order-app .field label{font-weight:700;font-size:14px;color:var(--charcoal)}
+  #order-app .field label.lblsp{display:block;margin-bottom:10px}
   #order-app .field .hint{color:var(--medium);font-size:13px;margin:3px 0 9px}
   #order-app .field input{width:100%;border:1.5px solid var(--sand);border-radius:var(--rs);padding:14px 16px;font-size:15px;font-family:inherit;color:var(--charcoal)}
   #order-app .field input:focus{outline:none;border-color:var(--acai)}
@@ -1086,14 +1106,43 @@ import Layout from '../../layouts/Layout.astro';
   };
 
   function orderPlaced(){
-    // success state: clear basket + show confirmation
+    // snapshot the order BEFORE clearing, so the confirmation can show it
+    // (screenshot-friendly: store, items, pick-up time, total, rewards earned)
+    var items=cart.slice();
+    var total=(lastQuote&&typeof lastQuote.total==='number')?lastQuote.total:items.reduce(function(s,c){return s+c.unit*c.q;},0);
+    var berries=items.reduce(function(s,c){return s+(c.bowl?c.q:0);},0);
+    var cups=items.reduce(function(s,c){return s+(c.cup?c.q:0);},0);
+    var when=($('timeText')&&$('timeText').textContent)||'ASAP';
+    var sname=store?shortName(store.name):'';
+    var saddr=store?[store.addressLine1,store.postCode].filter(Boolean).join(', '):'';
     cart=[]; redeem={freeBowls:0,freeDrinks:0}; couponCode='';
+    var rows=items.map(function(c){
+      return '<div class="cf-item"><span class="cf-q">'+c.q+'×</span><span class="cf-n">'+esc(c.n)+(c.extras&&c.extras.length?'<span class="cf-ex">'+esc(c.extras.join(', '))+'</span>':'')+'</span><span class="cf-p">'+f(c.unit*c.q)+'</span></div>';
+    }).join('');
+    var reward='';
+    if(berries||cups){
+      var parts=[];
+      if(berries)parts.push(rwImg('berry')+' +'+berries+' berr'+(berries>1?'ies':'y'));
+      if(cups)parts.push(rwImg('cup')+' +'+cups+' cup'+(cups>1?'s':''));
+      reward='<div class="cf-reward">'+parts.join(' &nbsp;&nbsp; ')+' earned</div>';
+    }
     var co=$('checkout');
-    co.innerHTML='<div class="oa-wrap" style="padding:60px 24px;text-align:center">'+
-      '<div style="font-size:42px">🥥</div>'+
-      '<h2 style="font-size:24px;font-weight:800;color:var(--charcoal);margin-top:10px">Order placed!</h2>'+
-      '<p style="color:var(--medium);margin-top:8px;max-width:420px;margin-left:auto;margin-right:auto">Thanks. The store has your order and will have it ready for pick-up. A receipt is on its way to your email.</p>'+
-      '<a href="/order" class="cta" style="display:inline-block;max-width:260px;margin-top:24px;text-decoration:none">Start a new order</a></div>';
+    co.innerHTML='<div class="oa-wrap cf-wrap">'+
+      '<div class="cf-emoji">🥥</div>'+
+      '<h2 class="cf-h">Order placed</h2>'+
+      '<p class="cf-sub2">Your order is with the store and will be ready at your pick-up time. Show this screen when you collect.</p>'+
+      '<div class="cf-card">'+
+        '<div class="cf-line"><span class="cf-lbl">Collect from</span><span class="cf-val">'+esc(sname)+'</span></div>'+
+        (saddr?'<div class="cf-addr">'+esc(saddr)+'</div>':'')+
+        '<div class="cf-line" style="margin-top:10px"><span class="cf-lbl">Pick-up</span><span class="cf-val">'+esc(when)+'</span></div>'+
+        '<div class="cf-div"></div>'+
+        '<div class="cf-items">'+rows+'</div>'+
+        '<div class="cf-div"></div>'+
+        '<div class="cf-line cf-tot"><span class="cf-lbl">Total paid</span><span class="cf-val">'+f(total)+'</span></div>'+
+        reward+
+      '</div>'+
+      '<a href="/order" class="cta cf-cta">Start a new order</a>'+
+    '</div>';
     window.scrollTo(0,0);
   }
 
