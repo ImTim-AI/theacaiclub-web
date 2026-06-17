@@ -458,6 +458,10 @@ import Layout from '../../layouts/Layout.astro';
   }
   function saveSess(){ try{ sess?localStorage.setItem('acai_session',JSON.stringify(sess)):localStorage.removeItem('acai_session'); }catch(_e){} }
   function loadSess(){ try{ var s=JSON.parse(localStorage.getItem('acai_session')||'null'); if(s&&s.refresh_token)sess=s; }catch(_e){} }
+  // Persist basket + chosen store so a refresh restores them (store-scoped: the
+  // cart only restores for the same store, mirroring the clear-on-store-change rule).
+  function saveCart(){ try{ localStorage.setItem('acai_cart',JSON.stringify({storeId:store&&store.id,cart:cart})); }catch(_e){} }
+  function loadCart(){ try{ return JSON.parse(localStorage.getItem('acai_cart')||'null'); }catch(_e){ return null; } }
   // Resolve a fresh access token (refreshing if within 60s of expiry); null = guest.
   function freshToken(){
     if(!sess)return Promise.resolve(null);
@@ -726,6 +730,7 @@ import Layout from '../../layouts/Layout.astro';
   function closeModal(){$('scrim').classList.remove('open');}
 
   function renderCart(){
+    saveCart();
     var html=cart.length?cart.map(function(c,i){
       return '<div class="line"><div class="qty"><button data-cm="'+i+'">−</button><span class="n">'+c.q+'</span><button data-cp="'+i+'">+</button></div><div class="nm">'+esc(c.n)+'<div class="ex">'+(c.extras.length?esc(c.extras.join(', ')):'No extras')+'</div></div><div class="pr">'+f(c.unit*c.q)+'</div></div>';
     }).join(''):'<div class="empty">Your basket is empty</div>';
@@ -841,7 +846,7 @@ import Layout from '../../layouts/Layout.astro';
     Promise.all(LOC.map(function(l){return sched[l.id]?Promise.resolve():api('get-ordering-schedule',{locationId:l.id}).then(function(s){sched[l.id]=s;}).catch(function(){});})).then(function(){renderPicker($('pSearch').value);});
   }
   function closePicker(){$('storePicker').classList.remove('open');}
-  function doPickStore(l){ store=l; closePicker(); scheduled=null; setMode(pickupMode); setStoreLabels(); loadSchedule(); loadMenu(); }
+  function doPickStore(l){ store=l; saveCart(); closePicker(); scheduled=null; setMode(pickupMode); setStoreLabels(); loadSchedule(); loadMenu(); }
   function pickStore(id){
     var l=LOC.filter(function(x){return x.id===id;})[0];if(!l)return;
     if(l.id===(store&&store.id)){ closePicker(); return; } // same store, no-op
@@ -1078,12 +1083,23 @@ import Layout from '../../layouts/Layout.astro';
   api('get-locations').then(function(l){LOC=l.filter(function(x){return x&&x.onlineOrderingActive!==false;});})
    .catch(function(){LOC=[{id:1,name:'The Acai Club - Reading'},{id:3,name:'The Acai Club - Beaconsfield'},{id:4,name:'The Acai Club - Datchet'}];})
    .then(function(){
-     renderCart();
-     // No default store (parity with the app): require an explicit choice first
-     // so a customer can never accidentally order from the wrong location.
-     document.querySelectorAll('[data-storename]').forEach(function(el){el.textContent='Select store';});
-     $('menu').innerHTML='<div class="section"><div class="empty">Choose your store above to see the menu.</div></div>';
-     openPicker();
+     // Restore a previously chosen store + its basket (survives refresh).
+     var saved=loadCart();
+     var savedStore=saved&&saved.storeId?LOC.filter(function(x){return x.id===saved.storeId;})[0]:null;
+     if(savedStore){
+       store=savedStore;
+       cart=Array.isArray(saved.cart)?saved.cart:[];
+       setStoreLabels(); renderCart(); setMode(pickupMode);
+       loadSchedule(); loadMenu();
+       if(cart.length)scheduleQuote();
+     } else {
+       // No saved store: require an explicit choice first (parity with the app)
+       // so a customer can never accidentally order from the wrong location.
+       renderCart();
+       document.querySelectorAll('[data-storename]').forEach(function(el){el.textContent='Select store';});
+       $('menu').innerHTML='<div class="section"><div class="empty">Choose your store above to see the menu.</div></div>';
+       openPicker();
+     }
    });
 })();
 </script>
