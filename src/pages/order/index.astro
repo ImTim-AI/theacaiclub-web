@@ -33,7 +33,7 @@ import Layout from '../../layouts/Layout.astro';
         </div>
       </div>
 
-      <div class="oa-cats"><div class="oa-wrap"><div class="row" id="catRow"></div></div></div>
+      <div class="oa-cats"><button class="catnav prev" id="catPrev" aria-label="Scroll categories left">‹</button><div class="oa-wrap"><div class="row" id="catRow"></div></div><button class="catnav next" id="catNext" aria-label="Scroll categories right">›</button></div>
 
       <div class="oa-wrap oa-grid">
         <div id="menu"></div>
@@ -213,7 +213,7 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <style is:global>
-  #order-app{--cream:#DED9D4;--off:#F2EEEA;--card:#fff;--sand:#CBC8BE;--charcoal:#3A3A38;--medium:#6B6B68;--taupe:#9B9B90;--taupe-dark:#7E7E73;--brand:#9B9B90;--pink:#E8B4B8;--pink-light:#f0cdd0;--acai:#5B2C6F;--r:18px;--rs:12px;background:var(--cream)}
+  #order-app{--cream:#DED9D4;--off:#F2EEEA;--card:#fff;--sand:#CBC8BE;--charcoal:#3A3A38;--medium:#6B6B68;--taupe:#9B9B90;--taupe-dark:#7E7E73;--brand:#9B9B90;--pink:#E8B4B8;--pink-light:#f0cdd0;--acai:#3A3A38;--r:18px;--rs:12px;background:var(--cream)}
   #order-app *{box-sizing:border-box}
   /* order flow: the marketing header is NOT fixed here, so it scrolls away with
      the page and only the category bar pins to the top when scrolling */
@@ -245,6 +245,11 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .oa-cats .oa-wrap{padding:0}
   #order-app .oa-cats .row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:2px 24px}
   #order-app .oa-cats .row::-webkit-scrollbar{display:none}
+  #order-app .catnav{position:absolute;top:50%;transform:translateY(-50%);z-index:6;width:38px;height:38px;border-radius:50%;background:#fff;border:1px solid var(--sand);box-shadow:0 4px 14px rgba(58,58,56,.16);display:none;place-items:center;font-size:24px;line-height:1;color:var(--charcoal);cursor:pointer;padding-bottom:3px}
+  #order-app .catnav:hover{border-color:var(--taupe)}
+  #order-app .catnav.show{display:grid}
+  #order-app .catnav.prev{left:12px}
+  #order-app .catnav.next{right:12px}
   #order-app .pill{display:flex;align-items:center;gap:9px;padding:8px 16px 8px 8px;border-radius:999px;background:#fff;border:1px solid var(--sand);white-space:nowrap;font-weight:700;font-size:14px;color:var(--medium);transition:.15s}
   #order-app .pill .pthumb{width:30px;height:30px;border-radius:50%;background-size:cover;background-position:center;background-color:var(--off);flex:none}
   #order-app .pill:hover{border-color:var(--taupe)}
@@ -412,6 +417,7 @@ import Layout from '../../layouts/Layout.astro';
     #order-app .oa-grid{grid-template-columns:1fr;padding:22px 16px 110px}
     #order-app .oa-wrap{padding:0 16px}
     #order-app .oa-cats .row{padding:2px 16px}
+    #order-app .catnav{display:none!important}
     #order-app .rail{display:none}
     #order-app .cards{grid-template-columns:1fr}
     #order-app .oa-hero-in{padding:44px 16px 84px}
@@ -535,6 +541,14 @@ import Layout from '../../layouts/Layout.astro';
       var thumb=c.img?('<span class="pthumb" style="background-image:url(\''+c.img+'\')"></span>'):('<span>'+c.e+'</span>');
       return '<button class="pill '+(c.id===activeCat?'active':'')+'" data-cat="'+c.id+'">'+thumb+esc(c.name)+'</button>';
     }).join('');
+    updateCatNav();
+  }
+  // desktop-only arrows to scroll the category strip when it overflows
+  function updateCatNav(){
+    var row=$('catRow'),pv=$('catPrev'),nx=$('catNext'); if(!row||!pv||!nx)return;
+    var more=row.scrollWidth-row.clientWidth-row.scrollLeft;
+    pv.className='catnav prev'+(row.scrollLeft>4?' show':'');
+    nx.className='catnav next'+(more>4?' show':'');
   }
   function renderMenu(){
     var cat=CATS.filter(function(c){return c.id===activeCat;})[0];if(!cat)return;
@@ -905,7 +919,9 @@ import Layout from '../../layouts/Layout.astro';
     else if(t.dataset.mode!==undefined){setMode(t.dataset.mode);}
     else if(t.dataset.tday!==undefined){tSelDay=+t.dataset.tday;tSelSlot=null;renderDays();renderSlots();}
     else if(t.dataset.tslot!==undefined){tSelSlot=t.dataset.tslot;renderSlots();}
-    else if(t.dataset.cm!==undefined){var i=+t.dataset.cm;cart[i].q--;if(cart[i].q<1)cart.splice(i,1);renderCart();}
+    else if(t.dataset.cm!==undefined){var i=+t.dataset.cm;cart[i].q--;if(cart[i].q<1)cart.splice(i,1);
+      // emptying the basket while reviewing returns you to the menu
+      if(!cart.length&&$('checkout').style.display==='block')backToMenu();else renderCart();}
     else if(t.dataset.cp!==undefined){cart[+t.dataset.cp].q++;renderCart();}
   });
   $('mClose').onclick=closeModal;
@@ -930,7 +946,12 @@ import Layout from '../../layouts/Layout.astro';
   function toCheckout(){if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';$('mobileBar').className='mbar';newCheckoutId();resetPayUI();refreshCheckoutState();if(!lastQuote)requestQuote();window.scrollTo(0,0);}
   $('reviewBtn').onclick=toCheckout;
   $('mobileBar').onclick=toCheckout;
-  $('backBtn').onclick=function(){$('shop').style.display='block';$('checkout').style.display='none';renderCart();window.scrollTo(0,0);};
+  function backToMenu(){$('shop').style.display='block';$('checkout').style.display='none';renderCart();window.scrollTo(0,0);}
+  $('backBtn').onclick=backToMenu;
+  $('catPrev').onclick=function(){$('catRow').scrollBy({left:-280,behavior:'smooth'});};
+  $('catNext').onclick=function(){$('catRow').scrollBy({left:280,behavior:'smooth'});};
+  $('catRow').addEventListener('scroll',updateCatNav);
+  window.addEventListener('resize',updateCatNav);
   // ---- payment (Stripe Payment Element, driven by order-pay) ----
   // Flow: "Order & pay" -> order-pay (server creates the pending order + PI) ->
   //   free order  -> process-order -> success
