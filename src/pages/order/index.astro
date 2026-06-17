@@ -1049,7 +1049,8 @@ import Layout from '../../layouts/Layout.astro';
       throw new Error('Unexpected response');
     }).catch(function(e){
       paySubmitting=false; btn.disabled=false;
-      if(e&&e.code==='EMAIL_REGISTERED'){ setPayMsg('That email already has an account. Sign in with a one-time code (your berries will count).','err'); return; }
+      // EMAIL_REGISTERED handling removed 2026-06-17: order-pay no longer blocks
+      // a returning email — it reuses the existing customer (see backend PR #12).
       if(e&&e.code==='AUTH_REQUIRED'){ setPayMsg('Please sign in to redeem rewards.','err'); return; }
       if(e&&e.code==='BAD_PICKUP_TIME'){ setPayMsg('That pickup time is no longer available. Please pick a new time.','err'); return; }
       // show a structured server message; hide raw network errors behind a generic line
