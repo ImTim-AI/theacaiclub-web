@@ -213,7 +213,7 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <style is:global>
-  #order-app{--cream:#DED9D4;--off:#F2EEEA;--card:#fff;--sand:#CBC8BE;--charcoal:#3A3A38;--medium:#6B6B68;--taupe:#9B9B90;--taupe-dark:#7E7E73;--pink:#E8B4B8;--pink-light:#f0cdd0;--acai:#5B2C6F;--r:18px;--rs:12px;background:var(--cream)}
+  #order-app{--cream:#DED9D4;--off:#F2EEEA;--card:#fff;--sand:#CBC8BE;--charcoal:#3A3A38;--medium:#6B6B68;--taupe:#9B9B90;--taupe-dark:#7E7E73;--brand:#9B9B90;--pink:#E8B4B8;--pink-light:#f0cdd0;--acai:#5B2C6F;--r:18px;--rs:12px;background:var(--cream)}
   #order-app *{box-sizing:border-box}
   /* order flow: the marketing header is NOT fixed here, so it scrolls away with
      the page and only the category bar pins to the top when scrolling */
@@ -279,7 +279,7 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .line .ex{color:var(--medium);font-size:12px;margin-top:2px}
   #order-app .line .pr{font-weight:700;font-size:14px;white-space:nowrap}
   #order-app .empty{color:var(--medium);font-size:14px;padding:18px 0;text-align:center}
-  #order-app .cta{width:100%;background:var(--charcoal);color:#fff;font-family:var(--font-heading);font-weight:700;font-size:15px;letter-spacing:.03em;padding:17px;border-radius:999px;margin-top:20px;text-transform:uppercase;transition:.15s}
+  #order-app .cta{width:100%;background:var(--brand);color:#fff;font-family:var(--font-heading);font-weight:700;font-size:15px;letter-spacing:.03em;padding:17px;border-radius:999px;margin-top:20px;text-transform:uppercase;transition:.15s}
   #order-app .cta:hover{opacity:.92}
   #order-app .cta.disabled{background:var(--sand);cursor:not-allowed}
   #order-app .berrybar{display:flex;align-items:center;gap:10px;background:var(--off);border-radius:var(--rs);padding:11px 14px;margin-top:16px;font-size:13px;color:var(--acai);font-weight:600}
@@ -309,7 +309,7 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .showmore .sm-arrow{font-size:15px}
   #order-app .mfoot{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 26px;border-top:1px solid var(--off)}
   #order-app .mfoot .mprice{font-family:var(--font-heading);font-weight:800;font-size:22px;color:var(--charcoal);flex:none}
-  #order-app .mfoot .addbtn{background:var(--charcoal);color:#fff;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:16px 34px;border-radius:999px;font-size:15px;flex:none}
+  #order-app .mfoot .addbtn{background:var(--brand);color:#fff;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:16px 34px;border-radius:999px;font-size:15px;flex:none}
   #order-app .pmodal{background:#fff;border-radius:24px;max-width:480px;width:100%;overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.3);display:flex;flex-direction:column;max-height:84vh}
   #order-app .phead{display:flex;align-items:center;justify-content:space-between;padding:22px 24px 12px}
   #order-app .phead h3{font-size:20px;font-weight:800;color:var(--charcoal)}
@@ -343,7 +343,7 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .authrow{display:flex;gap:10px;align-items:stretch}
   #order-app .authrow+.authrow{margin-top:10px}
   #order-app .authrow input{flex:1;min-width:0}
-  #order-app .authbtn{flex:none;background:var(--charcoal);color:#fff;font-weight:700;font-size:13px;padding:0 18px;border-radius:var(--rs);text-transform:uppercase;letter-spacing:.03em}
+  #order-app .authbtn{flex:none;background:var(--brand);color:#fff;font-weight:700;font-size:13px;padding:0 18px;border-radius:var(--rs);text-transform:uppercase;letter-spacing:.03em}
   #order-app .authbtn[disabled]{opacity:.5;cursor:not-allowed}
   #order-app .authmsg{font-size:13px;font-weight:600;margin-top:8px;color:var(--medium)}
   #order-app .authmsg.err{color:#b04a4a}
@@ -401,7 +401,7 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .cbtns{display:flex;gap:12px;margin-top:22px}
   #order-app .cbtn{flex:1;padding:14px;border-radius:999px;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.03em}
   #order-app .cbtn.cancel{background:var(--off);color:var(--charcoal)}
-  #order-app .cbtn.go{background:var(--charcoal);color:#fff}
+  #order-app .cbtn.go{background:var(--brand);color:#fff}
   /* toast */
   #order-app .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:var(--charcoal);color:#fff;padding:14px 22px;border-radius:999px;font-size:14px;font-weight:600;z-index:80;opacity:0;pointer-events:none;transition:.25s}
   #order-app .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -418,7 +418,7 @@ import Layout from '../../layouts/Layout.astro';
     #order-app .co-grid{grid-template-columns:1fr}
     #order-app .oa-pickup .card{flex-direction:column}
     #order-app .oa-pickup .seg+.seg{border-left:none;border-top:1px solid var(--sand)}
-    #order-app .mbar.show{display:flex;align-items:center;justify-content:space-between;position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--charcoal);color:#fff;padding:16px 22px;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:14px;box-shadow:0 -6px 24px rgba(0,0,0,.18)}
+    #order-app .mbar.show{display:flex;align-items:center;justify-content:space-between;position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--brand);color:#fff;padding:16px 22px;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:14px;box-shadow:0 -6px 24px rgba(0,0,0,.18)}
     #order-app .scrim{padding:0;align-items:stretch}
     /* full-screen modals on mobile: header + scrollable middle + PINNED footer
        so 'Add to basket' / 'DONE' are always reachable without scrolling */
