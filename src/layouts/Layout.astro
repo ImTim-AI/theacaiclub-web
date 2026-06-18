@@ -100,6 +100,9 @@ const allSchemas = schemaJsonLd
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
+    {/* Apple Smart App Banner (native iOS Safari banner). Excluded on /order so it
+        doesn't pull a customer out of a web order mid-checkout. */}
+    {!Astro.url.pathname.startsWith('/order') && <meta name="apple-itunes-app" content="app-id=6478923734" />}
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
 
