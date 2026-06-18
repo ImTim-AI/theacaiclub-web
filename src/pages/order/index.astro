@@ -8,14 +8,14 @@ import Layout from '../../layouts/Layout.astro';
 // No writes/orders/EPOS changes. Pay is a stub until order-pay + Stripe.
 // Brand colours only (app_theme.dart / global.css). No em-dashes anywhere.
 ---
-<Layout title="Order Online | The Acai Club" description="Order ahead for collection from your local Acai Club. Berry on every bowl, cup on every drink, 9 berries unlock a free bowl." noindex={true}>
+<Layout title="Order Online | The Acai Club" description="Order ahead for collection from your local Acai Club. Skip the queue and earn rewards as you go." noindex={true}>
   <div id="order-app">
     <!-- ===== SHOP ===== -->
     <div id="shop">
       <section class="oa-hero">
         <div class="oa-wrap oa-hero-in">
           <h1>Order ahead. Skip the queue.</h1>
-          <p>Berry on every bowl, cup on every drink. 9 berries unlock a free bowl.</p>
+          <p>Earn rewards and fuel your day.</p>
         </div>
       </section>
 
@@ -27,7 +27,7 @@ import Layout from '../../layouts/Layout.astro';
             <div class="chev">›</div>
           </button>
           <div class="seg status">
-            <div class="ic storeic"><img src="/images/logo.jpg" alt="" /></div>
+            <div class="ic storeic"><img id="storeImg" src="/images/logo.jpg" alt="" /></div>
             <div class="txt"><div class="lbl"><span class="open" id="openState">Checking…</span></div><div class="val" id="openHours">&nbsp;</div></div>
           </div>
         </div>
@@ -241,7 +241,7 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .open{color:var(--medium);font-weight:700;font-size:13px}
   #order-app .open.is-open{color:var(--acai)}
   #order-app .oa-pickup .chev{margin-left:auto;color:var(--taupe);font-size:22px}
-  #order-app .oa-cats{position:sticky;top:0;z-index:30;background:var(--cream);padding:14px 0;border-bottom:1px solid var(--sand)}
+  #order-app .oa-cats{position:sticky;top:0;z-index:30;background:var(--cream);padding:14px 0}
   #order-app .oa-cats .oa-wrap{padding:0}
   #order-app .oa-cats .row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:2px 24px}
   #order-app .oa-cats .row::-webkit-scrollbar{display:none}
@@ -440,6 +440,9 @@ import Layout from '../../layouts/Layout.astro';
     #order-app .catnav{display:none!important}
     #order-app .rail{display:none}
     #order-app .cards{grid-template-columns:1fr}
+    /* featured category card spans the full screen width on mobile (full-bleed
+       band; cancels the grid's 16px side gutter, keeps 16px internal padding) */
+    #order-app .feat{border-radius:0;margin-left:-16px;margin-right:-16px;padding:22px 16px}
     #order-app .oa-hero-in{padding:44px 16px 84px}
     #order-app .co-grid{grid-template-columns:1fr}
     #order-app .oa-pickup .card{flex-direction:column}
@@ -580,15 +583,51 @@ import Layout from '../../layouts/Layout.astro';
     pv.className='catnav prev'+(row.scrollLeft>4?' show':'');
     nx.className='catnav next'+(more>4?' show':'');
   }
+  // Render ALL categories stacked (app-style continuous scroll). Each section is
+  // id="sec-<catId>" so the pills can scroll to it and the scroll-spy can follow.
   function renderMenu(){
-    var cat=CATS.filter(function(c){return c.id===activeCat;})[0];if(!cat)return;
-    var items=MENU[activeCat]||[],feat=CATS[0]&&activeCat===CATS[0].id;
-    var rwIcon=cat.bowl?'berry_outlined':(cat.cup?'cup-icon':'');
-    var rw=rwIcon?('<span class="catrw"><img class="rwic" src="/images/'+rwIcon+'.png" alt="" /><span class="rwp">+1</span></span>'):'';
-    $('menu').innerHTML='<div class="'+(feat?'feat':'section')+'"><div class="sechead"><h2>'+esc(cat.name)+'</h2>'+rw+'</div><div class="cards">'+items.map(card).join('')+'</div></div>';
+    if(!CATS.length)return;
+    $('menu').innerHTML=CATS.map(function(cat,idx){
+      var items=MENU[cat.id]||[];
+      var rwIcon=cat.bowl?'berry_outlined':(cat.cup?'cup-icon':'');
+      var rw=rwIcon?('<span class="catrw"><img class="rwic" src="/images/'+rwIcon+'.png" alt="" /><span class="rwp">+1</span></span>'):'';
+      return '<div class="'+(idx===0?'feat':'section')+'" id="sec-'+cat.id+'"><div class="sechead"><h2>'+esc(cat.name)+'</h2>'+rw+'</div><div class="cards">'+items.map(function(it,i){return card(it,i,cat.id);}).join('')+'</div></div>';
+    }).join('');
   }
-  function card(it,i){
-    return '<div class="item" data-i="'+i+'"><div class="pic" style="'+picStyle(imgUrl(it.img))+'"></div><div class="body"><div class="nm">'+esc(it.n)+'</div><div class="desc">'+esc(it.d)+'</div><div class="foot"><span class="price">'+f(it.p)+'</span></div></div></div>';
+  // data-c (category) + data-i (index within that category) make the item ref
+  // unambiguous now that every category is on the page at once.
+  function card(it,i,catId){
+    return '<div class="item" data-c="'+catId+'" data-i="'+i+'"><div class="pic" style="'+picStyle(imgUrl(it.img))+'"></div><div class="body"><div class="nm">'+esc(it.n)+'</div><div class="desc">'+esc(it.d)+'</div><div class="foot"><span class="price">'+f(it.p)+'</span></div></div></div>';
+  }
+  // Highlight a pill (+ scroll it into view) WITHOUT re-rendering the menu — the
+  // scroll-spy calls this as sections pass under the sticky category bar.
+  function setActiveCat(id){
+    if(!id||id===activeCat)return;
+    activeCat=id;
+    var row=$('catRow'); if(!row)return;
+    [].forEach.call(row.children,function(b){ if(b.dataset&&b.dataset.cat!==undefined)b.classList.toggle('active',b.dataset.cat===id); });
+    var act=row.querySelector('.pill.active'); if(act&&act.scrollIntoView)act.scrollIntoView({inline:'center',block:'nearest',behavior:'smooth'});
+    updateCatNav();
+  }
+  // Tapping a pill scrolls that section just under the sticky bar.
+  function scrollToCat(id){
+    var el=document.getElementById('sec-'+id); if(!el)return;
+    var bar=document.querySelector('#order-app .oa-cats'), barH=bar?bar.offsetHeight:0;
+    window.scrollTo({top:window.pageYOffset+el.getBoundingClientRect().top-barH-6,behavior:'smooth'});
+    setActiveCat(id);
+  }
+  // Scroll-spy: the last section whose top has passed under the sticky bar is active.
+  var _spyTick=false;
+  function onScrollSpy(){
+    if(_spyTick)return; _spyTick=true;
+    requestAnimationFrame(function(){
+      _spyTick=false;
+      var co=$('checkout'); if(co&&co.style.display==='block')return; // not on the menu view
+      if(!CATS.length||!document.getElementById('sec-'+CATS[0].id))return;
+      var bar=document.querySelector('#order-app .oa-cats'), thr=(bar?bar.getBoundingClientRect().bottom:0)+12, cur=null;
+      for(var k=0;k<CATS.length;k++){ var el=document.getElementById('sec-'+CATS[k].id); if(el&&el.getBoundingClientRect().top<=thr)cur=CATS[k].id; }
+      if(cur)setActiveCat(cur);
+    });
   }
 
   function loadMenu(){
@@ -720,8 +759,8 @@ import Layout from '../../layouts/Layout.astro';
     closeTimePicker(); refreshCheckoutState();
   }
 
-  function openModal(i){
-    var it=(MENU[activeCat]||[])[i];if(!it)return;modal=it;mq=1;mSel={};mGroups=[];
+  function openModal(catId,i){
+    var it=(MENU[catId]||[])[i];if(!it)return;modal=it;mq=1;mSel={};mGroups=[];
     $('mPh').style.cssText=picStyle(imgUrl(it.img));
     $('mName').textContent=it.n;$('mDesc').textContent=it.d||'';
     // no reward pill at all for items that earn neither (there's no "points")
@@ -896,10 +935,14 @@ import Layout from '../../layouts/Layout.astro';
     }
   }
 
+  // per-store photo for the status tile (we have one image per store); falls back
+  // to the brand logo for any store without a dedicated image.
+  var STORE_IMG={1:'ig-reading',3:'ig-beaconsfield',4:'ig-datchet'};
   function setStoreLabels(){
     if(!store)return;
     document.querySelectorAll('[data-storename]').forEach(function(el){el.textContent=shortName(store.name);});
     document.querySelectorAll('[data-storeaddr]').forEach(function(el){el.textContent=[store.addressLine1,store.postCode].filter(Boolean).join(', ')||'Collection point';});
+    var si=$('storeImg'); if(si){ si.src='/images/'+(STORE_IMG[store.id]||'logo')+'.jpg'; }
   }
   function renderPicker(q){
     q=(q||'').toLowerCase();
@@ -937,8 +980,8 @@ import Layout from '../../layouts/Layout.astro';
   document.addEventListener('click',function(e){
     var t=e.target.closest('[data-cat],[data-i],[data-cm],[data-cp],[data-g],[data-more],[data-loc],[data-mode],[data-tday],[data-tslot]');
     if(!t)return;
-    if(t.dataset.cat!==undefined){activeCat=t.dataset.cat;renderCats();renderMenu();window.scrollTo({top:300,behavior:'smooth'});}
-    else if(t.dataset.i!==undefined){openModal(+t.dataset.i);}
+    if(t.dataset.cat!==undefined){scrollToCat(t.dataset.cat);}
+    else if(t.dataset.i!==undefined){openModal(t.dataset.c,+t.dataset.i);}
     else if(t.dataset.more!==undefined){openMoreSheet(+t.dataset.more);}
     else if(t.dataset.g!==undefined){
       var gi=+t.dataset.g, x=grpItems(mGroups[gi])[+t.dataset.x], k=gi+'_'+t.dataset.x;
@@ -986,6 +1029,7 @@ import Layout from '../../layouts/Layout.astro';
   $('catPrev').onclick=function(){$('catRow').scrollBy({left:-280,behavior:'smooth'});};
   $('catNext').onclick=function(){$('catRow').scrollBy({left:280,behavior:'smooth'});};
   $('catRow').addEventListener('scroll',updateCatNav);
+  window.addEventListener('scroll',onScrollSpy,{passive:true});
   window.addEventListener('resize',updateCatNav);
   // ---- payment (Stripe Payment Element, driven by order-pay) ----
   // Flow: "Order & pay" -> order-pay (server creates the pending order + PI) ->
