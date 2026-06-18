@@ -1079,7 +1079,10 @@ import Layout from '../../layouts/Layout.astro';
     paySubmitting=true; var btn=this; btn.disabled=true; setPayMsg('Setting up your order…');
     var body={
       locationId:store.id, items:items, checkoutId:checkoutId,
-      notes:($('orderNotes').value||'').trim(),
+      // Prefix the note with the service mode (In store / Takeaway), matching the
+      // app, so the kitchen sees how to serve it. Format mirrors the app exactly:
+      // "Takeaway" / "In store" (no note) or "Takeaway: <note>" / "In store: <note>".
+      notes:(function(){var m=(pickupMode==='in_store')?'In store':'Takeaway';var n=($('orderNotes').value||'').trim();return n?(m+': '+n):m;})(),
       pickup: scheduled?{slotIso:scheduled.iso}:{mode:pickupMode},
     };
     if(redeem.freeBowls||redeem.freeDrinks)body.redeem=redeem;
