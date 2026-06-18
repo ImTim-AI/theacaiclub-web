@@ -161,12 +161,28 @@ const allSchemas = schemaJsonLd
     </main>
     <Footer />
 
-    <!-- Cookie consent: analytics stays opted-out until the visitor accepts -->
-    <div id="ckBanner" style="display:none;position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;background:#1a1a1a;color:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 12px 40px rgba(0,0,0,.4);font-family:Inter,system-ui,sans-serif;font-size:13px;line-height:1.5;max-width:560px;margin:0 auto">
-      <div>We use cookies to understand how the site is used and improve it. See our <a href="/privacy" style="color:#E8B4B8;text-decoration:underline">Privacy Policy</a>.</div>
-      <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end">
-        <button id="ckDecline" type="button" style="background:transparent;color:#fff;border:1px solid #555;border-radius:999px;padding:9px 18px;font-weight:700;font-size:13px;cursor:pointer">Decline</button>
-        <button id="ckAccept" type="button" style="background:#fff;color:#1a1a1a;border:none;border-radius:999px;padding:9px 22px;font-weight:700;font-size:13px;cursor:pointer">Accept</button>
+    <!-- Cookie consent: granular (Accept / Only required / Show details with
+         per-category toggles). We only set two kinds of cookies, so we list
+         exactly those. Analytics stays opted-out until accepted. The footer
+         "Cookie settings" link re-opens this. -->
+    <div id="ckBanner" style="display:none;position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;background:#1a1a1a;color:#fff;border-radius:14px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.4);font-family:Inter,system-ui,sans-serif;font-size:13px;line-height:1.55;max-width:560px;margin:0 auto">
+      <div style="font-weight:700;font-size:15px;margin-bottom:6px">Cookies on The Açai Club</div>
+      <div>We use cookies to run the site and make ordering work. With your OK we also use analytics cookies to see how the site is used and improve it. See our <a href="/privacy" style="color:#E8B4B8;text-decoration:underline">Privacy Policy</a>.</div>
+      <div id="ckDetails" style="display:none;margin-top:14px;border-top:1px solid #333;padding-top:8px">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #2a2a2a">
+          <span><b>Strictly necessary</b><br><span style="color:#aaa">Keeps the site, your basket and checkout working.</span></span>
+          <span style="color:#aaa;font-size:12px;white-space:nowrap;padding-top:2px">Always on</span>
+        </div>
+        <label style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:9px 0;cursor:pointer">
+          <span><b>Analytics</b><br><span style="color:#aaa">Helps us understand how the site is used so we can improve it.</span></span>
+          <input type="checkbox" id="ckAnalytics" style="width:22px;height:22px;flex:none;accent-color:#9B9B90;margin-top:2px" />
+        </label>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;justify-content:flex-end">
+        <button id="ckOnlyReq" type="button" style="background:transparent;color:#fff;border:1px solid #555;border-radius:999px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer">Only required</button>
+        <button id="ckDetailsBtn" type="button" style="background:transparent;color:#fff;border:1px solid #555;border-radius:999px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer">Show details</button>
+        <button id="ckSave" type="button" style="display:none;background:#fff;color:#1a1a1a;border:none;border-radius:999px;padding:9px 18px;font-weight:700;font-size:13px;cursor:pointer">Save preferences</button>
+        <button id="ckAccept" type="button" style="background:#fff;color:#1a1a1a;border:none;border-radius:999px;padding:9px 20px;font-weight:700;font-size:13px;cursor:pointer">Accept</button>
       </div>
     </div>
     <script is:inline>
@@ -177,14 +193,28 @@ const allSchemas = schemaJsonLd
           else { mixpanel.opt_out_tracking&&mixpanel.opt_out_tracking(); }
         }catch(e){}}
         function choose(v){try{localStorage.setItem(KEY,v);}catch(e){} apply(v); var b=document.getElementById('ckBanner'); if(b)b.style.display='none';}
+        function openBanner(){
+          var c=null;try{c=localStorage.getItem(KEY);}catch(e){}
+          var t=document.getElementById('ckAnalytics'); if(t)t.checked=(c==='accepted');
+          var d=document.getElementById('ckDetails'), s=document.getElementById('ckSave'), db=document.getElementById('ckDetailsBtn');
+          if(d)d.style.display='none'; if(s)s.style.display='none'; if(db)db.textContent='Show details';
+          var b=document.getElementById('ckBanner'); if(b)b.style.display='';
+        }
+        window.acaiOpenCookieSettings=openBanner;
         document.addEventListener('DOMContentLoaded',function(){
           var c=null;try{c=localStorage.getItem(KEY);}catch(e){}
-          var a=document.getElementById('ckAccept'),d=document.getElementById('ckDecline'),b=document.getElementById('ckBanner');
-          if(a)a.onclick=function(){choose('accepted');};
-          if(d)d.onclick=function(){choose('declined');};
+          var acc=document.getElementById('ckAccept'), req=document.getElementById('ckOnlyReq'),
+              det=document.getElementById('ckDetailsBtn'), sav=document.getElementById('ckSave'),
+              panel=document.getElementById('ckDetails'), tog=document.getElementById('ckAnalytics'),
+              opener=document.getElementById('ckOpen');
+          if(acc)acc.onclick=function(){choose('accepted');};
+          if(req)req.onclick=function(){choose('declined');};
+          if(det)det.onclick=function(){var open=panel&&panel.style.display!=='none'; if(panel)panel.style.display=open?'none':'block'; if(sav)sav.style.display=open?'none':''; det.textContent=open?'Show details':'Hide details';};
+          if(sav)sav.onclick=function(){choose(tog&&tog.checked?'accepted':'declined');};
+          if(opener)opener.addEventListener('click',function(e){e.preventDefault();openBanner();});
           if(c==='accepted')apply('accepted');
           else if(c==='declined')apply('declined');
-          else if(b)b.style.display='';
+          else openBanner();
         });
       })();
     </script>
