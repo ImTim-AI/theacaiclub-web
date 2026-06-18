@@ -300,6 +300,7 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .cf-p{font-weight:700;color:var(--charcoal);font-size:14px;flex:none}
   #order-app .cf-tot .cf-val{font-size:18px}
   #order-app .cf-reward{margin-top:14px;background:var(--off);border-radius:10px;padding:11px 12px;font-weight:700;font-size:13px;color:var(--charcoal);text-align:center}
+  #order-app .cf-reward.cf-reward-muted{background:transparent;font-weight:500;color:var(--medium);padding:6px 0 0}
   #order-app .cf-cta{display:inline-block;max-width:260px;margin-top:24px;text-decoration:none}
   #order-app .feat{background:var(--off);border-radius:24px;padding:22px;margin-bottom:34px}
   #order-app .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -1262,8 +1263,12 @@ import Layout from '../../layouts/Layout.astro';
     var items=cart.slice();
     var total=(lastQuote&&typeof lastQuote.total==='number')?lastQuote.total:items.reduce(function(s,c){return s+c.unit*c.q;},0);
     mp('Placed Order',{order_value:total,item_count:items.length,store_id:store&&store.id,member:!!sess});
-    var berries=items.reduce(function(s,c){return s+(c.bowl?c.q:0);},0);
-    var cups=items.reduce(function(s,c){return s+(c.cup?c.q:0);},0);
+    // Loyalty is members-only, so only show earned rewards for signed-in members
+    // (a guest earns 0 — don't tell them they earned a berry).
+    var isMember=!!sess;
+    var berries=isMember?items.reduce(function(s,c){return s+(c.bowl?c.q:0);},0):0;
+    var cups=isMember?items.reduce(function(s,c){return s+(c.cup?c.q:0);},0):0;
+    var pickupName=($('custName').value||'').trim();
     var when=($('timeText')&&$('timeText').textContent)||'ASAP';
     var sname=store?shortName(store.name):'';
     var saddr=store?[store.addressLine1,store.postCode].filter(Boolean).join(', '):'';
@@ -1277,6 +1282,8 @@ import Layout from '../../layouts/Layout.astro';
       if(berries)parts.push(rwImg('berry')+' +'+berries+' berr'+(berries>1?'ies':'y'));
       if(cups)parts.push(rwImg('cup')+' +'+cups+' cup'+(cups>1?'s':''));
       reward='<div class="cf-reward">'+parts.join(' &nbsp;&nbsp; ')+' earned</div>';
+    } else if(!isMember){
+      reward='<div class="cf-reward cf-reward-muted">Sign in next time to earn berries &amp; cups.</div>';
     }
     var co=$('checkout');
     co.innerHTML='<div class="oa-wrap cf-wrap">'+
@@ -1287,6 +1294,7 @@ import Layout from '../../layouts/Layout.astro';
         '<div class="cf-line"><span class="cf-lbl">Collect from</span><span class="cf-val">'+esc(sname)+'</span></div>'+
         (saddr?'<div class="cf-addr">'+esc(saddr)+'</div>':'')+
         '<div class="cf-line" style="margin-top:10px"><span class="cf-lbl">Pick-up</span><span class="cf-val">'+esc(when)+'</span></div>'+
+        (pickupName?'<div class="cf-line" style="margin-top:10px"><span class="cf-lbl">Name</span><span class="cf-val">'+esc(pickupName)+'</span></div>':'')+
         '<div class="cf-div"></div>'+
         '<div class="cf-items">'+rows+'</div>'+
         '<div class="cf-div"></div>'+
