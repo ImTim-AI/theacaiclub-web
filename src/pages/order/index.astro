@@ -709,7 +709,7 @@ import Layout from '../../layouts/Layout.astro';
       mp('Viewed Menu',{store_id:store&&store.id});
       renderCats();
       if(activeCat)renderMenu();else $('menu').innerHTML='<div class="section"><div class="empty">No items available for this store.</div></div>';
-    }).catch(function(err){$('menu').innerHTML='<div class="section"><div class="empty">Could not load the live menu ('+esc(err.message)+'). Try refreshing.</div></div>';});
+    }).catch(function(err){mp('Menu Load Failed',{message:(err&&err.message)||String(err),store_id:store&&store.id});$('menu').innerHTML='<div class="section"><div class="empty">Could not load the live menu ('+esc(err.message)+'). Try refreshing.</div></div>';});
   }
 
   function applySchedule(s){
@@ -1195,6 +1195,7 @@ import Layout from '../../layouts/Layout.astro';
       throw new Error('Unexpected response');
     }).catch(function(e){
       paySubmitting=false; btn.disabled=false;
+      mp('Checkout Error',{step:'order_pay',code:(e&&e.code)||'',message:(e&&e.message)||String(e)});
       // EMAIL_REGISTERED handling removed 2026-06-17: order-pay no longer blocks
       // a returning email — it reuses the existing customer (see backend PR #12).
       if(e&&e.code==='AUTH_REQUIRED'){ setPayMsg('Please sign in to redeem rewards.','err'); return; }
@@ -1211,13 +1212,14 @@ import Layout from '../../layouts/Layout.astro';
       orderPlaced();
     }).catch(function(){
       paySubmitting=false; $('payBtn').disabled=false;
+      mp('Checkout Error',{step:'free_order'});
       setPayMsg('Could not place your free order. Please try again.','err');
     });
   }
 
   function mountPayment(clientSecret){
     var S=stripeJs();
-    if(!S){ paySubmitting=false; $('payBtn').disabled=false; setPayMsg('Payment failed to load. Please reload the page.','err'); return; }
+    if(!S){ paySubmitting=false; $('payBtn').disabled=false; mp('Checkout Error',{step:'payment_load'}); setPayMsg('Payment failed to load. Please reload the page.','err'); return; }
     stripe=stripe||S(STRIPE_PK);
     elements=stripe.elements({clientSecret:clientSecret, appearance:{theme:'flat', variables:{colorPrimary:'#5B2C6F', borderRadius:'12px'}}});
     var pe=elements.create('payment',{layout:'tabs'});
@@ -1240,6 +1242,7 @@ import Layout from '../../layouts/Layout.astro';
     }).then(function(res){
       if(res.error){
         paySubmitting=false; cb.disabled=false;
+        mp('Payment Failed',{message:(res.error&&res.error.message)||'',code:(res.error&&res.error.code)||'',decline_code:(res.error&&res.error.decline_code)||''});
         setPayMsg(res.error.message||'Payment was not completed. Please try again.','err');
         return;
       }
@@ -1248,6 +1251,7 @@ import Layout from '../../layouts/Layout.astro';
       orderPlaced();
     }).catch(function(){
       paySubmitting=false; cb.disabled=false;
+      mp('Payment Failed',{message:'confirm exception'});
       setPayMsg('Something went wrong confirming payment. Please try again.','err');
     });
   };
@@ -1303,6 +1307,7 @@ import Layout from '../../layouts/Layout.astro';
     aapi('/otp',{email:em,create_user:true}).then(function(){
       $('codeRow').style.display='flex'; setAuthMsg('Code sent. Check your email (it can take a minute).','ok'); $('authCode').focus();
     }).catch(function(e){
+      mp('Sign-in Failed',{step:'send_code',reason:e&&e.status===429?'rate_limited':'send_error'});
       setAuthMsg(e.status===429?'Too many codes requested. Try again in a few minutes.':'Could not send the code. Try again.','err');
     }).then(function(){ b.disabled=false; });
   };
@@ -1316,6 +1321,7 @@ import Layout from '../../layouts/Layout.astro';
       saveSess(); _linkP=null; renderAuth(); setAuthMsg('');
       if(cart.length)requestQuote(); // re-quote signed-in: balance + redemption offers appear
     }).catch(function(){
+      mp('Sign-in Failed',{step:'verify_code'});
       setAuthMsg('That code didn\'t work. Check it or request a new one.','err');
     }).then(function(){ b.disabled=false; });
   };
