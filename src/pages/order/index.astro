@@ -52,9 +52,29 @@ import Layout from '../../layouts/Layout.astro';
     <div id="checkout" style="display:none">
       <div class="oa-wrap">
         <div class="co-head"><button class="back" id="backBtn">← Back to menu</button></div>
-        <div class="co-grid">
+        <div class="co-steps" id="coSteps">
+          <button class="co-step active" id="step1" data-gostep="basket"><span class="co-stepn">1</span>Basket</button>
+          <span class="co-stepbar"></span>
+          <button class="co-step" id="step2" data-gostep="details"><span class="co-stepn">2</span>Details</button>
+          <span class="co-stepbar"></span>
+          <button class="co-step" id="step3" data-gostep="pay"><span class="co-stepn">3</span>Pay</button>
+        </div>
+
+        <!-- STEP 1: BASKET -->
+        <div class="co-pane" id="paneBasket">
           <div class="co-card">
-            <h3>Checkout</h3>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <h3 style="margin:0">Basket</h3><span id="coCount" class="sub">0 items</span>
+            </div>
+            <div id="coBasket"></div>
+          </div>
+          <button class="cta" id="toDetailsBtn">Continue to details · <span id="basketTot">£0.00</span></button>
+        </div>
+
+        <!-- STEP 2: DETAILS -->
+        <div class="co-pane" id="paneDetails" style="display:none">
+          <div class="co-card">
+            <h3>Your details</h3>
             <div class="field" id="nameField">
               <label>Your name</label><div class="hint">How we'll call you at pick-up.</div>
               <input id="custName" placeholder="e.g. Jamie Berry" />
@@ -104,33 +124,31 @@ import Layout from '../../layouts/Layout.astro';
               <textarea id="orderNotes" rows="3" placeholder="Allergies, dietary requirements, etc."></textarea>
             </div>
           </div>
-          <div>
-            <div class="co-card">
-              <h3>Total</h3>
-              <div id="redeemBox"></div>
-              <div class="authrow couponrow">
-                <input id="couponInput" placeholder="Discount code" />
-                <button class="authbtn" id="couponApply">Apply</button>
-              </div>
-              <div class="authmsg" id="couponMsg"></div>
-              <div class="totrow"><span>Subtotal</span><span id="coSub">£0.00</span></div>
-              <div id="quoteRows"></div>
-              <div class="totrow big"><span>Total</span><span id="coTotal">£0.00</span></div>
-              <div class="muted" style="text-align:left;margin:6px 0 0">Prices include VAT where applicable.</div>
-              <div class="terms"><input type="checkbox" id="termsChk" checked /> I agree to the <a href="/terms">terms &amp; conditions</a></div>
-              <!-- Stripe Payment Element mounts here once order-pay returns a clientSecret -->
-              <div id="payElement" style="display:none"></div>
-              <div class="authmsg" id="payMsg"></div>
-              <button class="cta" id="payBtn">Order &amp; pay · <span id="payTot">£0.00</span></button>
-              <button class="cta" id="confirmPayBtn" style="display:none">Pay · <span id="confirmTot">£0.00</span></button>
-              <div class="muted">Card, Apple&nbsp;Pay &amp; Google&nbsp;Pay · powered by Stripe</div>
+          <div class="authmsg" id="detailsMsg" style="margin-top:10px"></div>
+          <button class="cta" id="toPayBtn">Continue to pay · <span id="detailsTot">£0.00</span></button>
+        </div>
+
+        <!-- STEP 3: PAY -->
+        <div class="co-pane" id="panePay" style="display:none">
+          <div class="co-card">
+            <h3>Total</h3>
+            <div id="redeemBox"></div>
+            <div class="authrow couponrow">
+              <input id="couponInput" placeholder="Discount code" />
+              <button class="authbtn" id="couponApply">Apply</button>
             </div>
-            <div class="co-card" style="margin-top:16px">
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <h3 style="margin:0">Basket</h3><span id="coCount" class="sub">0 items</span>
-              </div>
-              <div id="coBasket"></div>
-            </div>
+            <div class="authmsg" id="couponMsg"></div>
+            <div class="totrow"><span>Subtotal</span><span id="coSub">£0.00</span></div>
+            <div id="quoteRows"></div>
+            <div class="totrow big"><span>Total</span><span id="coTotal">£0.00</span></div>
+            <div class="muted" style="text-align:left;margin:6px 0 0">Prices include VAT where applicable.</div>
+            <div class="terms"><input type="checkbox" id="termsChk" checked /> I agree to the <a href="/terms">terms &amp; conditions</a></div>
+            <!-- Stripe Payment Element mounts here once order-pay returns a clientSecret -->
+            <div id="payElement" style="display:none"></div>
+            <div class="authmsg" id="payMsg"></div>
+            <button class="cta" id="payBtn">Order &amp; pay · <span id="payTot">£0.00</span></button>
+            <button class="cta" id="confirmPayBtn" style="display:none">Pay · <span id="confirmTot">£0.00</span></button>
+            <div class="muted">Card, Apple&nbsp;Pay &amp; Google&nbsp;Pay · powered by Stripe</div>
           </div>
         </div>
       </div>
@@ -356,6 +374,16 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .co-head .back{display:flex;align-items:center;gap:8px;font-weight:700;color:var(--charcoal)}
   #order-app .co-grid{display:grid;grid-template-columns:1fr 400px;gap:24px;align-items:start;padding-bottom:80px}
   #order-app .co-card{background:#fff;border:1px solid var(--sand);border-radius:var(--r);padding:26px}
+  /* 3-step checkout (Basket / Details / Pay) */
+  #order-app .co-steps{display:flex;align-items:center;justify-content:center;gap:8px;max-width:560px;margin:0 auto 24px}
+  #order-app .co-step{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:var(--medium);white-space:nowrap}
+  #order-app .co-step.active{color:var(--charcoal)}
+  #order-app .co-stepn{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--off);color:var(--medium);font-size:13px;flex:none}
+  #order-app .co-step.active .co-stepn{background:var(--brand);color:#fff}
+  #order-app .co-step.done .co-stepn{background:var(--acai);color:#fff}
+  #order-app .co-stepbar{flex:1;max-width:48px;height:2px;background:var(--sand)}
+  #order-app .co-pane{max-width:560px;margin:0 auto;padding-bottom:90px}
+  #order-app .co-pane .cta{margin-top:18px}
   #order-app .co-card h3{font-size:21px;font-weight:800;margin-bottom:20px;color:var(--charcoal)}
   #order-app .sub{color:var(--medium);font-size:13px;font-weight:600}
   #order-app .field{margin-bottom:20px}
@@ -689,6 +717,7 @@ import Layout from '../../layouts/Layout.astro';
       } else { note.className='closednote'; }
     }
     if(pay){ pay.className='cta'+(ok?'':' disabled'); pay.disabled=!ok; }
+    var tp=$('toPayBtn'); if(tp){ tp.className='cta'+(ok?'':' disabled'); tp.disabled=!ok; }
   }
 
   // ---- pickup-time picker ----
@@ -849,7 +878,7 @@ import Layout from '../../layouts/Layout.astro';
     $('berryBar').innerHTML=bowls?(rwImg('berry')+' '+(sess?('You will earn '+bowls+' berr'+(bowls>1?'ies':'y')+'. '+Math.max(0,9-bowls)+' more to a free bowl'):('Sign in to earn '+bowls+' berr'+(bowls>1?'ies':'y')+' on this order'))):(rwImg('berry')+' Add a bowl to earn your next berry');
     // client math is the INSTANT PREVIEW only; order-quote (server-authoritative)
     // overwrites these as soon as it returns (see applyQuote).
-    $('coSub').textContent=f(sub);$('coTotal').textContent=f(sub);$('payTot').textContent=f(sub);
+    $('coSub').textContent=f(sub);$('coTotal').textContent=f(sub);$('payTot').textContent=f(sub);syncStepTotals(f(sub));
     $('coCount').textContent=n+' item'+(n!==1?'s':'');
     var mb=$('mobileBar');
     var onShop = $('checkout').style.display !== 'block'; // hide the review bar once in checkout
@@ -900,7 +929,7 @@ import Layout from '../../layouts/Layout.astro';
     // coupon, etc.), so the locked PaymentIntent amount is now stale. Tear it
     // down and make the customer re-tap Order & pay for a fresh, correct charge.
     if(elements){ resetPayUI(); setPayMsg('Your order changed. Tap Order & pay again.'); }
-    $('coSub').textContent=f(q.subtotal);$('coTotal').textContent=f(q.total);$('payTot').textContent=f(q.total);
+    $('coSub').textContent=f(q.subtotal);$('coTotal').textContent=f(q.total);$('payTot').textContent=f(q.total);syncStepTotals(f(q.total));
     var n=cart.reduce(function(s,c){return s+c.q;},0);
     var onShop = $('checkout').style.display !== 'block';
     if(n && onShop){var mb=$('mobileBar');mb.innerHTML='<span>'+n+' item'+(n!==1?'s':'')+'</span><span>Review order · '+f(q.total)+'</span>';}
@@ -1021,8 +1050,34 @@ import Layout from '../../layouts/Layout.astro';
   $('cCancel').onclick=closeConfirm;
   $('cGo').onclick=function(){var cb=_confirmCb;closeConfirm();if(cb)cb();};
   $('confirmDlg').onclick=function(e){if(e.target===$('confirmDlg'))closeConfirm();};
-  function toCheckout(){if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';$('mobileBar').className='mbar';newCheckoutId();resetPayUI();refreshCheckoutState();if(!lastQuote)requestQuote();window.scrollTo(0,0);}
+  var coStep='basket';
+  function syncStepTotals(t){var b=$('basketTot'),d=$('detailsTot');if(b)b.textContent=t;if(d)d.textContent=t;}
+  function goStep(s){
+    coStep=s;
+    $('paneBasket').style.display=(s==='basket')?'block':'none';
+    $('paneDetails').style.display=(s==='details')?'block':'none';
+    $('panePay').style.display=(s==='pay')?'block':'none';
+    var ord={basket:0,details:1,pay:2}, idx=ord[s];
+    [['step1','basket'],['step2','details'],['step3','pay']].forEach(function(p){var el=$(p[0]);if(!el)return;var o=ord[p[1]];el.className='co-step'+(o===idx?' active':'')+(o<idx?' done':'');});
+    window.scrollTo(0,0);
+  }
+  function toCheckout(){if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';$('mobileBar').className='mbar';newCheckoutId();resetPayUI();refreshCheckoutState();if(!lastQuote)requestQuote();goStep('basket');}
   $('reviewBtn').onclick=toCheckout;
+  $('toDetailsBtn').onclick=function(){ goStep('details'); };
+  $('toPayBtn').onclick=function(){
+    var dm=$('detailsMsg');
+    function fail(t,el){ if(dm){dm.textContent=t;dm.className='authmsg err';} if(el)el.focus(); }
+    if(dm){dm.textContent='';dm.className='authmsg';}
+    if(!sess){
+      var g=guestDetails();
+      if(!g.firstName||!g.lastName) return fail('Please enter your name for pick-up.',$('custName'));
+      if(!EMAIL_RE.test(g.email)) return fail('Please enter a valid email for your receipt.',$('authEmail'));
+    }
+    if(!canOrder()) return fail($('closedNote').textContent||'Please choose a pickup time to continue.',$('timeField'));
+    goStep('pay');
+  };
+  // stepper lets you jump BACK to an already-completed step
+  $('coSteps').addEventListener('click',function(e){var b=e.target.closest('[data-gostep]');if(!b)return;var ord={basket:0,details:1,pay:2};if(ord[b.dataset.gostep]<ord[coStep])goStep(b.dataset.gostep);});
   $('mobileBar').onclick=toCheckout;
   function backToMenu(){$('shop').style.display='block';$('checkout').style.display='none';renderCart();window.scrollTo(0,0);}
   $('backBtn').onclick=backToMenu;
