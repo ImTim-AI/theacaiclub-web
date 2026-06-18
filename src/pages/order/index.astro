@@ -706,6 +706,7 @@ import Layout from '../../layouts/Layout.astro';
         MENU[String(d.id)]=items;
       });
       activeCat=CATS.length?CATS[0].id:null;
+      mp('Viewed Menu',{store_id:store&&store.id});
       renderCats();
       if(activeCat)renderMenu();else $('menu').innerHTML='<div class="section"><div class="empty">No items available for this store.</div></div>';
     }).catch(function(err){$('menu').innerHTML='<div class="section"><div class="empty">Could not load the live menu ('+esc(err.message)+'). Try refreshing.</div></div>';});
@@ -1075,7 +1076,7 @@ import Layout from '../../layouts/Layout.astro';
       +'<span class="mb-badge">'+n+'</span></span>View order</span>'
       +'<span class="mb-tot">'+total+'</span>';
   }
-  $('mAdd').onclick=function(){cart.push({pid:modal.id,n:modal.n,unit:modUnit(),q:mq,bowl:modal.bowl||0,cup:modal.cup||0,extras:selectedNames(),modIds:selectedModIds()});mp('Web: Added to basket',{item:modal.n,qty:mq});closeModal();renderCart();};
+  $('mAdd').onclick=function(){cart.push({pid:modal.id,n:modal.n,unit:modUnit(),q:mq,bowl:modal.bowl||0,cup:modal.cup||0,extras:selectedNames(),modIds:selectedModIds()});mp('Added to Basket',{item:modal.n,qty:mq});closeModal();renderCart();};
   $('openPicker').onclick=openPicker;
   $('changeStore2').onclick=openPicker;
   $('pClose').onclick=closePicker;
@@ -1100,11 +1101,11 @@ import Layout from '../../layouts/Layout.astro';
     $('panePay').style.display=(s==='pay')?'block':'none';
     var ord={basket:0,details:1,pay:2}, idx=ord[s];
     [['step1','basket'],['step2','details'],['step3','pay']].forEach(function(p){var el=$(p[0]);if(!el)return;var o=ord[p[1]];el.className='co-step'+(o===idx?' active':'')+(o<idx?' done':'');});
-    if(s==='pay')mp('Web: Reached payment');
+    if(s==='pay')mp('Reached Payment');
     window.scrollTo(0,0);
   }
   function setFooter(show){var ft=document.querySelector('footer'); if(ft)ft.style.display=show?'':'none';}
-  function toCheckout(){if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';$('mobileBar').className='mbar';setFooter(false);newCheckoutId();resetPayUI();refreshCheckoutState();if(!lastQuote)requestQuote();mp('Web: Started checkout',{items:cart.length});goStep('basket');}
+  function toCheckout(){if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';$('mobileBar').className='mbar';setFooter(false);newCheckoutId();resetPayUI();refreshCheckoutState();if(!lastQuote)requestQuote();mp('Started Checkout',{item_count:cart.length});goStep('basket');}
   $('reviewBtn').onclick=toCheckout;
   $('toDetailsBtn').onclick=function(){ goStep('details'); };
   $('toPayBtn').onclick=function(){
@@ -1256,7 +1257,7 @@ import Layout from '../../layouts/Layout.astro';
     // (screenshot-friendly: store, items, pick-up time, total, rewards earned)
     var items=cart.slice();
     var total=(lastQuote&&typeof lastQuote.total==='number')?lastQuote.total:items.reduce(function(s,c){return s+c.unit*c.q;},0);
-    mp('Web: Placed order',{value:total,items:items.length});
+    mp('Placed Order',{order_value:total,item_count:items.length,store_id:store&&store.id,member:!!sess});
     var berries=items.reduce(function(s,c){return s+(c.bowl?c.q:0);},0);
     var cups=items.reduce(function(s,c){return s+(c.cup?c.q:0);},0);
     var when=($('timeText')&&$('timeText').textContent)||'ASAP';
