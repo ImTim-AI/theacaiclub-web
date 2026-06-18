@@ -1187,10 +1187,24 @@ import Layout from '../../layouts/Layout.astro';
   api('get-locations').then(function(l){LOC=l.filter(function(x){return x&&x.onlineOrderingActive!==false;});})
    .catch(function(){LOC=[{id:1,name:'The Acai Club - Reading'},{id:3,name:'The Acai Club - Beaconsfield'},{id:4,name:'The Acai Club - Datchet'}];})
    .then(function(){
+     // ?store=<id> deep-link (the marketing site's per-store CTAs) preselects that
+     // location, then we strip the param so the in-page choice / saved store wins on
+     // later refreshes. Falls back to the saved store, else the picker.
+     var urlStore=null;
+     try{var qs=parseInt(new URLSearchParams(location.search).get('store')||'',10);if(qs)urlStore=LOC.filter(function(x){return x.id===qs;})[0]||null;}catch(_e){}
      // Restore a previously chosen store + its basket (survives refresh).
      var saved=loadCart();
      var savedStore=saved&&saved.storeId?LOC.filter(function(x){return x.id===saved.storeId;})[0]:null;
-     if(savedStore){
+     if(urlStore){
+       store=urlStore;
+       // keep the saved basket only if it belongs to this store; else start empty
+       cart=(savedStore&&savedStore.id===urlStore.id&&Array.isArray(saved.cart))?saved.cart:[];
+       saveCart();
+       try{history.replaceState({},'',location.pathname);}catch(_e){}
+       setStoreLabels(); renderCart(); setMode(pickupMode);
+       loadSchedule(); loadMenu();
+       if(cart.length)scheduleQuote();
+     } else if(savedStore){
        store=savedStore;
        cart=Array.isArray(saved.cart)?saved.cart:[];
        setStoreLabels(); renderCart(); setMode(pickupMode);
