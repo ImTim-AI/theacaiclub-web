@@ -483,7 +483,12 @@ import Layout from '../../layouts/Layout.astro';
     #order-app .co-grid{grid-template-columns:1fr}
     #order-app .oa-pickup .card{flex-direction:column}
     #order-app .oa-pickup .seg+.seg{border-left:none;border-top:1px solid var(--sand)}
-    #order-app .mbar.show{display:flex;align-items:center;justify-content:space-between;position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--brand);color:#fff;padding:16px 22px;font-family:var(--font-heading);font-weight:700;text-transform:uppercase;letter-spacing:.03em;font-size:14px;box-shadow:0 -6px 24px rgba(0,0,0,.18)}
+    #order-app .mbar.show{display:flex;align-items:center;justify-content:space-between;position:fixed;left:0;right:0;bottom:0;z-index:50;background:#3A3A38;color:#fff;padding:14px 20px;font-family:var(--font-heading);font-weight:700;font-size:16px;box-shadow:0 -6px 24px rgba(0,0,0,.18)}
+    #order-app .mbar .mb-l{display:flex;align-items:center;gap:14px}
+    #order-app .mbar .mb-bag{position:relative;display:flex;align-items:center;justify-content:center}
+    #order-app .mbar .mb-bag svg{display:block}
+    #order-app .mbar .mb-badge{position:absolute;top:-7px;right:-9px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:var(--brand);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1;box-sizing:border-box}
+    #order-app .mbar .mb-tot{font-size:16px}
     #order-app .scrim{padding:0;align-items:stretch}
     /* full-screen modals on mobile: header + scrollable middle + PINNED footer
        so 'Add to basket' / 'DONE' are always reachable without scrolling */
@@ -908,7 +913,7 @@ import Layout from '../../layouts/Layout.astro';
     $('coCount').textContent=n+' item'+(n!==1?'s':'');
     var mb=$('mobileBar');
     var onShop = $('checkout').style.display !== 'block'; // hide the review bar once in checkout
-    if(n && onShop){mb.className='mbar show';mb.innerHTML='<span>'+n+' item'+(n!==1?'s':'')+'</span><span>Review order · '+f(sub)+'</span>';}
+    if(n && onShop){mb.className='mbar show';mb.innerHTML=mbarHTML(n,f(sub));}
     else mb.className='mbar';
     scheduleQuote();
   }
@@ -958,7 +963,7 @@ import Layout from '../../layouts/Layout.astro';
     $('coSub').textContent=f(q.subtotal);$('coTotal').textContent=f(q.total);$('payTot').textContent=f(q.total);syncStepTotals(f(q.total));
     var n=cart.reduce(function(s,c){return s+c.q;},0);
     var onShop = $('checkout').style.display !== 'block';
-    if(n && onShop){var mb=$('mobileBar');mb.innerHTML='<span>'+n+' item'+(n!==1?'s':'')+'</span><span>Review order · '+f(q.total)+'</span>';}
+    if(n && onShop){var mb=$('mobileBar');mb.innerHTML=mbarHTML(n,f(q.total));}
     $('reviewBtn').innerHTML=n?('Review order · '+f(q.total)):'Review order';
     // discount rows between subtotal and total
     var rows='';
@@ -1062,6 +1067,14 @@ import Layout from '../../layouts/Layout.astro';
   $('storePicker').onclick=function(e){if(e.target===$('storePicker'))closePicker();};
   // Mixpanel funnel events (guarded; mixpanel is init'd site-wide in Layout)
   function mp(ev,props){try{window.mixpanel&&mixpanel.track&&mixpanel.track(ev,props||{});}catch(e){}}
+  // Bottom "View order" bar, styled like the app: bag icon + count badge, label,
+  // price on the right.
+  function mbarHTML(n,total){
+    return '<span class="mb-l"><span class="mb-bag">'
+      +'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 11a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>'
+      +'<span class="mb-badge">'+n+'</span></span>View order</span>'
+      +'<span class="mb-tot">'+total+'</span>';
+  }
   $('mAdd').onclick=function(){cart.push({pid:modal.id,n:modal.n,unit:modUnit(),q:mq,bowl:modal.bowl||0,cup:modal.cup||0,extras:selectedNames(),modIds:selectedModIds()});mp('Web: Added to basket',{item:modal.n,qty:mq});closeModal();renderCart();};
   $('openPicker').onclick=openPicker;
   $('changeStore2').onclick=openPicker;
