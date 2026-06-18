@@ -476,6 +476,9 @@ import Layout from '../../layouts/Layout.astro';
     /* featured category card spans the full screen width on mobile (full-bleed
        band; cancels the grid's 16px side gutter, keeps 16px internal padding) */
     #order-app .feat{border-radius:0;margin-left:-16px;margin-right:-16px;padding:22px 16px}
+    /* stack input + button (e.g. email + Send code, coupon + Apply) on mobile */
+    #order-app .authrow{flex-direction:column;align-items:stretch}
+    #order-app .authrow .authbtn{padding:13px 18px}
     #order-app .oa-hero-in{padding:44px 16px 84px}
     #order-app .co-grid{grid-template-columns:1fr}
     #order-app .oa-pickup .card{flex-direction:column}
@@ -892,7 +895,7 @@ import Layout from '../../layouts/Layout.astro';
   function renderCart(){
     saveCart();
     var html=cart.length?cart.map(function(c,i){
-      return '<div class="line"><div class="qty"><button data-cm="'+i+'">−</button><span class="n">'+c.q+'</span><button data-cp="'+i+'">+</button></div><div class="nm">'+esc(c.n)+'<div class="ex">'+(c.extras.length?esc(c.extras.join(', ')):'No extras')+'</div></div><div class="pr">'+f(c.unit*c.q)+'</div></div>';
+      return '<div class="line"><div class="qty"><button data-cm="'+i+'" aria-label="'+(c.q<=1?'Remove item':'Decrease')+'">'+(c.q<=1?'🗑':'−')+'</button><span class="n">'+c.q+'</span><button data-cp="'+i+'">+</button></div><div class="nm">'+esc(c.n)+'<div class="ex">'+(c.extras.length?esc(c.extras.join(', ')):'No extras')+'</div></div><div class="pr">'+f(c.unit*c.q)+'</div></div>';
     }).join(''):'<div class="empty">Your basket is empty</div>';
     $('cartLines').innerHTML=html;
     var basket=$('coBasket');if(basket)basket.innerHTML=cart.length?html:'';
@@ -1057,7 +1060,9 @@ import Layout from '../../layouts/Layout.astro';
   $('mClose').onclick=closeModal;
   $('scrim').onclick=function(e){if(e.target===$('scrim'))closeModal();};
   $('storePicker').onclick=function(e){if(e.target===$('storePicker'))closePicker();};
-  $('mAdd').onclick=function(){cart.push({pid:modal.id,n:modal.n,unit:modUnit(),q:mq,bowl:modal.bowl||0,cup:modal.cup||0,extras:selectedNames(),modIds:selectedModIds()});closeModal();renderCart();};
+  // Mixpanel funnel events (guarded; mixpanel is init'd site-wide in Layout)
+  function mp(ev,props){try{window.mixpanel&&mixpanel.track&&mixpanel.track(ev,props||{});}catch(e){}}
+  $('mAdd').onclick=function(){cart.push({pid:modal.id,n:modal.n,unit:modUnit(),q:mq,bowl:modal.bowl||0,cup:modal.cup||0,extras:selectedNames(),modIds:selectedModIds()});mp('Web: Added to basket',{item:modal.n,qty:mq});closeModal();renderCart();};
   $('openPicker').onclick=openPicker;
   $('changeStore2').onclick=openPicker;
   $('pClose').onclick=closePicker;
@@ -1082,9 +1087,11 @@ import Layout from '../../layouts/Layout.astro';
     $('panePay').style.display=(s==='pay')?'block':'none';
     var ord={basket:0,details:1,pay:2}, idx=ord[s];
     [['step1','basket'],['step2','details'],['step3','pay']].forEach(function(p){var el=$(p[0]);if(!el)return;var o=ord[p[1]];el.className='co-step'+(o===idx?' active':'')+(o<idx?' done':'');});
+    if(s==='pay')mp('Web: Reached payment');
     window.scrollTo(0,0);
   }
-  function toCheckout(){if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';$('mobileBar').className='mbar';newCheckoutId();resetPayUI();refreshCheckoutState();if(!lastQuote)requestQuote();goStep('basket');}
+  function setFooter(show){var ft=document.querySelector('footer'); if(ft)ft.style.display=show?'':'none';}
+  function toCheckout(){if(!cart.length)return;$('shop').style.display='none';$('checkout').style.display='block';$('mobileBar').className='mbar';setFooter(false);newCheckoutId();resetPayUI();refreshCheckoutState();if(!lastQuote)requestQuote();mp('Web: Started checkout',{items:cart.length});goStep('basket');}
   $('reviewBtn').onclick=toCheckout;
   $('toDetailsBtn').onclick=function(){ goStep('details'); };
   $('toPayBtn').onclick=function(){
@@ -1093,7 +1100,7 @@ import Layout from '../../layouts/Layout.astro';
     if(dm){dm.textContent='';dm.className='authmsg';}
     if(!sess){
       var g=guestDetails();
-      if(!g.firstName||!g.lastName) return fail('Please enter your name for pick-up.',$('custName'));
+      if(!g.firstName) return fail('Please enter your name for pick-up.',$('custName'));
       if(!EMAIL_RE.test(g.email)) return fail('Please enter a valid email for your receipt.',$('authEmail'));
     }
     if(!canOrder()) return fail($('closedNote').textContent||'Please choose a pickup time to continue.',$('timeField'));
@@ -1102,7 +1109,7 @@ import Layout from '../../layouts/Layout.astro';
   // stepper lets you jump BACK to an already-completed step
   $('coSteps').addEventListener('click',function(e){var b=e.target.closest('[data-gostep]');if(!b)return;var ord={basket:0,details:1,pay:2};if(ord[b.dataset.gostep]<ord[coStep])goStep(b.dataset.gostep);});
   $('mobileBar').onclick=toCheckout;
-  function backToMenu(){$('shop').style.display='block';$('checkout').style.display='none';renderCart();window.scrollTo(0,0);}
+  function backToMenu(){$('shop').style.display='block';$('checkout').style.display='none';setFooter(true);renderCart();window.scrollTo(0,0);}
   $('backBtn').onclick=backToMenu;
   $('catPrev').onclick=function(){$('catRow').scrollBy({left:-280,behavior:'smooth'});};
   $('catNext').onclick=function(){$('catRow').scrollBy({left:280,behavior:'smooth'});};
@@ -1151,7 +1158,7 @@ import Layout from '../../layouts/Layout.astro';
     var g=null;
     if(!sess){
       g=guestDetails();
-      if(!g.firstName||!g.lastName){ setPayMsg('Please enter your name for pick-up.','err'); $('custName').focus(); return; }
+      if(!g.firstName){ setPayMsg('Please enter your name for pick-up.','err'); $('custName').focus(); return; }
       if(!EMAIL_RE.test(g.email)){ setPayMsg('Please enter a valid email for your receipt.','err'); $('authEmail').focus(); return; }
     }
     paySubmitting=true; var btn=this; btn.disabled=true; setPayMsg('Setting up your order…');
@@ -1236,6 +1243,7 @@ import Layout from '../../layouts/Layout.astro';
     // (screenshot-friendly: store, items, pick-up time, total, rewards earned)
     var items=cart.slice();
     var total=(lastQuote&&typeof lastQuote.total==='number')?lastQuote.total:items.reduce(function(s,c){return s+c.unit*c.q;},0);
+    mp('Web: Placed order',{value:total,items:items.length});
     var berries=items.reduce(function(s,c){return s+(c.bowl?c.q:0);},0);
     var cups=items.reduce(function(s,c){return s+(c.cup?c.q:0);},0);
     var when=($('timeText')&&$('timeText').textContent)||'ASAP';
