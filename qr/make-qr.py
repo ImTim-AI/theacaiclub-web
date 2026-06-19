@@ -127,7 +127,7 @@ def tint(rgba, color):
     solid.putalpha(rgba.getchannel("A"))
     return solid
 
-def _compose(url, version, lines, icon, dark=False, centre_text=None):
+def _compose(url, version, lines, icon, dark=False, centre_text=None, centre_scale=0.30):
     """Render one circular QR at a specific version. Returns the RGB image.
     dark=True -> light modules/logo/text on a near-black background (black acrylic).
     centre_text=[...] -> put those text lines (e.g. ['ORDER NOW','Datchet']) on the
@@ -152,7 +152,7 @@ def _compose(url, version, lines, icon, dark=False, centre_text=None):
         cfont = load_font(MONT, 64, weight=600) if os.path.exists(MONT) \
             else ImageFont.truetype(FUT, 64, index=0)
         tblk = label_block(centre_text, ink_c, icon_fn=None, font=cfont)
-        target_w = int(W * 0.30)                     # legible but small enough to stay scannable
+        target_w = int(W * centre_scale)             # legible but small enough to stay scannable
         sc = target_w / tblk.size[0]
         tblk = tblk.resize((max(1, int(tblk.size[0] * sc)), max(1, int(tblk.size[1] * sc))),
                            Image.LANCZOS)
@@ -205,18 +205,18 @@ def _compose(url, version, lines, icon, dark=False, centre_text=None):
         img.alpha_composite(block, (cx - bw // 2, top + lkh + gap))
     return img.convert("RGB")
 
-def _adaptive_qr(url, lines, icon, dark=False, centre_text=None):
+def _adaptive_qr(url, lines, icon, dark=False, centre_text=None, centre_scale=0.30):
     """Return a circular-QR RGB image, auto-bumping the QR version until the
     finished image (centre plate and all) actually decodes."""
     import tempfile
-    natural = _compose(url, None, lines, icon, dark, centre_text)
+    natural = _compose(url, None, lines, icon, dark, centre_text, centre_scale)
     tmp = os.path.join(tempfile.gettempdir(), "_qrcheck.png")
     natural.save(tmp)
     if verify(tmp, url).startswith("OK"):
         return natural
     for v in range(2, 21):
         try:
-            img = _compose(url, v, lines, icon, dark, centre_text)
+            img = _compose(url, v, lines, icon, dark, centre_text, centre_scale)
         except qrcode.exceptions.DataOverflowError:
             continue
         img.save(tmp)
@@ -229,18 +229,21 @@ def make_circle(url, out_path, lines=None, icon="instagram", dark=False):
     _adaptive_qr(url, lines, icon, dark).save(out_path)
     return out_path
 
-def make_text_circle(url, out_path, text_lines, dark=False):
+def make_text_circle(url, out_path, text_lines, dark=False, centre_scale=0.30):
     """Circular QR with TEXT in the centre plate INSTEAD of the wordmark logo
     (the 'Order Now centre' style). `text_lines` = 1-2 short lines, e.g.
-    ['ORDER NOW', 'Datchet']. Auto-bumps version + decode-verifies like the others."""
-    _adaptive_qr(url, None, "none", dark, centre_text=text_lines).save(out_path)
+    ['ORDER NOW', 'Datchet']. `centre_scale` = how wide the text is vs the QR
+    (0.30 default; bump to ~0.40 for a bigger 2-line centre). Auto-bumps version
+    + decode-verifies like the others."""
+    _adaptive_qr(url, None, "none", dark, centre_text=text_lines, centre_scale=centre_scale).save(out_path)
     return out_path
 
-def make_stand(url, out_path, lines, icon="none", dark=False):
-    """Stand / menu poster: a logo-only circular QR on top, with the caption text
-    BELOW the code (not inside it). Taller canvas. `lines` = caption under the QR.
-    dark=True -> light QR/logo/text on near-black (for black acrylic)."""
-    qr = _adaptive_qr(url, None, icon, dark)    # logo-only centre (original style)
+def make_stand(url, out_path, lines, icon="none", dark=False, caption_pos="below", centre_text=None):
+    """Stand / menu poster: a circular QR with a caption in a fixed band.
+    caption_pos='below' (default) or 'above' the code. `lines` = caption text.
+    centre_text=[...] -> text on the centre plate instead of the logo (e.g.
+    ['FREE','REWARDS']); None = the wordmark logo. dark=True -> light on near-black."""
+    qr = _adaptive_qr(url, None, icon, dark, centre_text=centre_text)   # logo, or centre text
     W, _ = qr.size
     canvas_bg = DARK_BG if dark else BG
     ink = LIGHT if dark else logo_ink(lockup_rgba())
@@ -263,10 +266,16 @@ def make_stand(url, out_path, lines, icon="none", dark=False):
     band_h = int(W * 0.105)
     pad_top = int(W * 0.04)      # gap between QR and caption band
     pad_bot = int(W * 0.07)      # breathing room under the caption
-    canvas = Image.new("RGB", (W, W + pad_top + band_h + pad_bot), canvas_bg)
-    canvas.paste(qr, (0, 0))
-    cy = W + pad_top + (band_h - ch) // 2        # centre caption within the fixed band
-    canvas.paste(caption, ((W - cw) // 2, cy), caption)
+    total_h = W + pad_top + band_h + pad_bot
+    canvas = Image.new("RGB", (W, total_h), canvas_bg)
+    if caption_pos == "above":
+        cy = pad_bot + (band_h - ch) // 2                 # caption in the top band
+        canvas.paste(caption, ((W - cw) // 2, cy), caption)
+        canvas.paste(qr, (0, pad_bot + band_h + pad_top))  # QR below the band
+    else:
+        canvas.paste(qr, (0, 0))
+        cy = W + pad_top + (band_h - ch) // 2             # caption in the bottom band
+        canvas.paste(caption, ((W - cw) // 2, cy), caption)
     canvas.save(out_path)
     return out_path
 
