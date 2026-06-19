@@ -188,8 +188,12 @@ def _compose(url, version, lines, icon, dark=False, centre_text=None, centre_sca
         img.alpha_composite(tblk, (px + (side - cw) // 2, py + (side - ch) // 2))
         return img.convert("RGB")
 
+    # Plate footprint is sized as if the centre image were full (0.26 of W). Shrinking
+    # the image (centre_img_scale<1) only shrinks the drawn icon, NOT the circle, so it
+    # gets more padding inside a same-size plate (scale 1.0 -> identical to before).
+    pw = int(W * 0.26); ph = int(lh * (W * 0.26 / lw))
     cf = 0.26 * centre_img_scale
-    lk = lk0.resize((int(W * cf), int(lh * (W * cf / lw))), Image.LANCZOS)
+    lk = lk0.resize((max(1, int(W * cf)), max(1, int(lh * (W * cf / lw)))), Image.LANCZOS)
     lkw, lkh = lk.size
     if ink is None:
         ink = logo_ink(lk0)
@@ -200,16 +204,16 @@ def _compose(url, version, lines, icon, dark=False, centre_text=None, centre_sca
     if lines:
         icon_fn = {"mobile": mobile_glyph, "none": None}.get(icon, instagram_glyph)
         block = label_block(lines, ink, icon_fn)
-        max_w = int(lkw * 0.92 * (0.78 if len(lines) > 1 else 1.0))
+        max_w = int(pw * 0.92 * (0.78 if len(lines) > 1 else 1.0))
         if block.size[0] > max_w:
             sc = max_w / block.size[0]
             block = block.resize((int(block.size[0] * sc), int(block.size[1] * sc)), Image.LANCZOS)
         bw, bh = block.size
-        gap = int(lkh * 0.12)
+        gap = int(ph * 0.12)
 
-    content_w = max(lkw, bw or 0)
-    content_h = lkh + ((gap + bh) if block else 0)
-    margin = int(lkw * 0.09)
+    content_w = max(pw, bw or 0)
+    content_h = ph + ((gap + bh) if block else 0)
+    margin = int(pw * 0.09)
     side = int(2 * (math.hypot(content_w, content_h) / 2 + margin))
 
     plate = Image.new("RGBA", (side, side), (0, 0, 0, 0))
@@ -221,9 +225,9 @@ def _compose(url, version, lines, icon, dark=False, centre_text=None, centre_sca
     cx, cy = px + side // 2, py + side // 2
     img.alpha_composite(plate, (px, py))
     top = cy - content_h // 2
-    img.alpha_composite(lk, (cx - lkw // 2, top))
+    img.alpha_composite(lk, (cx - lkw // 2, top + (ph - lkh) // 2))   # icon centred in its footprint
     if block:
-        img.alpha_composite(block, (cx - bw // 2, top + lkh + gap))
+        img.alpha_composite(block, (cx - bw // 2, top + ph + gap))
     return img.convert("RGB")
 
 def _adaptive_qr(url, lines, icon, dark=False, centre_text=None, centre_scale=0.30, centre_img=None, centre_img_scale=1.0):
