@@ -320,17 +320,27 @@ def make_stand(url, out_path, lines, icon="none", dark=False, caption_pos="below
     return out_path
 
 def make_sticker(url, out_path, headline=None, instruction="Scan to order",
-                 dark=False, qr_centre_text=None, qr_frac=0.56, wordmark=True, S=1800):
+                 dark=False, qr_centre_text=None, qr_frac=0.56, wordmark=True, S=1800,
+                 transparent=False):
     """Square (30x30cm-style) window-sticker poster, per the 2026-06-19 research:
     brand wordmark (anchor), a big headline CTA, the house-style QR on its cream
     panel (its own quiet zone), and a short instruction line.
     headline = list of 1-2 short lines (or None to omit). qr_centre_text puts text
     on the QR plate instead of the logo. dark=True -> near-black bg, cream art; the
-    QR stays dark-on-light on its cream panel (never inverted)."""
-    bg = DARK_BG if dark else BG
-    art_ink = LIGHT if dark else logo_ink(lockup_rgba())   # wordmark + instruction tone
-    head_ink = LIGHT if dark else FG                       # headline (true black on cream)
-    canvas = Image.new("RGB", (S, S), bg)
+    QR stays dark-on-light on its cream panel (never inverted).
+    transparent=True -> ALL-WHITE art on a transparent background (white-ink-on-clear
+    vinyl). WARNING: the QR becomes white modules with NO light panel, so it only
+    scans over a consistently DARK backing; over glass with daylight behind it the
+    contrast fails. Confirm a dark window backing before printing this variant."""
+    WHITE = (255, 255, 255)
+    if transparent:
+        art_ink = WHITE; head_ink = WHITE
+        canvas = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    else:
+        bg = DARK_BG if dark else BG
+        art_ink = LIGHT if dark else logo_ink(lockup_rgba())   # wordmark + instruction tone
+        head_ink = LIGHT if dark else FG                       # headline (true black on cream)
+        canvas = Image.new("RGB", (S, S), bg)
     mont_bold = load_font(MONT, 64, weight=700) if os.path.exists(MONT) else None
     mont = load_font(MONT, 64, weight=600) if os.path.exists(MONT) else None
 
@@ -343,7 +353,9 @@ def make_sticker(url, out_path, headline=None, instruction="Scan to order",
         # a 30cm print needs the original high-res / vector lockup.
         a = lk.getchannel("A").point(lambda p: 0 if p < 40 else (255 if p > 95 else int((p - 40) / 55 * 255)))
         lk.putalpha(a)
-        if dark:
+        if transparent:
+            lk = tint(lk, WHITE)
+        elif dark:
             lk = tint(lk, LIGHT)
         ww = min(int(S * 0.42), lk.size[0]); wh = int(lk.size[1] * (ww / lk.size[0]))
         els.append(lk.resize((ww, wh), Image.LANCZOS))
@@ -354,9 +366,21 @@ def make_sticker(url, out_path, headline=None, instruction="Scan to order",
     # QR is always rendered light (dark-on-cream) so the cream forms its contrast panel.
     # Centre = the runner-arch ICON only (not the full wordmark) since the wordmark is
     # already the poster header; unless the centre is text (qr_centre_text).
-    qr = _adaptive_qr(url, None, "none", False, centre_text=qr_centre_text,
-                      centre_img=(None if qr_centre_text else icon_mark_rgba()),
-                      centre_img_scale=0.5)   # icon at half size in the QR
+    if transparent:
+        # Build a verified dark-mode QR (cream art on near-black) then knock the
+        # near-black out to transparent and recolour the art white -> white modules
+        # + white centre on clear. Scannable as an inverted code ONLY over dark backing.
+        qd = _adaptive_qr(url, None, "none", True, centre_text=qr_centre_text,
+                          centre_img=(None if qr_centre_text else icon_mark_rgba()),
+                          centre_img_scale=0.5)
+        rgb = qd.convert("RGB")
+        diff = ImageChops.difference(rgb, Image.new("RGB", rgb.size, DARK_BG)).convert("L")
+        alpha = diff.point(lambda p: min(255, int(p / 18 * 255)))
+        qr = Image.new("RGBA", rgb.size, (255, 255, 255, 0)); qr.putalpha(alpha)
+    else:
+        qr = _adaptive_qr(url, None, "none", False, centre_text=qr_centre_text,
+                          centre_img=(None if qr_centre_text else icon_mark_rgba()),
+                          centre_img_scale=0.5)   # icon at half size in the QR
     qside = int(S * qr_frac)
     els.append(qr.resize((qside, qside), Image.LANCZOS))
     if instruction:
