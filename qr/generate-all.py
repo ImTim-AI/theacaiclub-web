@@ -50,9 +50,9 @@ STANDS = [
 # Centre-text codes: "ORDER NOW" + store on the centre plate INSTEAD of the logo
 # (new style 2026-06-19). Circular, same stable /qr/<store> handles as the order codes.
 TEXTSET = [
-    ("order-now-beaconsfield", QR + "/beaconsfield", ["ORDER NOW", "Beaconsfield"]),
-    ("order-now-reading",      QR + "/reading",      ["ORDER NOW", "Reading"]),
-    ("order-now-datchet",      QR + "/datchet",      ["ORDER NOW", "Datchet"]),
+    ("order-now-beaconsfield", QR + "/beaconsfield", ["ORDER NOW"]),
+    ("order-now-reading",      QR + "/reading",      ["ORDER NOW"]),
+    ("order-now-datchet",      QR + "/datchet",      ["ORDER NOW"]),
 ]
 
 if __name__ == "__main__":
