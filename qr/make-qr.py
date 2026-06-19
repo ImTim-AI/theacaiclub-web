@@ -238,34 +238,45 @@ def make_text_circle(url, out_path, text_lines, dark=False, centre_scale=0.30):
     _adaptive_qr(url, None, "none", dark, centre_text=text_lines, centre_scale=centre_scale).save(out_path)
     return out_path
 
-def make_stand(url, out_path, lines, icon="none", dark=False, caption_pos="below", centre_text=None):
-    """Stand / menu poster: a circular QR with a caption in a fixed band.
+def make_stand(url, out_path, lines, icon="none", dark=False, caption_pos="below",
+               centre_text=None, caption_full_width=False, caption_color=None):
+    """Stand / menu poster: a circular QR with a caption in a band.
     caption_pos='below' (default) or 'above' the code. `lines` = caption text.
     centre_text=[...] -> text on the centre plate instead of the logo (e.g.
-    ['FREE','REWARDS']); None = the wordmark logo. dark=True -> light on near-black."""
+    ['FREE','REWARDS']); None = the wordmark logo. dark=True -> light on near-black.
+    caption_full_width=True -> scale the caption to span (almost) the full QR width
+    (big header look); the band grows to fit. caption_color overrides the ink
+    (e.g. FG for black instead of the sampled logo grey)."""
     qr = _adaptive_qr(url, None, icon, dark, centre_text=centre_text)   # logo, or centre text
     W, _ = qr.size
     canvas_bg = DARK_BG if dark else BG
-    ink = LIGHT if dark else logo_ink(lockup_rgba())
+    ink = caption_color if caption_color is not None else (LIGHT if dark else logo_ink(lockup_rgba()))
     # Stand caption uses the brand font (Gotham → Montserrat fallback), SemiBold.
     mont = load_font(MONT, 64, weight=600) if os.path.exists(MONT) else None
     caption = label_block(lines, ink, icon_fn=None, font=mont)   # text-only, no icon
 
-    # Scale to a fixed letter HEIGHT (not width) so every stand has the same text
-    # size and the same total height regardless of wording — fronts/flipsides match.
-    # Only shrink below that if the text would otherwise exceed the max width.
-    target_h = int(W * 0.105)
-    max_w = int(W * 0.86)
-    sc = target_h / caption.size[1]
-    if caption.size[0] * sc > max_w:
-        sc = max_w / caption.size[0]
-    caption = caption.resize((int(caption.size[0] * sc), int(caption.size[1] * sc)), Image.LANCZOS)
-    cw, ch = caption.size
-
-    # Fixed caption band so the canvas height is identical across stands.
-    band_h = int(W * 0.105)
-    pad_top = int(W * 0.04)      # gap between QR and caption band
-    pad_bot = int(W * 0.07)      # breathing room under the caption
+    if caption_full_width:
+        # Big header: scale the caption to span ~the full QR width; band fits its height.
+        sc = int(W * 0.92) / caption.size[0]
+        caption = caption.resize((int(caption.size[0] * sc), int(caption.size[1] * sc)), Image.LANCZOS)
+        cw, ch = caption.size
+        band_h = ch
+        pad_top = int(W * 0.05)
+        pad_bot = int(W * 0.05)
+    else:
+        # Scale to a fixed letter HEIGHT (not width) so every stand has the same text
+        # size and the same total height regardless of wording — fronts/flipsides match.
+        # Only shrink below that if the text would otherwise exceed the max width.
+        target_h = int(W * 0.105)
+        max_w = int(W * 0.86)
+        sc = target_h / caption.size[1]
+        if caption.size[0] * sc > max_w:
+            sc = max_w / caption.size[0]
+        caption = caption.resize((int(caption.size[0] * sc), int(caption.size[1] * sc)), Image.LANCZOS)
+        cw, ch = caption.size
+        band_h = int(W * 0.105)      # fixed caption band so canvas height is identical across stands
+        pad_top = int(W * 0.04)      # gap between QR and caption band
+        pad_bot = int(W * 0.07)      # breathing room under the caption
     total_h = W + pad_top + band_h + pad_bot
     canvas = Image.new("RGB", (W, total_h), canvas_bg)
     if caption_pos == "above":
