@@ -47,10 +47,22 @@ STANDS = [
     ("menu-flipside-reading-dark", QR + "/reading", ["JOIN THE CLUB"], True),
 ]
 
+# Centre-text codes: "ORDER NOW" + store on the centre plate INSTEAD of the logo
+# (new style 2026-06-19). Circular, same stable /qr/<store> handles as the order codes.
+TEXTSET = [
+    ("order-now-beaconsfield", QR + "/beaconsfield", ["ORDER NOW", "Beaconsfield"]),
+    ("order-now-reading",      QR + "/reading",      ["ORDER NOW", "Reading"]),
+    ("order-now-datchet",      QR + "/datchet",      ["ORDER NOW", "Datchet"]),
+]
+
 if __name__ == "__main__":
     for name, url, lines in SET:
         out = os.path.join(OUT, name + ".png")
         mq.make_circle(url, out, lines=lines, icon="none")
+        print(f"{name:28s} {mq.verify(out, url)}")
+    for name, url, text in TEXTSET:
+        out = os.path.join(OUT, name + ".png")
+        mq.make_text_circle(url, out, text)
         print(f"{name:28s} {mq.verify(out, url)}")
     for name, url, lines, dark in STANDS:
         out = os.path.join(OUT, name + ".png")

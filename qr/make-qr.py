@@ -127,9 +127,11 @@ def tint(rgba, color):
     solid.putalpha(rgba.getchannel("A"))
     return solid
 
-def _compose(url, version, lines, icon, dark=False):
+def _compose(url, version, lines, icon, dark=False, centre_text=None):
     """Render one circular QR at a specific version. Returns the RGB image.
-    dark=True -> light modules/logo/text on a near-black background (black acrylic)."""
+    dark=True -> light modules/logo/text on a near-black background (black acrylic).
+    centre_text=[...] -> put those text lines (e.g. ['ORDER NOW','Datchet']) on the
+    centre plate INSTEAD of the wordmark logo (the 'Order Now centre' style)."""
     import math
     bg = DARK_BG if dark else BG            # canvas / plate colour
     fg = LIGHT if dark else FG              # qr module colour (a tuple or hex both work)
@@ -142,6 +144,29 @@ def _compose(url, version, lines, icon, dark=False):
     qr.add_data(url); qr.make(fit=(version is None))
     img = qr.make_image(fill_color=fg_hex, back_color=bg_hex).convert("RGBA")
     W, H = img.size
+
+    # --- Centre-text style: text on the plate instead of the logo ---------------
+    if centre_text:
+        ink_c = LIGHT if dark else logo_ink(lk0)     # brand ink (sampled), even w/o the logo
+        # brand font: Gotham -> Montserrat SemiBold fallback (same as stand captions)
+        cfont = load_font(MONT, 64, weight=600) if os.path.exists(MONT) \
+            else ImageFont.truetype(FUT, 64, index=0)
+        tblk = label_block(centre_text, ink_c, icon_fn=None, font=cfont)
+        target_w = int(W * 0.30)                     # legible but small enough to stay scannable
+        sc = target_w / tblk.size[0]
+        tblk = tblk.resize((max(1, int(tblk.size[0] * sc)), max(1, int(tblk.size[1] * sc))),
+                           Image.LANCZOS)
+        cw, ch = tblk.size
+        margin = int(W * 0.055)
+        side = int(2 * (math.hypot(cw, ch) / 2 + margin))
+        plate = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+        m = Image.new("L", (side, side), 0)
+        ImageDraw.Draw(m).ellipse([0, 0, side - 1, side - 1], fill=255)
+        plate.paste(Image.new("RGBA", (side, side), bg + (255,)), (0, 0), m)
+        px, py = (W - side) // 2, (H - side) // 2
+        img.alpha_composite(plate, (px, py))
+        img.alpha_composite(tblk, (px + (side - cw) // 2, py + (side - ch) // 2))
+        return img.convert("RGB")
 
     lk = lk0.resize((int(W * 0.26), int(lh * (W * 0.26 / lw))), Image.LANCZOS)
     lkw, lkh = lk.size
@@ -180,18 +205,18 @@ def _compose(url, version, lines, icon, dark=False):
         img.alpha_composite(block, (cx - bw // 2, top + lkh + gap))
     return img.convert("RGB")
 
-def _adaptive_qr(url, lines, icon, dark=False):
+def _adaptive_qr(url, lines, icon, dark=False, centre_text=None):
     """Return a circular-QR RGB image, auto-bumping the QR version until the
     finished image (centre plate and all) actually decodes."""
     import tempfile
-    natural = _compose(url, None, lines, icon, dark)
+    natural = _compose(url, None, lines, icon, dark, centre_text)
     tmp = os.path.join(tempfile.gettempdir(), "_qrcheck.png")
     natural.save(tmp)
     if verify(tmp, url).startswith("OK"):
         return natural
     for v in range(2, 21):
         try:
-            img = _compose(url, v, lines, icon, dark)
+            img = _compose(url, v, lines, icon, dark, centre_text)
         except qrcode.exceptions.DataOverflowError:
             continue
         img.save(tmp)
@@ -202,6 +227,13 @@ def _adaptive_qr(url, lines, icon, dark=False):
 def make_circle(url, out_path, lines=None, icon="instagram", dark=False):
     """Circular QR with the logo (and optional inline label) in the centre."""
     _adaptive_qr(url, lines, icon, dark).save(out_path)
+    return out_path
+
+def make_text_circle(url, out_path, text_lines, dark=False):
+    """Circular QR with TEXT in the centre plate INSTEAD of the wordmark logo
+    (the 'Order Now centre' style). `text_lines` = 1-2 short lines, e.g.
+    ['ORDER NOW', 'Datchet']. Auto-bumps version + decode-verifies like the others."""
+    _adaptive_qr(url, None, "none", dark, centre_text=text_lines).save(out_path)
     return out_path
 
 def make_stand(url, out_path, lines, icon="none", dark=False):
