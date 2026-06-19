@@ -294,6 +294,60 @@ def make_stand(url, out_path, lines, icon="none", dark=False, caption_pos="below
     canvas.save(out_path)
     return out_path
 
+def make_sticker(url, out_path, headline=None, instruction="Scan to order",
+                 dark=False, qr_centre_text=None, qr_frac=0.56, wordmark=True, S=1800):
+    """Square (30x30cm-style) window-sticker poster, per the 2026-06-19 research:
+    brand wordmark (anchor), a big headline CTA, the house-style QR on its cream
+    panel (its own quiet zone), and a short instruction line.
+    headline = list of 1-2 short lines (or None to omit). qr_centre_text puts text
+    on the QR plate instead of the logo. dark=True -> near-black bg, cream art; the
+    QR stays dark-on-light on its cream panel (never inverted)."""
+    bg = DARK_BG if dark else BG
+    art_ink = LIGHT if dark else logo_ink(lockup_rgba())   # wordmark + instruction tone
+    head_ink = LIGHT if dark else FG                       # headline (true black on cream)
+    canvas = Image.new("RGB", (S, S), bg)
+    mont_bold = load_font(MONT, 64, weight=700) if os.path.exists(MONT) else None
+    mont = load_font(MONT, 64, weight=600) if os.path.exists(MONT) else None
+
+    els = []
+    if wordmark:
+        lk = lockup_rgba()
+        if dark:
+            lk = tint(lk, LIGHT)
+        ww = int(S * 0.44); wh = int(lk.size[1] * (ww / lk.size[0]))
+        els.append(lk.resize((ww, wh), Image.LANCZOS))
+    if headline:
+        hblk = label_block(headline, head_ink, icon_fn=None, font=mont_bold)
+        hsc = int(S * 0.82) / hblk.size[0]
+        els.append(hblk.resize((max(1, int(hblk.size[0] * hsc)), max(1, int(hblk.size[1] * hsc))), Image.LANCZOS))
+    # QR is always rendered light (dark-on-cream) so the cream forms its contrast panel
+    qr = _adaptive_qr(url, None, "none", False, centre_text=qr_centre_text)
+    qside = int(S * qr_frac)
+    els.append(qr.resize((qside, qside), Image.LANCZOS))
+    if instruction:
+        iblk = label_block([instruction], art_ink, icon_fn=None, font=mont)
+        isc = int(S * 0.32) / iblk.size[0]
+        els.append(iblk.resize((max(1, int(iblk.size[0] * isc)), max(1, int(iblk.size[1] * isc))), Image.LANCZOS))
+
+    gap = int(S * 0.040)
+    total = sum(e.size[1] for e in els) + gap * (len(els) - 1)
+    # Fit guard: if the stack is taller than the safe area (e.g. a 2-line headline),
+    # scale everything down so nothing overlaps the QR and breaks the scan.
+    pad = int(S * 0.055)
+    avail = S - 2 * pad
+    if total > avail:
+        f = avail / total
+        els = [e.resize((max(1, int(e.size[0] * f)), max(1, int(e.size[1] * f))), Image.LANCZOS) for e in els]
+        gap = int(gap * f)
+        total = sum(e.size[1] for e in els) + gap * (len(els) - 1)
+    y = (S - total) // 2
+    for e in els:
+        x = (S - e.size[0]) // 2
+        canvas.paste(e, (x, y), e) if e.mode == "RGBA" else canvas.paste(e, (x, y))
+        y += e.size[1] + gap
+    canvas.save(out_path)
+    return out_path
+
 def verify(out, url):
     try:
         import cv2
