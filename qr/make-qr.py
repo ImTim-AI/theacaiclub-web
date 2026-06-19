@@ -256,8 +256,12 @@ def make_stand(url, out_path, lines, icon="none", dark=False, caption_pos="below
     caption = label_block(lines, ink, icon_fn=None, font=mont)   # text-only, no icon
 
     if caption_full_width:
-        # Big header: scale the caption to span ~the full QR width; band fits its height.
-        sc = int(W * 0.92) / caption.size[0]
+        # Big header: scale the caption to span the QR PATTERN width (the dark
+        # modules), not the image width. The QR has a 4-module quiet-zone border at
+        # box_size 24 -> 96px of cream each side, so the pattern is W-192 wide and
+        # centred; matching that makes the header flush with the code, not overhanging.
+        quiet = 4 * 24
+        sc = (W - 2 * quiet) / caption.size[0]
         caption = caption.resize((int(caption.size[0] * sc), int(caption.size[1] * sc)), Image.LANCZOS)
         cw, ch = caption.size
         band_h = ch
