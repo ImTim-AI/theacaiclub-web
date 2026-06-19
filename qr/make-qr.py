@@ -23,6 +23,10 @@ FUT = "/System/Library/Fonts/Supplemental/Futura.ttc"   # 0 = Medium
 # Bundled OFL font so renders are reproducible on any machine.
 MONT = os.path.join(HERE, "fonts", "Montserrat.ttf")
 SPLASH = os.path.join(HERE, "..", "..", "app", "assets", "images", "splash-screen.png")
+# The runner-arch app icon alone (no wordmark), 1024px — high-res source for a QR
+# centre mark when the full wordmark already appears elsewhere (e.g. sticker top).
+ICON = os.path.join(HERE, "..", "..", "app", "ios", "Runner", "Assets.xcassets",
+                    "AppIcon.appiconset", "Icon-App-1024x1024@1x.png")
 
 def load_font(path, size, index=0, weight=None):
     f = ImageFont.truetype(path, size, index=index)
@@ -112,6 +116,22 @@ def lockup_rgba():
     out = crop.convert("RGBA"); out.putalpha(alpha)
     return out
 
+def icon_mark_rgba():
+    """Just the runner-arch app-icon mark (no wordmark text), knocked out of the
+    1024px app icon. Crisp, high-res; for use as a QR centre when the full wordmark
+    is shown elsewhere (avoids the logo appearing twice)."""
+    src = Image.open(ICON).convert("RGB")
+    bgc = src.getpixel((5, 5))
+    diff = ImageChops.difference(src, Image.new("RGB", src.size, bgc)).convert("L")
+    x0, y0, x1, y1 = diff.point(lambda p: 255 if p > 18 else 0).getbbox()
+    pad = 8
+    crop = src.crop((max(0, x0 - pad), max(0, y0 - pad),
+                     min(src.size[0], x1 + pad), min(src.size[1], y1 + pad)))
+    alpha = ImageChops.difference(crop, Image.new("RGB", crop.size, bgc)).convert("L")
+    alpha = alpha.point(lambda p: 0 if p < 24 else (255 if p > 70 else int((p - 24) / 46 * 255)))
+    out = crop.convert("RGBA"); out.putalpha(alpha)
+    return out
+
 def logo_ink(crop_rgba):
     """Exact logo ink colour = average of the darkest (most-inked) pixels."""
     rgb = crop_rgba.convert("RGB")
@@ -127,7 +147,7 @@ def tint(rgba, color):
     solid.putalpha(rgba.getchannel("A"))
     return solid
 
-def _compose(url, version, lines, icon, dark=False, centre_text=None, centre_scale=0.30):
+def _compose(url, version, lines, icon, dark=False, centre_text=None, centre_scale=0.30, centre_img=None):
     """Render one circular QR at a specific version. Returns the RGB image.
     dark=True -> light modules/logo/text on a near-black background (black acrylic).
     centre_text=[...] -> put those text lines (e.g. ['ORDER NOW','Datchet']) on the
@@ -139,7 +159,7 @@ def _compose(url, version, lines, icon, dark=False, centre_text=None, centre_sca
     bg_hex = "#%02x%02x%02x" % bg
     ink = LIGHT if dark else None          # logo/text colour (None = sample from logo)
 
-    lk0 = lockup_rgba(); lw, lh = lk0.size
+    lk0 = centre_img if centre_img is not None else lockup_rgba(); lw, lh = lk0.size
     qr = qrcode.QRCode(version=version, error_correction=ERROR_CORRECT_H, box_size=24, border=4)
     qr.add_data(url); qr.make(fit=(version is None))
     img = qr.make_image(fill_color=fg_hex, back_color=bg_hex).convert("RGBA")
@@ -205,18 +225,18 @@ def _compose(url, version, lines, icon, dark=False, centre_text=None, centre_sca
         img.alpha_composite(block, (cx - bw // 2, top + lkh + gap))
     return img.convert("RGB")
 
-def _adaptive_qr(url, lines, icon, dark=False, centre_text=None, centre_scale=0.30):
+def _adaptive_qr(url, lines, icon, dark=False, centre_text=None, centre_scale=0.30, centre_img=None):
     """Return a circular-QR RGB image, auto-bumping the QR version until the
     finished image (centre plate and all) actually decodes."""
     import tempfile
-    natural = _compose(url, None, lines, icon, dark, centre_text, centre_scale)
+    natural = _compose(url, None, lines, icon, dark, centre_text, centre_scale, centre_img)
     tmp = os.path.join(tempfile.gettempdir(), "_qrcheck.png")
     natural.save(tmp)
     if verify(tmp, url).startswith("OK"):
         return natural
     for v in range(2, 21):
         try:
-            img = _compose(url, v, lines, icon, dark, centre_text, centre_scale)
+            img = _compose(url, v, lines, icon, dark, centre_text, centre_scale, centre_img)
         except qrcode.exceptions.DataOverflowError:
             continue
         img.save(tmp)
@@ -312,16 +332,25 @@ def make_sticker(url, out_path, headline=None, instruction="Scan to order",
     els = []
     if wordmark:
         lk = lockup_rgba()
+        # Sharpen the knockout alpha so the soft halo (visible once tinted on dark)
+        # is removed, and never upscale past the source's native width so the
+        # wordmark stays crisp. NOTE: the only logo asset is the ~467px splash crop;
+        # a 30cm print needs the original high-res / vector lockup.
+        a = lk.getchannel("A").point(lambda p: 0 if p < 40 else (255 if p > 95 else int((p - 40) / 55 * 255)))
+        lk.putalpha(a)
         if dark:
             lk = tint(lk, LIGHT)
-        ww = int(S * 0.44); wh = int(lk.size[1] * (ww / lk.size[0]))
+        ww = min(int(S * 0.42), lk.size[0]); wh = int(lk.size[1] * (ww / lk.size[0]))
         els.append(lk.resize((ww, wh), Image.LANCZOS))
     if headline:
         hblk = label_block(headline, head_ink, icon_fn=None, font=mont_bold)
         hsc = int(S * 0.82) / hblk.size[0]
         els.append(hblk.resize((max(1, int(hblk.size[0] * hsc)), max(1, int(hblk.size[1] * hsc))), Image.LANCZOS))
-    # QR is always rendered light (dark-on-cream) so the cream forms its contrast panel
-    qr = _adaptive_qr(url, None, "none", False, centre_text=qr_centre_text)
+    # QR is always rendered light (dark-on-cream) so the cream forms its contrast panel.
+    # Centre = the runner-arch ICON only (not the full wordmark) since the wordmark is
+    # already the poster header; unless the centre is text (qr_centre_text).
+    qr = _adaptive_qr(url, None, "none", False, centre_text=qr_centre_text,
+                      centre_img=(None if qr_centre_text else icon_mark_rgba()))
     qside = int(S * qr_frac)
     els.append(qr.resize((qside, qside), Image.LANCZOS))
     if instruction:
