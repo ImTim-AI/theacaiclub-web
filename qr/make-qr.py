@@ -147,7 +147,7 @@ def tint(rgba, color):
     solid.putalpha(rgba.getchannel("A"))
     return solid
 
-def _compose(url, version, lines, icon, dark=False, centre_text=None, centre_scale=0.30, centre_img=None):
+def _compose(url, version, lines, icon, dark=False, centre_text=None, centre_scale=0.30, centre_img=None, centre_img_scale=1.0):
     """Render one circular QR at a specific version. Returns the RGB image.
     dark=True -> light modules/logo/text on a near-black background (black acrylic).
     centre_text=[...] -> put those text lines (e.g. ['ORDER NOW','Datchet']) on the
@@ -188,7 +188,8 @@ def _compose(url, version, lines, icon, dark=False, centre_text=None, centre_sca
         img.alpha_composite(tblk, (px + (side - cw) // 2, py + (side - ch) // 2))
         return img.convert("RGB")
 
-    lk = lk0.resize((int(W * 0.26), int(lh * (W * 0.26 / lw))), Image.LANCZOS)
+    cf = 0.26 * centre_img_scale
+    lk = lk0.resize((int(W * cf), int(lh * (W * cf / lw))), Image.LANCZOS)
     lkw, lkh = lk.size
     if ink is None:
         ink = logo_ink(lk0)
@@ -225,18 +226,18 @@ def _compose(url, version, lines, icon, dark=False, centre_text=None, centre_sca
         img.alpha_composite(block, (cx - bw // 2, top + lkh + gap))
     return img.convert("RGB")
 
-def _adaptive_qr(url, lines, icon, dark=False, centre_text=None, centre_scale=0.30, centre_img=None):
+def _adaptive_qr(url, lines, icon, dark=False, centre_text=None, centre_scale=0.30, centre_img=None, centre_img_scale=1.0):
     """Return a circular-QR RGB image, auto-bumping the QR version until the
     finished image (centre plate and all) actually decodes."""
     import tempfile
-    natural = _compose(url, None, lines, icon, dark, centre_text, centre_scale, centre_img)
+    natural = _compose(url, None, lines, icon, dark, centre_text, centre_scale, centre_img, centre_img_scale)
     tmp = os.path.join(tempfile.gettempdir(), "_qrcheck.png")
     natural.save(tmp)
     if verify(tmp, url).startswith("OK"):
         return natural
     for v in range(2, 21):
         try:
-            img = _compose(url, v, lines, icon, dark, centre_text, centre_scale, centre_img)
+            img = _compose(url, v, lines, icon, dark, centre_text, centre_scale, centre_img, centre_img_scale)
         except qrcode.exceptions.DataOverflowError:
             continue
         img.save(tmp)
@@ -350,7 +351,8 @@ def make_sticker(url, out_path, headline=None, instruction="Scan to order",
     # Centre = the runner-arch ICON only (not the full wordmark) since the wordmark is
     # already the poster header; unless the centre is text (qr_centre_text).
     qr = _adaptive_qr(url, None, "none", False, centre_text=qr_centre_text,
-                      centre_img=(None if qr_centre_text else icon_mark_rgba()))
+                      centre_img=(None if qr_centre_text else icon_mark_rgba()),
+                      centre_img_scale=0.5)   # icon at half size in the QR
     qside = int(S * qr_frac)
     els.append(qr.resize((qside, qside), Image.LANCZOS))
     if instruction:
