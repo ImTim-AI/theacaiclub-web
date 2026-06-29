@@ -17,7 +17,7 @@ spec = importlib.util.spec_from_file_location("mq", os.path.join(HERE, "make-qr.
 mq = importlib.util.module_from_spec(spec); spec.loader.exec_module(mq)
 
 QR = "https://theacaiclub.com/qr"
-STORES = ["datchet"]   # add "beaconsfield", "reading" to roll out the set
+STORES = ["datchet", "beaconsfield", "reading"]   # full store set
 
 for slug in STORES:
     url = f"{QR}/{slug}"
