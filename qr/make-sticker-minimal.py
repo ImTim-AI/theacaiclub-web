@@ -21,13 +21,13 @@ STORES = ["datchet", "beaconsfield", "reading"]   # full store set
 
 for slug in STORES:
     url = f"{QR}/{slug}"
-    out = os.path.join(OUT, f"sticker-ordernow-{slug}-white.png")
+    out = os.path.join(OUT, f"{slug.upper()}-ordernow-white.png")
     mq.make_sticker(url, out, headline=["ORDER NOW"], instruction=None,
                     wordmark=False, dark=True, transparent=True)
     # composite the transparent art onto near-black so it is viewable / printable-on-dark
     art = Image.open(out).convert("RGBA")
     prev_img = Image.alpha_composite(Image.new("RGBA", art.size, (26, 26, 26, 255)), art).convert("RGB")
-    prev = os.path.join(OUT, f"sticker-ordernow-{slug}-white-PREVIEW-on-dark.png")
+    prev = os.path.join(OUT, f"{slug.upper()}-ordernow-white-PREVIEW-on-dark.png")
     prev_img.save(prev)
     print(f"{os.path.basename(out):40s} decode(on-dark)={mq.verify(prev, url)}")
     print(f"{os.path.basename(prev):40s} preview")
