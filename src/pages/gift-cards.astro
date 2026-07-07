@@ -1,0 +1,262 @@
+---
+import Layout from '../layouts/Layout.astro';
+// GIFT CARDS V1 (spec: Shadow/theacaiclub/gift-cards-mvp-spec.md, locked 2026-07-07).
+// Buy flow only: pick a fixed amount, enter emails + optional message, pay by card.
+// The card itself (code + email) is minted server-side by stripe-webhook on
+// payment success; this page never sees the code. Stripe wiring copied from
+// /order (same publishable key, same Payment Element + confirmPayment pattern).
+// Depends on backend PR #26 (gift-card-purchase fn); the endpoint 404s until merged.
+---
+
+<Layout
+  title="Gift Cards | The Açai Club"
+  description="Give the gift of açai. Digital gift cards from £10, delivered by email in minutes. Redeemable on app and web orders at The Açai Club."
+>
+  <!-- Hero -->
+  <section class="pt-28 pb-16 bg-dark">
+    <div class="max-w-[1400px] mx-auto px-8 text-center">
+      <div class="text-5xl mb-4">🎁</div>
+      <h1 class="font-heading text-5xl sm:text-6xl font-black uppercase tracking-tight text-light leading-tight">
+        Gift Cards
+      </h1>
+      <p class="mt-4 text-grey text-lg max-w-xl mx-auto">
+        Give the gift of açai. Delivered by email in minutes, redeemable on any app or web order.
+      </p>
+    </div>
+  </section>
+
+  <!-- Purchase card -->
+  <section class="bg-dark-surface py-16 sm:py-20">
+    <div class="max-w-xl mx-auto px-6 sm:px-8">
+
+      <!-- Success state (hidden until payment completes) -->
+      <div id="gcSuccess" class="hidden bg-dark-card rounded-2xl border border-dark-border p-8 sm:p-10 text-center">
+        <div class="text-5xl">💌</div>
+        <h2 class="font-heading text-2xl font-bold text-light mt-4">Gift card on its way<span id="gcSuccessTo"></span>!</h2>
+        <p class="text-grey text-base mt-3 leading-relaxed">It will arrive by email in a few minutes. The email is the gift card: it has the code and how to spend it.</p>
+        <p class="text-grey text-sm mt-4">Valid for 12 months from purchase.</p>
+        <a href="/gift-cards" class="inline-flex mt-8 px-8 py-3.5 bg-taupe text-white font-heading font-bold uppercase tracking-wider text-sm rounded-full hover:bg-taupe-dark transition-colors">Send another</a>
+      </div>
+
+      <!-- Buy form -->
+      <div id="gcForm" class="bg-dark-card rounded-2xl border border-dark-border p-6 sm:p-10">
+        <h2 class="font-heading text-xl font-bold uppercase tracking-tight text-light mb-6">Choose an amount</h2>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="gcAmounts">
+          <button type="button" class="gc-amt" data-pence="1000">£10</button>
+          <button type="button" class="gc-amt sel" data-pence="2500">£25</button>
+          <button type="button" class="gc-amt" data-pence="5000">£50</button>
+          <button type="button" class="gc-amt" data-pence="10000">£100</button>
+        </div>
+
+        <!-- Expiry must be PROMINENT at purchase (unfair-terms rule; see spec) -->
+        <div class="mt-5 bg-dark-surface border border-dark-border rounded-xl px-4 py-3 text-center">
+          <p class="text-light text-sm font-semibold">Gift cards are valid for 12 months from purchase.</p>
+        </div>
+
+        <div class="mt-8 space-y-5">
+          <div>
+            <label for="gcPurchaser" class="block text-light text-sm font-bold">Your email <span class="text-grey font-normal">(required)</span></label>
+            <p class="text-grey text-[13px] mt-0.5 mb-2">For your receipt.</p>
+            <input id="gcPurchaser" type="email" autocomplete="email" placeholder="you@email.com" class="gc-input" />
+          </div>
+          <div>
+            <label for="gcRecipient" class="block text-light text-sm font-bold">Recipient's email <span class="text-grey font-normal">(optional)</span></label>
+            <p class="text-grey text-[13px] mt-0.5 mb-2">Leave blank to send it to yourself.</p>
+            <input id="gcRecipient" type="email" placeholder="them@email.com" class="gc-input" />
+          </div>
+          <div>
+            <div class="flex items-baseline justify-between">
+              <label for="gcMessage" class="block text-light text-sm font-bold">Personal message <span class="text-grey font-normal">(optional)</span></label>
+              <span id="gcCount" class="text-grey text-[12px]">0/280</span>
+            </div>
+            <p class="text-grey text-[13px] mt-0.5 mb-2">Printed on the gift card email.</p>
+            <textarea id="gcMessage" rows="3" maxlength="280" placeholder="Happy birthday! Enjoy a bowl on me." class="gc-input resize-y"></textarea>
+          </div>
+        </div>
+
+        <!-- Stripe Payment Element mounts here once gift-card-purchase returns a clientSecret -->
+        <div id="gcPayElement" class="hidden mt-6"></div>
+        <div id="gcMsg" class="text-sm font-semibold mt-4 text-grey"></div>
+
+        <button id="gcBuyBtn" class="w-full mt-6 px-10 py-4 bg-taupe text-white font-heading font-bold uppercase tracking-wider text-sm rounded-full hover:bg-taupe-dark transition-colors cursor-pointer">
+          Buy gift card · <span id="gcBuyTot">£25</span>
+        </button>
+        <button id="gcConfirmBtn" class="hidden w-full mt-6 px-10 py-4 bg-taupe text-white font-heading font-bold uppercase tracking-wider text-sm rounded-full hover:bg-taupe-dark transition-colors cursor-pointer">
+          Pay · <span id="gcConfirmTot">£25</span>
+        </button>
+        <p class="text-grey text-[12px] text-center mt-3">Card, Apple&nbsp;Pay &amp; Google&nbsp;Pay · powered by Stripe</p>
+      </div>
+
+      <!-- How it works -->
+      <div class="mt-12 grid sm:grid-cols-3 gap-4 text-center">
+        <div class="bg-dark-card rounded-2xl p-6 border border-dark-border">
+          <div class="text-2xl mb-2">💳</div>
+          <h3 class="font-heading font-normal text-light text-base mb-1">Pay online</h3>
+          <p class="text-grey text-[13px] leading-relaxed">Pick an amount and pay by card. No account needed.</p>
+        </div>
+        <div class="bg-dark-card rounded-2xl p-6 border border-dark-border">
+          <div class="text-2xl mb-2">📧</div>
+          <h3 class="font-heading font-normal text-light text-base mb-1">Sent by email</h3>
+          <p class="text-grey text-[13px] leading-relaxed">A unique code lands in their inbox within minutes.</p>
+        </div>
+        <div class="bg-dark-card rounded-2xl p-6 border border-dark-border">
+          <div class="text-2xl mb-2">🍇</div>
+          <h3 class="font-heading font-normal text-light text-base mb-1">Spend on açai</h3>
+          <p class="text-grey text-[13px] leading-relaxed">Enter the code at app or web checkout. Any leftover balance stays on the code.</p>
+        </div>
+      </div>
+      <p class="text-grey text-[13px] text-center mt-8 leading-relaxed">
+        Gift cards are valid for 12 months from purchase and can be spent across multiple orders.<br class="hidden sm:inline" />
+        Redeemable online and in the app, at any Açai Club store.
+      </p>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .gc-amt{font-family:var(--font-heading);font-weight:800;font-size:20px;color:var(--color-light);background:#fff;border:2px solid var(--color-dark-border);border-radius:14px;padding:18px 8px;cursor:pointer;transition:.15s}
+  .gc-amt:hover{border-color:var(--color-taupe)}
+  .gc-amt.sel{border-color:var(--color-light);background:var(--color-dark-surface);box-shadow:inset 0 0 0 1px var(--color-light)}
+  .gc-input{width:100%;border:1.5px solid var(--color-dark-border);border-radius:12px;padding:14px 16px;font-size:15px;font-family:inherit;color:var(--color-light);background:#fff}
+  .gc-input:focus{outline:none;border-color:var(--color-light)}
+  #gcMsg.err{color:#b04a4a}
+  #gcMsg.ok{color:var(--color-light)}
+  #gcBuyBtn:disabled,#gcConfirmBtn:disabled{opacity:.5;cursor:not-allowed}
+</style>
+
+<script is:inline src="https://js.stripe.com/v3/"></script>
+<script is:inline>
+(function(){
+  // Same Supabase functions base + anon key + Stripe publishable key as /order
+  // (all public by design; they ship in the app binary too).
+  var SUPA='https://vtrsbxqlctmhkjnpdwdy.supabase.co/functions/v1';
+  var STRIPE_PK='pk_live_51IldPUGhY98XvWg6AWuEcFVQKjnJlhUhEKz7FtLHpGzKNUNWtC1pAOOJdDR5MxUbpxadbyphZ227MYXONw5TEhjM007TiGWv3f';
+  var ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0cnNieHFsY3RtaGtqbnBkd2R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNjIzNzAsImV4cCI6MjA2MTgzODM3MH0.Nn65Q3E2Ly-j8bvn_SaR1TmKYnzcNye1wAiFu5ciiuk';
+
+  var $=function(id){return document.getElementById(id);};
+  var EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  function api(fn,body){
+    return fetch(SUPA+'/'+fn,{method:'POST',headers:{'apikey':ANON,'Authorization':'Bearer '+ANON,'Content-Type':'application/json'},body:JSON.stringify(body||{})})
+      .then(function(r){return r.json().catch(function(){return {};}).then(function(j){ if(!r.ok){var e=new Error(j.error||fn+' '+r.status);e.status=r.status;throw e;} return j; });});
+  }
+  function mp(ev,props){try{window.mixpanel&&mixpanel.track&&mixpanel.track(ev,props||{});}catch(e){}}
+  function setMsg(t,cls){ var m=$('gcMsg'); if(m){m.textContent=t||'';m.className='text-sm font-semibold mt-4'+(cls?' '+cls:' text-grey');} }
+
+  var amount=2500, submitting=false, stripe=null, elements=null;
+  // checkoutId = the idempotency key for gift-card-purchase (one per distinct
+  // purchase attempt: retrying the SAME details reuses the PaymentIntent, but
+  // changing amount/emails/message mints a fresh key, since Stripe rejects the
+  // same idempotency key with different params).
+  var checkoutId=null, lastSig='';
+  function uuid(){ return (crypto.randomUUID?crypto.randomUUID():(Date.now()+'-'+Math.random().toString(16).slice(2))); }
+
+  function fAmt(p){ return '£'+(p/100).toFixed(p%100?2:0); }
+  function setAmount(p){
+    amount=p;
+    document.querySelectorAll('.gc-amt').forEach(function(b){ b.classList.toggle('sel',+b.dataset.pence===p); });
+    $('gcBuyTot').textContent=fAmt(p); $('gcConfirmTot').textContent=fAmt(p);
+    resetPayUI();
+  }
+  $('gcAmounts').addEventListener('click',function(e){
+    var b=e.target.closest('.gc-amt'); if(b)setAmount(+b.dataset.pence);
+  });
+
+  // live character counter for the message
+  $('gcMessage').addEventListener('input',function(){ $('gcCount').textContent=this.value.length+'/280'; });
+
+  // Editing anything invalidates a mounted Payment Element (its PI amount /
+  // metadata would be stale): tear it down and require a fresh Buy tap.
+  ['gcPurchaser','gcRecipient','gcMessage'].forEach(function(id){
+    $(id).addEventListener('input',function(){ if(elements){ resetPayUI(); setMsg('Details changed. Tap Buy gift card again.'); } });
+  });
+
+  function resetPayUI(){
+    elements=null; submitting=false;
+    var pe=$('gcPayElement'); pe.classList.add('hidden'); pe.innerHTML='';
+    $('gcConfirmBtn').classList.add('hidden');
+    $('gcBuyBtn').classList.remove('hidden'); $('gcBuyBtn').disabled=false;
+    setMsg('');
+  }
+
+  function showSuccess(email){
+    $('gcSuccessTo').textContent=email?(' to '+email):'';
+    $('gcForm').classList.add('hidden');
+    $('gcSuccess').classList.remove('hidden');
+    window.scrollTo(0,0);
+  }
+
+  $('gcBuyBtn').onclick=function(){
+    if(submitting)return;
+    var purchaser=($('gcPurchaser').value||'').trim().toLowerCase();
+    var recipient=($('gcRecipient').value||'').trim().toLowerCase();
+    var message=($('gcMessage').value||'').trim();
+    if(!EMAIL_RE.test(purchaser)){ setMsg('Please enter a valid email for your receipt.','err'); $('gcPurchaser').focus(); return; }
+    if(recipient&&!EMAIL_RE.test(recipient)){ setMsg('That recipient email doesn\'t look right.','err'); $('gcRecipient').focus(); return; }
+    if(message.length>280){ setMsg('Message must be 280 characters or less.','err'); return; }
+    var body={amount:amount,purchaserEmail:purchaser};
+    if(recipient)body.recipientEmail=recipient;
+    if(message)body.message=message;
+    var sig=JSON.stringify(body);
+    if(sig!==lastSig||!checkoutId){ checkoutId=uuid(); lastSig=sig; }
+    body.checkoutId=checkoutId;
+    submitting=true; var btn=this; btn.disabled=true; setMsg('Setting up your gift card…');
+    mp('Gift Card Purchase Started',{amount:amount/100,has_recipient:!!recipient});
+    api('gift-card-purchase',body).then(function(r){
+      if(r&&r.clientSecret)return mountPayment(r.clientSecret);
+      throw new Error('Unexpected response');
+    }).catch(function(e){
+      submitting=false; btn.disabled=false;
+      mp('Gift Card Error',{step:'purchase',message:(e&&e.message)||String(e)});
+      if(e&&e.status===429){ setMsg('Too many attempts, try again later.','err'); return; }
+      setMsg((e&&e.message)||'Could not start the gift card purchase. Please try again.','err');
+    });
+  };
+
+  function stripeJs(){ return (typeof Stripe!=='undefined')?Stripe:null; }
+  function mountPayment(clientSecret){
+    var S=stripeJs();
+    if(!S){ submitting=false; $('gcBuyBtn').disabled=false; setMsg('Payment failed to load. Please reload the page.','err'); return; }
+    stripe=stripe||S(STRIPE_PK);
+    elements=stripe.elements({clientSecret:clientSecret, appearance:{theme:'flat', variables:{colorPrimary:'#5B2C6F', borderRadius:'12px'}}});
+    var pe=elements.create('payment',{layout:'tabs'});
+    var box=$('gcPayElement'); box.innerHTML=''; box.classList.remove('hidden'); pe.mount(box);
+    $('gcBuyBtn').classList.add('hidden');
+    var cb=$('gcConfirmBtn'); cb.classList.remove('hidden'); cb.disabled=false;
+    setMsg('Enter your card details to finish.');
+    submitting=false;
+    box.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+
+  $('gcConfirmBtn').onclick=function(){
+    if(!elements||!stripe||submitting)return;
+    submitting=true; var cb=this; cb.disabled=true; setMsg('Confirming payment…');
+    stripe.confirmPayment({
+      elements:elements,
+      confirmParams:{ return_url: location.origin+'/gift-cards?paid=1' },
+      redirect:'if_required',
+    }).then(function(res){
+      if(res.error){
+        submitting=false; cb.disabled=false;
+        mp('Gift Card Payment Failed',{message:(res.error&&res.error.message)||''});
+        setMsg(res.error.message||'Payment was not completed. Please try again.','err');
+        return;
+      }
+      // Paid. stripe-webhook mints the card + sends the email; nothing else to call.
+      mp('Gift Card Purchased',{amount:amount/100});
+      showSuccess(($('gcRecipient').value||'').trim().toLowerCase()||($('gcPurchaser').value||'').trim().toLowerCase());
+    }).catch(function(){
+      submitting=false; cb.disabled=false;
+      setMsg('Something went wrong confirming payment. Please try again.','err');
+    });
+  };
+
+  // Redirect-based payment methods return to /gift-cards?paid=1: show success.
+  try{
+    if(new URLSearchParams(location.search).get('paid')==='1'){
+      showSuccess('');
+      history.replaceState({},'',location.pathname);
+    }
+  }catch(_e){}
+})();
+</script>
