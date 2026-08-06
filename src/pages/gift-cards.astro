@@ -268,8 +268,13 @@ import Layout from '../layouts/Layout.astro';
       var fail=function(m){ clean(); setMsg(m||'That payment was not completed. Please try again.','err'); };
       var cs=q.get('payment_intent_client_secret');
       var rs=q.get('redirect_status');
-      if(cs){
-        stripe=stripe||S(STRIPE_PK);
+      // stripeJs(), not S: S is local to mountPayment, which has not run on a
+      // fresh page load after the redirect. Referencing it here threw a
+      // ReferenceError that this block's own catch swallowed, so the customer
+      // saw nothing at all - no success, no failure, ?paid=1 left in the URL.
+      var SJ = stripeJs();
+      if(cs && SJ){
+        stripe=stripe||SJ(STRIPE_PK);
         stripe.retrievePaymentIntent(cs).then(function(r){
           var st=r&&r.paymentIntent&&r.paymentIntent.status;
           if(st==='succeeded'){
