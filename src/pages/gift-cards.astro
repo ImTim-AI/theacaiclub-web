@@ -171,7 +171,7 @@ import Layout from '../layouts/Layout.astro';
     resetPayUI();
   }
   $('gcAmounts').addEventListener('click',function(e){
-    var b=e.target.closest('.gc-amt'); if(b)setAmount(+b.dataset.pence);
+    var b=e.target.closest('.gc-amt'); if(b){ setAmount(+b.dataset.pence); mp('Gift Card Amount Selected',{amount:amount/100}); }
   });
 
   // live character counter for the message
@@ -220,13 +220,16 @@ import Layout from '../layouts/Layout.astro';
     if(sig!==lastSig||!checkoutId){ checkoutId=uuid(); lastSig=sig; }
     body.checkoutId=checkoutId;
     submitting=true; var btn=this; btn.disabled=true; setMsg('Setting up your gift card…');
-    mp('Gift Card Purchase Started',{amount:amount/100,has_recipient:!!recipient});
+    mp('Gift Card Purchase Started',{amount:amount/100,delivery:recipient?'recipient':'self'});
     api('gift-card-purchase',body).then(function(r){
       if(r&&r.clientSecret)return mountPayment(r.clientSecret);
       throw new Error('Unexpected response');
     }).catch(function(e){
       submitting=false; btn.disabled=false;
-      mp('Gift Card Error',{step:'purchase',message:(e&&e.message)||String(e)});
+      // A CODED reason, never e.message. The raw text of an arbitrary error can
+      // carry a URL, a token, or the email address the customer just typed, and
+      // this property lands in analytics.
+      mp('Gift Card Purchase Failed',{amount:amount/100,delivery:recipient?'recipient':'self',step:'setup',reason:(e&&e.status===429)?'rate_limited':'setup_failed'});
       if(e&&e.status===429){ setMsg('Too many attempts, try again later.','err'); return; }
       setMsg((e&&e.message)||'Could not start the gift card purchase. Please try again.','err');
     });
@@ -255,17 +258,25 @@ import Layout from '../layouts/Layout.astro';
       confirmParams:{ return_url: location.origin+'/gift-cards?paid=1' },
       redirect:'if_required',
     }).then(function(res){
+      var delivery=($('gcRecipient').value||'').trim()?'recipient':'self';
       if(res.error){
         submitting=false; cb.disabled=false;
-        mp('Gift Card Payment Failed',{message:(res.error&&res.error.message)||''});
+        // Stripe's error CODE (card_declined, expired_card, ...) is machine
+        // readable and safe. Its message is customer-facing prose and is not.
+        mp('Gift Card Purchase Failed',{amount:amount/100,delivery:delivery,step:'payment',reason:(res.error&&(res.error.code||res.error.type))||'payment_failed'});
         setMsg(res.error.message||'Payment was not completed. Please try again.','err');
         return;
       }
       // Paid. stripe-webhook mints the card + sends the email; nothing else to call.
-      mp('Gift Card Purchased',{amount:amount/100});
+      // Named to match the app exactly: this is one funnel measured across two
+      // platforms, and the mixpanel.register({platform:'web'}) super property in
+      // Layout.astro is what tells them apart. A second name for the same action
+      // would split the number instead.
+      mp('Gift Card Purchase Completed',{amount:amount/100,delivery:delivery});
       showSuccess(($('gcRecipient').value||'').trim().toLowerCase()||($('gcPurchaser').value||'').trim().toLowerCase());
     }).catch(function(){
       submitting=false; cb.disabled=false;
+      mp('Gift Card Purchase Failed',{amount:amount/100,delivery:($('gcRecipient').value||'').trim()?'recipient':'self',step:'payment',reason:'unexpected_error'});
       setMsg('Something went wrong confirming payment. Please try again.','err');
     });
   };
