@@ -251,11 +251,50 @@ import Layout from '../layouts/Layout.astro';
     });
   };
 
-  // Redirect-based payment methods return to /gift-cards?paid=1: show success.
+  // Redirect-based payment methods (iDEAL, Bancontact, some 3DS flows) come
+  // back to /gift-cards?paid=1. The presence of that parameter says only that
+  // the customer RETURNED, not that they paid: Stripe sends the same URL on
+  // failure and adds redirect_status + payment_intent_client_secret to say
+  // which. Showing "Gift card on its way!" on a failed payment tells someone a
+  // card was sent when no card exists and no money moved.
+  //
+  // Ask Stripe rather than trusting the URL: retrieve the PaymentIntent and
+  // switch on its real status. redirect_status is only the fallback for when
+  // the client secret is missing from the return URL.
   try{
-    if(new URLSearchParams(location.search).get('paid')==='1'){
-      showSuccess('');
-      history.replaceState({},'',location.pathname);
+    var q=new URLSearchParams(location.search);
+    if(q.get('paid')==='1'){
+      var clean=function(){ history.replaceState({},'',location.pathname); };
+      var fail=function(m){ clean(); setMsg(m||'That payment was not completed. Please try again.','err'); };
+      var cs=q.get('payment_intent_client_secret');
+      var rs=q.get('redirect_status');
+      if(cs){
+        stripe=stripe||S(STRIPE_PK);
+        stripe.retrievePaymentIntent(cs).then(function(r){
+          var st=r&&r.paymentIntent&&r.paymentIntent.status;
+          if(st==='succeeded'){
+            mp('Gift Card Purchased',{amount:(r.paymentIntent.amount||0)/100});
+            showSuccess(''); clean();
+          } else if(st==='processing'){
+            // Genuinely undecided: promise nothing, and do not claim failure.
+            clean();
+            setMsg('Your payment is still processing. We will email the gift card as soon as it clears.');
+          } else {
+            mp('Gift Card Payment Failed',{status:st||'unknown'});
+            fail();
+          }
+        }).catch(function(){
+          // Could not verify. Say so rather than guessing either way.
+          clean();
+          setMsg('We could not confirm that payment. Check your email before trying again.','err');
+        });
+      } else if(rs==='succeeded'){
+        mp('Gift Card Purchased',{amount:amount/100});
+        showSuccess(''); clean();
+      } else {
+        mp('Gift Card Payment Failed',{status:rs||'unknown'});
+        fail();
+      }
     }
   }catch(_e){}
 })();
