@@ -75,6 +75,18 @@ import Layout from '../layouts/Layout.astro';
           </div>
         </div>
 
+        <!-- Consumer Contracts Regs 2013: a gift card is digital content supplied
+             immediately, so the 14-day cancellation right survives unless the buyer
+             expressly consents to immediate supply AND acknowledges losing it.
+             Without this the buyer could spend the card and still cancel for a full
+             statutory refund inside 14 days. -->
+        <label for="gcConsent" class="flex items-start gap-3 mt-6 cursor-pointer select-none">
+          <input id="gcConsent" type="checkbox" class="mt-1 h-4 w-4 shrink-0 accent-taupe cursor-pointer" />
+          <span class="text-grey text-[13px] leading-snug">
+            Send my gift card straight away. I understand this means I lose my 14-day right to cancel.
+          </span>
+        </label>
+
         <!-- Stripe Payment Element mounts here once gift-card-purchase returns a clientSecret -->
         <div id="gcPayElement" class="hidden mt-6"></div>
         <div id="gcMsg" class="text-sm font-semibold mt-4 text-grey"></div>
@@ -175,7 +187,7 @@ import Layout from '../layouts/Layout.astro';
     elements=null; submitting=false;
     var pe=$('gcPayElement'); pe.classList.add('hidden'); pe.innerHTML='';
     $('gcConfirmBtn').classList.add('hidden');
-    $('gcBuyBtn').classList.remove('hidden'); $('gcBuyBtn').disabled=false;
+    $('gcBuyBtn').classList.remove('hidden'); syncConsent();
     setMsg('');
   }
 
@@ -186,15 +198,22 @@ import Layout from '../layouts/Layout.astro';
     window.scrollTo(0,0);
   }
 
+  // Buy stays disabled until the cancellation waiver is ticked.
+  function syncConsent(){ $('gcBuyBtn').disabled = !$('gcConsent').checked; }
+  $('gcConsent').addEventListener('change', syncConsent);
+  syncConsent();
+
   $('gcBuyBtn').onclick=function(){
     if(submitting)return;
+    if(!$('gcConsent').checked){ setMsg('Please confirm you want the gift card sent straight away.','err'); return; }
     var purchaser=($('gcPurchaser').value||'').trim().toLowerCase();
     var recipient=($('gcRecipient').value||'').trim().toLowerCase();
     var message=($('gcMessage').value||'').trim();
     if(!EMAIL_RE.test(purchaser)){ setMsg('Please enter a valid email for your receipt.','err'); $('gcPurchaser').focus(); return; }
     if(recipient&&!EMAIL_RE.test(recipient)){ setMsg('That recipient email doesn\'t look right.','err'); $('gcRecipient').focus(); return; }
     if(message.length>280){ setMsg('Message must be 280 characters or less.','err'); return; }
-    var body={amount:amount,purchaserEmail:purchaser};
+    // Server rejects without this; the button is gated on the same checkbox.
+    var body={amount:amount,purchaserEmail:purchaser,immediateSupplyConsent:true};
     if(recipient)body.recipientEmail=recipient;
     if(message)body.message=message;
     var sig=JSON.stringify(body);
