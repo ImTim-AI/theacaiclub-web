@@ -1293,6 +1293,14 @@ import Layout from '../../layouts/Layout.astro';
     }).then(function(res){
       if(res.error){
         paySubmitting=false; cb.disabled=false;
+        // Hand the gift card back. The retry mints a NEW order token, so the
+        // hold taken for THIS attempt would otherwise lock the customer out of
+        // their own card for 30 minutes ("being used in another checkout").
+        // Released by code, because paid web orders deliberately never receive
+        // the order token. Best-effort: the hold expires by itself anyway.
+        try{
+          if(giftCardCode) api('gift-card-release',{code:giftCardCode}).catch(function(){});
+        }catch(_e){}
         mp('Payment Failed',{message:(res.error&&res.error.message)||'',code:(res.error&&res.error.code)||'',decline_code:(res.error&&res.error.decline_code)||''});
         setPayMsg(res.error.message||'Payment was not completed. Please try again.','err');
         return;
