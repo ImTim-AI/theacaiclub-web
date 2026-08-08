@@ -43,7 +43,7 @@ import Layout from '../../layouts/Layout.astro';
             <div id="cartLines"></div>
             <div class="berrybar" id="berryBar"></div>
             <button class="cta disabled" id="reviewBtn">Review order</button>
-            <a class="giftpromo" href="/gift-cards">🎁 <b>Gift cards</b> · treat someone to açai</a>
+            <a class="giftpromo" id="giftPromo" href="/gift-cards" style="display:none">🎁 <b>Gift cards</b> · treat someone to açai</a>
           </div>
         </aside>
       </div>
@@ -137,7 +137,7 @@ import Layout from '../../layouts/Layout.astro';
             <div class="authmsg" id="couponMsg"></div>
             <!-- Gift card redemption (backend PR #28). Collapsed by default; the
                  code is validated via order-quote (preview) and held by order-pay. -->
-            <button class="giftlink" id="giftToggle" type="button">Got a gift card?</button>
+            <button class="giftlink" id="giftToggle" type="button" style="display:none">Got a gift card?</button>
             <div id="giftBox" style="display:none">
               <div class="authrow giftrow">
                 <input id="giftInput" placeholder="ACAI-XXXX-XXXX-XXXX" autocapitalize="characters" autocomplete="off" spellcheck="false" />
@@ -536,6 +536,27 @@ import Layout from '../../layouts/Layout.astro';
   // rewards_config), NOT a name guess: a berry only on regular bowls (not minis),
   // a cup only on certain drinks. Loaded per store in loadMenu.
   var REST=SUPA.replace('/functions/v1','/rest/v1');
+
+  // Feature flag, the same app_config row the app reads.
+  //
+  // Both gift surfaces start HIDDEN in the markup and are only revealed if the
+  // flag comes back true. That is the same fail-closed rule as the app: a
+  // missing row, an outage or an RLS change reads as OFF, because a flag that
+  // defaults to on when the lookup fails turns a Supabase blip into an
+  // unplanned launch. Until now the web showed these unconditionally while the
+  // app gated them, so one switch would have covered only half the product.
+  function applyGiftFlag(on){
+    if(!on) return;
+    var promo=document.getElementById('giftPromo');
+    var toggle=document.getElementById('giftToggle');
+    if(promo) promo.style.display='';
+    if(toggle) toggle.style.display='';
+  }
+  fetch(REST+'/app_config?key=eq.gift_cards&select=enabled',
+    {headers:{'apikey':ANON,'Authorization':'Bearer '+ANON}})
+    .then(function(r){ return r.ok ? r.json() : []; })
+    .then(function(rows){ applyGiftFlag(rows && rows[0] && rows[0].enabled === true); })
+    .catch(function(){ /* stays hidden */ });
   var RW={bowl:[],drink:[]};
   function loadRewards(locId){
     return fetch(REST+'/rewards_config?location_id=eq.'+locId+'&select=config',{headers:{'apikey':ANON,'Authorization':'Bearer '+ANON}})
