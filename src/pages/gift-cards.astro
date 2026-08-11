@@ -76,10 +76,10 @@ import Layout from '../layouts/Layout.astro';
           <div>
             <div class="flex items-baseline justify-between">
               <label for="gcMessage" class="block text-light text-sm font-bold">Personal message <span class="text-grey font-normal">(optional)</span></label>
-              <span id="gcCount" class="text-grey text-[12px]">0/280</span>
+              <span id="gcCount" class="text-grey text-[12px]">0/450</span>
             </div>
             <p class="text-grey text-[13px] mt-0.5 mb-2">Printed on the gift card email.</p>
-            <textarea id="gcMessage" rows="3" maxlength="280" placeholder="Happy birthday! Enjoy a bowl on me." class="gc-input resize-y"></textarea>
+            <textarea id="gcMessage" rows="3" maxlength="450" placeholder="Happy birthday! Enjoy a bowl on me." class="gc-input resize-y"></textarea>
           </div>
         </div>
 
@@ -151,6 +151,9 @@ import Layout from '../layouts/Layout.astro';
   // Same Supabase functions base + anon key + Stripe publishable key as /order
   // (all public by design; they ship in the app binary too).
   var SUPA='https://vtrsbxqlctmhkjnpdwdy.supabase.co/functions/v1';
+  // Must match GIFT_CARD_MESSAGE_MAX in the backend's _shared/gift-cards.ts.
+  // The real ceiling is Stripe metadata at 500 chars per value.
+  var MSG_MAX=450;
   var STRIPE_PK='pk_live_51IldPUGhY98XvWg6AWuEcFVQKjnJlhUhEKz7FtLHpGzKNUNWtC1pAOOJdDR5MxUbpxadbyphZ227MYXONw5TEhjM007TiGWv3f';
   var ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0cnNieHFsY3RtaGtqbnBkd2R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNjIzNzAsImV4cCI6MjA2MTgzODM3MH0.Nn65Q3E2Ly-j8bvn_SaR1TmKYnzcNye1wAiFu5ciiuk';
 
@@ -205,7 +208,7 @@ import Layout from '../layouts/Layout.astro';
   });
 
   // live character counter for the message
-  $('gcMessage').addEventListener('input',function(){ $('gcCount').textContent=this.value.length+'/280'; });
+  $('gcMessage').addEventListener('input',function(){ $('gcCount').textContent=this.value.length+'/'+MSG_MAX; });
 
   // Editing anything invalidates a mounted Payment Element (its PI amount /
   // metadata would be stale): tear it down and require a fresh Buy tap.
@@ -241,7 +244,7 @@ import Layout from '../layouts/Layout.astro';
     var message=($('gcMessage').value||'').trim();
     if(!EMAIL_RE.test(purchaser)){ setMsg('Please enter a valid email for your receipt.','err'); $('gcPurchaser').focus(); return; }
     if(recipient&&!EMAIL_RE.test(recipient)){ setMsg('That recipient email doesn\'t look right.','err'); $('gcRecipient').focus(); return; }
-    if(message.length>280){ setMsg('Message must be 280 characters or less.','err'); return; }
+    if(message.length>MSG_MAX){ setMsg('Message must be '+MSG_MAX+' characters or less.','err'); return; }
     // Server rejects without this; the button is gated on the same checkbox.
     var body={amount:amount,purchaserEmail:purchaser,immediateSupplyConsent:true};
     if(recipient)body.recipientEmail=recipient;
