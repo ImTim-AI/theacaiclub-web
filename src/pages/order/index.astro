@@ -1321,6 +1321,18 @@ import Layout from '../../layouts/Layout.astro';
         // the order token. Best-effort: the hold expires by itself anyway.
         try{
           if(giftCardCode) api('gift-card-release',{code:giftCardCode}).catch(function(){});
+          // A WALLET hold cannot be released by code or by token: paid web
+          // orders deliberately never receive the token, and a balance has no
+          // code. It is released by IDENTITY instead, which needs no secret
+          // handed to the browser - so the reason the token is withheld still
+          // holds. Only fires for a signed-in customer, which is the only kind
+          // that can have a wallet hold.
+          // Needs the USER token, not the anon key: the wallet function
+          // verifies the JWT and resolves the customer from it, so an anon
+          // call is a 401 and would have released nothing while looking fine.
+          if(sess) freshToken().then(function(tok){
+            if(tok) api('wallet',{action:'release'},tok).catch(function(){});
+          }).catch(function(){});
         }catch(_e){}
         mp('Payment Failed',{message:(res.error&&res.error.message)||'',code:(res.error&&res.error.code)||'',decline_code:(res.error&&res.error.decline_code)||''});
         setPayMsg(res.error.message||'Payment was not completed. Please try again.','err');
