@@ -10,7 +10,7 @@ import Layout from '../layouts/Layout.astro';
       <h1 class="font-heading text-4xl sm:text-5xl font-black uppercase tracking-tight text-light mb-4">
         Terms of Use
       </h1>
-      <p class="text-grey text-sm mb-12">Last updated: 29 July 2026</p>
+      <p class="text-grey text-sm mb-12">Last updated: 19 August 2026</p>
 
       <div class="prose prose-invert prose-sm max-w-none space-y-8 text-grey leading-relaxed">
 
@@ -57,32 +57,51 @@ import Layout from '../layouts/Layout.astro';
         </div>
 
         <!--
-          ADDED 2026-08-18. Neither of these existed anywhere customer-facing,
-          and both became load-bearing on the same day:
+          Gift card + wallet clauses. History matters here, so it is written
+          down rather than tidied away.
 
-          * The 12-month gift card expiry was reinstated (T). An expiry term the
-            customer never had a real opportunity to read is CRA 2015 Sch 2
-            para 10, and under s.62 an unfair term is simply NOT BINDING - so an
-            undisclosed expiry is an expiry we could not enforce anyway.
-          * The 14-day cancellation right was removed from the app FAQ (T:
-            "remove the refund stuff for the wallet"). The RIGHT survives
-            regardless: CCR 2013 reg 37(2) does not extinguish it until supply
-            has begun, and an unspent balance is not supply. What reg 31
-            punishes is failing to DISCLOSE it, and the penalty is the
-            cancellation window stretching from 14 days to 12 MONTHS and 14
-            days. Removing it from the FAQ without putting it here would have
-            bought the exact liability the removal was meant to avoid.
+          ADDED 2026-08-18 for two reasons: an expiry term the customer never
+          had a real opportunity to read is CRA 2015 Sch 2 para 10, and under
+          s.62 an unfair term is NOT BINDING - so an undisclosed expiry is one
+          we could not enforce anyway. And the 14-day cancellation right had
+          just been removed from the app FAQ, so this was the only place left
+          disclosing it.
 
-          These two clauses are therefore the pre-contract disclosure for the
-          whole stored-value scheme. Do not delete them to match the app copy.
-        -->
-        <div>
+          CHANGED 2026-08-19 (T), after the Fable review found the clauses
+          described things the code does not do:
+
+          * The 14-day cancellation paragraph is REMOVED, at T's explicit
+            instruction, with the consequence put to him first. The RIGHT still
+            exists and is still honoured on request - CCR 2013 reg 37(2) does
+            not extinguish it until supply has begun and an unspent balance is
+            not supply. But reg 31 penalises failing to DISCLOSE it by
+            stretching the cancellation window from 14 days to TWELVE MONTHS
+            and 14 days, and with nothing disclosed anywhere that is now the
+            operative window on every top-up. This is a known, accepted cost,
+            not an oversight. Do not re-add the clause without asking T.
+          * The unclaimed-gift refund promise is REMOVED: no code ever
+            performed it (the 8-week constant had zero consumers), so it
+            promised something that did not exist. Refunds are handled on
+            request as a support process and are deliberately not advertised.
+          * "Your balance can be spent on app and website orders" is now
+            app-only. The website has no Add funds screen and never sends
+            useWallet, so it cannot spend a balance at all.
+          * "A gift card must be added to an account before it can be spent"
+            was false: the website spends raw codes in its guest flow. Now
+            states both routes.
+          * "The expiry date is shown when you buy the card" was false - no
+            purchase surface shows a date, only the 12-month period. The date
+            is in the recipient's email.
+
+          The 12-month expiry disclosure STAYS, per T: it belongs in the FAQ
+          and the legal docs.
+        -->        <div>
           <h2 class="font-heading text-lg font-bold uppercase tracking-wide text-light mb-3">5. Gift Cards</h2>
           <p>
-            Gift cards are valid for 12 months from the date of purchase. After that date any remaining balance expires and can no longer be spent. The expiry date is shown when you buy the card and is included in the email sent to the recipient.
+            Gift cards are valid for 12 months from the date of purchase. After that date any remaining balance expires and can no longer be spent. The expiry period is shown when you buy the card, and the expiry date is included in the email sent to the recipient.
           </p>
           <p class="mt-3">
-            A gift card must be added to an Açai Club account before it can be spent. If a gift card is never claimed, we will refund the purchase to the person who bought it. Gift cards can be spent across as many orders as you like until the balance runs out or the card expires, and are currently redeemable on app and website orders only.
+            To spend a gift card in the app it must first be added to an Açai Club account, which is free. A code can also be entered directly at checkout on our website. Gift cards can be spent across as many orders as you like until the balance runs out or the card expires, and are currently redeemable on app and website orders only, not in store.
           </p>
           <p class="mt-3">
             Nothing in these terms affects your statutory rights.
@@ -95,10 +114,10 @@ import Layout from '../layouts/Layout.astro';
             Money you add to your wallet does not expire. You may hold up to £120 at any one time and add up to £120 per day. A gift card added to your wallet keeps its own 12-month expiry from the date that card was bought, so part of your balance may expire while the rest does not.
           </p>
           <p class="mt-3">
-            If you change your mind after topping up, you may cancel within 14 days of the top-up and we will refund any balance you have not yet spent, to the payment method you used. Contact us to do this. This right applies to money you added yourself; it does not apply to gift card value, which is refunded to whoever bought the card.
+            Your balance can be spent on app orders. It is not a payment account, it earns no interest, and it cannot be transferred to another person or exchanged for cash.
           </p>
           <p class="mt-3">
-            Your balance can be spent on app and website orders. It is not a payment account, it earns no interest, and it cannot be transferred to another person or exchanged for cash except as set out above.
+            Nothing in these terms affects your statutory rights.
           </p>
         </div>
 
