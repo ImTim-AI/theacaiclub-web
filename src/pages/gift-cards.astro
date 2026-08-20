@@ -1,0 +1,373 @@
+---
+import Layout from '../layouts/Layout.astro';
+// GIFT CARDS V1 (spec: Shadow/theacaiclub/gift-cards-mvp-spec.md, locked 2026-07-07).
+// Buy flow only: pick a fixed amount, enter emails + optional message, pay by card.
+// The card itself (code + email) is minted server-side by stripe-webhook on
+// payment success; this page never sees the code. Stripe wiring copied from
+// /order (same publishable key, same Payment Element + confirmPayment pattern).
+// Depends on backend PR #26 (gift-card-purchase fn); the endpoint 404s until merged.
+---
+
+<Layout
+  title="Gift Cards | The Açai Club"
+  description="Give the gift of açai. Digital gift cards from £5, delivered by email in minutes. Redeemable on app and web orders at The Açai Club."
+>
+  <!-- Hero -->
+  <section class="pt-28 pb-16 bg-dark">
+    <div class="max-w-[1400px] mx-auto px-8 text-center">
+      <div class="text-5xl mb-4">🎁</div>
+      <h1 class="font-heading text-5xl sm:text-6xl font-black uppercase tracking-tight text-light leading-tight">
+        Gift Cards
+      </h1>
+      <p class="mt-4 text-grey text-lg max-w-xl mx-auto">
+        Give the gift of açai. Delivered by email in minutes, redeemable on any app or web order.
+      </p>
+    </div>
+  </section>
+
+  <!-- Purchase card -->
+  <section class="bg-dark-surface py-16 sm:py-20">
+    <div class="max-w-xl mx-auto px-6 sm:px-8">
+
+      <!-- Success state (hidden until payment completes) -->
+      <div id="gcSuccess" class="hidden bg-dark-card rounded-2xl border border-dark-border p-8 sm:p-10 text-center">
+        <div class="text-5xl">💌</div>
+        <h2 class="font-heading text-2xl font-bold text-light mt-4">Gift card on its way<span id="gcSuccessTo"></span>!</h2>
+        <p class="text-grey text-base mt-3 leading-relaxed">It will arrive by email in a few minutes. The email is the gift card: it has the code and how to spend it.</p>
+        <p class="text-grey text-sm mt-4">Valid for 12 months.</p>
+        <a href="/gift-cards" class="inline-flex mt-8 px-8 py-3.5 bg-taupe text-white font-heading font-bold uppercase tracking-wider text-sm rounded-full hover:bg-taupe-dark transition-colors">Send another</a>
+      </div>
+
+      <!-- Off-state. Shown until the feature flag says otherwise, because this
+           page is reachable by direct URL and by any link already shared. -->
+      <div id="gcOff" class="bg-dark-card rounded-2xl border border-dark-border p-6 sm:p-10 text-center">
+        <p class="text-grey text-[15px]">Gift cards are not available just yet. Check back soon.</p>
+        <a href="/order" class="inline-flex mt-6 px-8 py-3.5 bg-taupe text-white font-heading font-bold uppercase tracking-wider text-sm rounded-full hover:bg-taupe-dark transition-colors">Order now</a>
+      </div>
+
+      <!-- Buy form. Hidden until the flag is confirmed on. -->
+      <div id="gcForm" class="bg-dark-card rounded-2xl border border-dark-border p-6 sm:p-10" style="display:none">
+        <h2 class="font-heading text-xl font-bold uppercase tracking-tight text-light mb-6">Choose an amount</h2>
+
+        <div class="grid grid-cols-3 sm:grid-cols-5 gap-3" id="gcAmounts">
+          <button type="button" class="gc-amt" data-pence="500">£5</button>
+          <button type="button" class="gc-amt" data-pence="1000">£10</button>
+          <button type="button" class="gc-amt sel" data-pence="2500">£25</button>
+          <button type="button" class="gc-amt" data-pence="5000">£50</button>
+          <button type="button" class="gc-amt" data-pence="10000">£100</button>
+        </div>
+
+        <!-- Expiry must be PROMINENT at purchase (unfair-terms rule; see spec).
+             LIVE AGAIN 2026-08-18 (T): the 12-month expiry is back, reversing
+             2026-08-15. This is the buyer's only sight of the term before they
+             pay, and CRA 2015 Sch 2 para 10 bites hardest here because the
+             RECIPIENT never sees our terms at all. Do not shrink this. -->
+        <div class="mt-5 bg-dark-surface border border-dark-border rounded-xl px-4 py-3 text-center">
+          <p class="text-light text-sm font-semibold">Gift cards are valid for 12 months from purchase.</p>
+        </div>
+
+        <div class="mt-8 space-y-5">
+          <div>
+            <label for="gcPurchaser" class="block text-light text-sm font-bold">Your email <span class="text-grey font-normal">(required)</span></label>
+            <p class="text-grey text-[13px] mt-0.5 mb-2">For your receipt.</p>
+            <input id="gcPurchaser" type="email" autocomplete="email" placeholder="you@email.com" class="gc-input" />
+          </div>
+          <div>
+            <label for="gcRecipient" class="block text-light text-sm font-bold">Recipient's email <span class="text-grey font-normal">(optional)</span></label>
+            <p class="text-grey text-[13px] mt-0.5 mb-2">Leave blank to send it to yourself.</p>
+            <input id="gcRecipient" type="email" placeholder="them@email.com" class="gc-input" />
+          </div>
+          <div>
+            <div class="flex items-baseline justify-between">
+              <label for="gcMessage" class="block text-light text-sm font-bold">Personal message <span class="text-grey font-normal">(optional)</span></label>
+              <span id="gcCount" class="text-grey text-[12px]">0/450</span>
+            </div>
+            <p class="text-grey text-[13px] mt-0.5 mb-2">Printed on the gift card email.</p>
+            <textarea id="gcMessage" rows="3" maxlength="450" placeholder="Happy birthday! Enjoy a bowl on me." class="gc-input resize-y"></textarea>
+          </div>
+        </div>
+
+        <!-- Consumer Contracts Regs 2013: a gift card is digital content supplied
+             immediately, so the 14-day cancellation right survives unless the buyer
+             expressly consents to immediate supply AND acknowledges losing it.
+             Without this the buyer could spend the card and still cancel for a full
+             statutory refund inside 14 days. -->
+        <label for="gcConsent" class="flex items-start gap-3 mt-6 cursor-pointer select-none">
+          <input id="gcConsent" type="checkbox" class="mt-1 h-4 w-4 shrink-0 accent-taupe cursor-pointer" />
+          <span class="text-grey text-[13px] leading-snug">
+            Send my gift card straight away. I understand this means I lose my 14-day right to cancel.
+          </span>
+        </label>
+
+        <!-- Stripe Payment Element mounts here once gift-card-purchase returns a clientSecret -->
+        <div id="gcPayElement" class="hidden mt-6"></div>
+        <div id="gcMsg" class="text-sm font-semibold mt-4 text-grey"></div>
+
+        <button id="gcBuyBtn" class="w-full mt-6 px-10 py-4 bg-taupe text-white font-heading font-bold uppercase tracking-wider text-sm rounded-full hover:bg-taupe-dark transition-colors cursor-pointer">
+          Buy gift card · <span id="gcBuyTot">£25</span>
+        </button>
+        <button id="gcConfirmBtn" class="hidden w-full mt-6 px-10 py-4 bg-taupe text-white font-heading font-bold uppercase tracking-wider text-sm rounded-full hover:bg-taupe-dark transition-colors cursor-pointer">
+          Pay · <span id="gcConfirmTot">£25</span>
+        </button>
+        <p class="text-grey text-[12px] text-center mt-3">Card, Apple&nbsp;Pay &amp; Google&nbsp;Pay · powered by Stripe</p>
+      </div>
+
+      <!-- How it works -->
+      <div class="mt-12 grid sm:grid-cols-3 gap-4 text-center">
+        <div class="bg-dark-card rounded-2xl p-6 border border-dark-border">
+          <div class="text-2xl mb-2">💳</div>
+          <h3 class="font-heading font-normal text-light text-base mb-1">Pay online</h3>
+          <p class="text-grey text-[13px] leading-relaxed">Pick an amount and pay by card. No account needed.</p>
+        </div>
+        <div class="bg-dark-card rounded-2xl p-6 border border-dark-border">
+          <div class="text-2xl mb-2">📧</div>
+          <h3 class="font-heading font-normal text-light text-base mb-1">Sent by email</h3>
+          <p class="text-grey text-[13px] leading-relaxed">A unique code lands in their inbox within minutes.</p>
+        </div>
+        <div class="bg-dark-card rounded-2xl p-6 border border-dark-border">
+          <div class="text-2xl mb-2">🍇</div>
+          <h3 class="font-heading font-normal text-light text-base mb-1">Spend on açai</h3>
+          <p class="text-grey text-[13px] leading-relaxed">Enter the code at app or web checkout. Any leftover balance stays on the code.</p>
+        </div>
+      </div>
+      <p class="text-grey text-[13px] text-center mt-8 leading-relaxed">
+        Gift cards are valid for 12 months from purchase and can be spent across as many orders as you like.<br class="hidden sm:inline" />
+        Redeemable online and in the app, at any Açai Club store.
+      </p>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .gc-amt{font-family:var(--font-heading);font-weight:800;font-size:20px;color:var(--color-light);background:#fff;border:2px solid var(--color-dark-border);border-radius:14px;padding:18px 8px;cursor:pointer;transition:.15s}
+  .gc-amt:hover{border-color:var(--color-taupe)}
+  .gc-amt.sel{border-color:var(--color-light);background:var(--color-dark-surface);box-shadow:inset 0 0 0 1px var(--color-light)}
+  .gc-input{width:100%;border:1.5px solid var(--color-dark-border);border-radius:12px;padding:14px 16px;font-size:15px;font-family:inherit;color:var(--color-light);background:#fff}
+  .gc-input:focus{outline:none;border-color:var(--color-light)}
+  #gcMsg.err{color:#b04a4a}
+  #gcMsg.ok{color:var(--color-light)}
+  #gcBuyBtn:disabled,#gcConfirmBtn:disabled{opacity:.5;cursor:not-allowed}
+</style>
+
+<script is:inline src="https://js.stripe.com/v3/"></script>
+<script is:inline>
+(function(){
+  // Same Supabase functions base + anon key + Stripe publishable key as /order
+  // (all public by design; they ship in the app binary too).
+  var SUPA='https://vtrsbxqlctmhkjnpdwdy.supabase.co/functions/v1';
+  // Must match GIFT_CARD_MESSAGE_MAX in the backend's _shared/gift-cards.ts.
+  // The real ceiling is Stripe metadata at 500 chars per value.
+  var MSG_MAX=450;
+  var STRIPE_PK='pk_live_51IldPUGhY98XvWg6AWuEcFVQKjnJlhUhEKz7FtLHpGzKNUNWtC1pAOOJdDR5MxUbpxadbyphZ227MYXONw5TEhjM007TiGWv3f';
+  var ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0cnNieHFsY3RtaGtqbnBkd2R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYyNjIzNzAsImV4cCI6MjA2MTgzODM3MH0.Nn65Q3E2Ly-j8bvn_SaR1TmKYnzcNye1wAiFu5ciiuk';
+
+  var $=function(id){return document.getElementById(id);};
+  var EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // Feature flag, the same app_config row the app and the order page read.
+  //
+  // The buy form starts HIDDEN and the off-state starts visible, so the failure
+  // mode is "not available yet" rather than a live purchase form. Fail closed
+  // is the whole point: this page takes money, and a Supabase blip must not be
+  // able to open a shop that is not ready. Direct URLs land here too, which is
+  // why the gate is on the page itself and not only on the links to it.
+  (function(){
+    var REST=SUPA.replace('/functions/v1','/rest/v1');
+    fetch(REST+'/app_config?key=eq.gift_cards&select=enabled',
+      {headers:{'apikey':ANON,'Authorization':'Bearer '+ANON}})
+      .then(function(r){ return r.ok ? r.json() : []; })
+      .then(function(rows){
+        if(!(rows && rows[0] && rows[0].enabled === true)) return;
+        var off=document.getElementById('gcOff');
+        var form=document.getElementById('gcForm');
+        if(off) off.style.display='none';
+        if(form) form.style.display='';
+      })
+      .catch(function(){ /* stays off */ });
+  })();
+
+  function api(fn,body){
+    return fetch(SUPA+'/'+fn,{method:'POST',headers:{'apikey':ANON,'Authorization':'Bearer '+ANON,'Content-Type':'application/json'},body:JSON.stringify(body||{})})
+      .then(function(r){return r.json().catch(function(){return {};}).then(function(j){ if(!r.ok){var e=new Error(j.error||fn+' '+r.status);e.status=r.status;throw e;} return j; });});
+  }
+  function mp(ev,props){try{window.mixpanel&&mixpanel.track&&mixpanel.track(ev,props||{});}catch(e){}}
+  function setMsg(t,cls){ var m=$('gcMsg'); if(m){m.textContent=t||'';m.className='text-sm font-semibold mt-4'+(cls?' '+cls:' text-grey');} }
+
+  var amount=2500, submitting=false, stripe=null, elements=null;
+  // checkoutId = the idempotency key for gift-card-purchase (one per distinct
+  // purchase attempt: retrying the SAME details reuses the PaymentIntent, but
+  // changing amount/emails/message mints a fresh key, since Stripe rejects the
+  // same idempotency key with different params).
+  var checkoutId=null, lastSig='';
+  function uuid(){ return (crypto.randomUUID?crypto.randomUUID():(Date.now()+'-'+Math.random().toString(16).slice(2))); }
+
+  function fAmt(p){ return '£'+(p/100).toFixed(p%100?2:0); }
+  function setAmount(p){
+    amount=p;
+    document.querySelectorAll('.gc-amt').forEach(function(b){ b.classList.toggle('sel',+b.dataset.pence===p); });
+    $('gcBuyTot').textContent=fAmt(p); $('gcConfirmTot').textContent=fAmt(p);
+    resetPayUI();
+  }
+  $('gcAmounts').addEventListener('click',function(e){
+    var b=e.target.closest('.gc-amt'); if(b){ setAmount(+b.dataset.pence); mp('Gift Card Amount Selected',{amount:amount/100}); }
+  });
+
+  // live character counter for the message
+  $('gcMessage').addEventListener('input',function(){ $('gcCount').textContent=this.value.length+'/'+MSG_MAX; });
+
+  // Editing anything invalidates a mounted Payment Element (its PI amount /
+  // metadata would be stale): tear it down and require a fresh Buy tap.
+  ['gcPurchaser','gcRecipient','gcMessage'].forEach(function(id){
+    $(id).addEventListener('input',function(){ if(elements){ resetPayUI(); setMsg('Details changed. Tap Buy gift card again.'); } });
+  });
+
+  function resetPayUI(){
+    elements=null; submitting=false;
+    var pe=$('gcPayElement'); pe.classList.add('hidden'); pe.innerHTML='';
+    $('gcConfirmBtn').classList.add('hidden');
+    $('gcBuyBtn').classList.remove('hidden'); syncConsent();
+    setMsg('');
+  }
+
+  function showSuccess(email){
+    $('gcSuccessTo').textContent=email?(' to '+email):'';
+    $('gcForm').classList.add('hidden');
+    $('gcSuccess').classList.remove('hidden');
+    window.scrollTo(0,0);
+  }
+
+  // Buy stays disabled until the cancellation waiver is ticked.
+  function syncConsent(){ $('gcBuyBtn').disabled = !$('gcConsent').checked; }
+  $('gcConsent').addEventListener('change', syncConsent);
+  syncConsent();
+
+  $('gcBuyBtn').onclick=function(){
+    if(submitting)return;
+    if(!$('gcConsent').checked){ setMsg('Please confirm you want the gift card sent straight away.','err'); return; }
+    var purchaser=($('gcPurchaser').value||'').trim().toLowerCase();
+    var recipient=($('gcRecipient').value||'').trim().toLowerCase();
+    var message=($('gcMessage').value||'').trim();
+    if(!EMAIL_RE.test(purchaser)){ setMsg('Please enter a valid email for your receipt.','err'); $('gcPurchaser').focus(); return; }
+    if(recipient&&!EMAIL_RE.test(recipient)){ setMsg('That recipient email doesn\'t look right.','err'); $('gcRecipient').focus(); return; }
+    if(message.length>MSG_MAX){ setMsg('Message must be '+MSG_MAX+' characters or less.','err'); return; }
+    // Server rejects without this; the button is gated on the same checkbox.
+    var body={amount:amount,purchaserEmail:purchaser,immediateSupplyConsent:true};
+    if(recipient)body.recipientEmail=recipient;
+    if(message)body.message=message;
+    var sig=JSON.stringify(body);
+    if(sig!==lastSig||!checkoutId){ checkoutId=uuid(); lastSig=sig; }
+    body.checkoutId=checkoutId;
+    submitting=true; var btn=this; btn.disabled=true; setMsg('Setting up your gift card…');
+    mp('Gift Card Purchase Started',{amount:amount/100,delivery:recipient?'recipient':'self'});
+    api('gift-card-purchase',body).then(function(r){
+      if(r&&r.clientSecret)return mountPayment(r.clientSecret);
+      throw new Error('Unexpected response');
+    }).catch(function(e){
+      submitting=false; btn.disabled=false;
+      // A CODED reason, never e.message. The raw text of an arbitrary error can
+      // carry a URL, a token, or the email address the customer just typed, and
+      // this property lands in analytics.
+      mp('Gift Card Purchase Failed',{amount:amount/100,delivery:recipient?'recipient':'self',step:'setup',reason:(e&&e.status===429)?'rate_limited':'setup_failed'});
+      if(e&&e.status===429){ setMsg('Too many attempts, try again later.','err'); return; }
+      setMsg((e&&e.message)||'Could not start the gift card purchase. Please try again.','err');
+    });
+  };
+
+  function stripeJs(){ return (typeof Stripe!=='undefined')?Stripe:null; }
+  function mountPayment(clientSecret){
+    var S=stripeJs();
+    if(!S){ submitting=false; $('gcBuyBtn').disabled=false; setMsg('Payment failed to load. Please reload the page.','err'); return; }
+    stripe=stripe||S(STRIPE_PK);
+    elements=stripe.elements({clientSecret:clientSecret, appearance:{theme:'flat', variables:{colorPrimary:'#5B2C6F', borderRadius:'12px'}}});
+    var pe=elements.create('payment',{layout:'tabs'});
+    var box=$('gcPayElement'); box.innerHTML=''; box.classList.remove('hidden'); pe.mount(box);
+    $('gcBuyBtn').classList.add('hidden');
+    var cb=$('gcConfirmBtn'); cb.classList.remove('hidden'); cb.disabled=false;
+    setMsg('Enter your card details to finish.');
+    submitting=false;
+    box.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+
+  $('gcConfirmBtn').onclick=function(){
+    if(!elements||!stripe||submitting)return;
+    submitting=true; var cb=this; cb.disabled=true; setMsg('Confirming payment…');
+    stripe.confirmPayment({
+      elements:elements,
+      confirmParams:{ return_url: location.origin+'/gift-cards?paid=1' },
+      redirect:'if_required',
+    }).then(function(res){
+      var delivery=($('gcRecipient').value||'').trim()?'recipient':'self';
+      if(res.error){
+        submitting=false; cb.disabled=false;
+        // Stripe's error CODE (card_declined, expired_card, ...) is machine
+        // readable and safe. Its message is customer-facing prose and is not.
+        mp('Gift Card Purchase Failed',{amount:amount/100,delivery:delivery,step:'payment',reason:(res.error&&(res.error.code||res.error.type))||'payment_failed'});
+        setMsg(res.error.message||'Payment was not completed. Please try again.','err');
+        return;
+      }
+      // Paid. stripe-webhook mints the card + sends the email; nothing else to call.
+      // Named to match the app exactly: this is one funnel measured across two
+      // platforms, and the mixpanel.register({platform:'web'}) super property in
+      // Layout.astro is what tells them apart. A second name for the same action
+      // would split the number instead.
+      mp('Gift Card Purchase Completed',{amount:amount/100,delivery:delivery});
+      showSuccess(($('gcRecipient').value||'').trim().toLowerCase()||($('gcPurchaser').value||'').trim().toLowerCase());
+    }).catch(function(){
+      submitting=false; cb.disabled=false;
+      mp('Gift Card Purchase Failed',{amount:amount/100,delivery:($('gcRecipient').value||'').trim()?'recipient':'self',step:'payment',reason:'unexpected_error'});
+      setMsg('Something went wrong confirming payment. Please try again.','err');
+    });
+  };
+
+  // Redirect-based payment methods (iDEAL, Bancontact, some 3DS flows) come
+  // back to /gift-cards?paid=1. The presence of that parameter says only that
+  // the customer RETURNED, not that they paid: Stripe sends the same URL on
+  // failure and adds redirect_status + payment_intent_client_secret to say
+  // which. Showing "Gift card on its way!" on a failed payment tells someone a
+  // card was sent when no card exists and no money moved.
+  //
+  // Ask Stripe rather than trusting the URL: retrieve the PaymentIntent and
+  // switch on its real status. redirect_status is only the fallback for when
+  // the client secret is missing from the return URL.
+  try{
+    var q=new URLSearchParams(location.search);
+    if(q.get('paid')==='1'){
+      var clean=function(){ history.replaceState({},'',location.pathname); };
+      var fail=function(m){ clean(); setMsg(m||'That payment was not completed. Please try again.','err'); };
+      var cs=q.get('payment_intent_client_secret');
+      var rs=q.get('redirect_status');
+      // stripeJs(), not S: S is local to mountPayment, which has not run on a
+      // fresh page load after the redirect. Referencing it here threw a
+      // ReferenceError that this block's own catch swallowed, so the customer
+      // saw nothing at all - no success, no failure, ?paid=1 left in the URL.
+      var SJ = stripeJs();
+      if(cs && SJ){
+        stripe=stripe||SJ(STRIPE_PK);
+        stripe.retrievePaymentIntent(cs).then(function(r){
+          var st=r&&r.paymentIntent&&r.paymentIntent.status;
+          if(st==='succeeded'){
+            mp('Gift Card Purchased',{amount:(r.paymentIntent.amount||0)/100});
+            showSuccess(''); clean();
+          } else if(st==='processing'){
+            // Genuinely undecided: promise nothing, and do not claim failure.
+            clean();
+            setMsg('Your payment is still processing. We will email the gift card as soon as it clears.');
+          } else {
+            mp('Gift Card Payment Failed',{status:st||'unknown'});
+            fail();
+          }
+        }).catch(function(){
+          // Could not verify. Say so rather than guessing either way.
+          clean();
+          setMsg('We could not confirm that payment. Check your email before trying again.','err');
+        });
+      } else if(rs==='succeeded'){
+        mp('Gift Card Purchased',{amount:amount/100});
+        showSuccess(''); clean();
+      } else {
+        mp('Gift Card Payment Failed',{status:rs||'unknown'});
+        fail();
+      }
+    }
+  }catch(_e){}
+})();
+</script>

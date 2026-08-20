@@ -43,6 +43,7 @@ import Layout from '../../layouts/Layout.astro';
             <div id="cartLines"></div>
             <div class="berrybar" id="berryBar"></div>
             <button class="cta disabled" id="reviewBtn">Review order</button>
+            <a class="giftpromo" id="giftPromo" href="/gift-cards" style="display:none">🎁 <b>Gift cards</b> · treat someone to açai</a>
           </div>
         </aside>
       </div>
@@ -134,9 +135,20 @@ import Layout from '../../layouts/Layout.astro';
               <button class="authbtn" id="couponApply">Apply</button>
             </div>
             <div class="authmsg" id="couponMsg"></div>
+            <!-- Gift card redemption (backend PR #28). Collapsed by default; the
+                 code is validated via order-quote (preview) and held by order-pay. -->
+            <button class="giftlink" id="giftToggle" type="button" style="display:none">Got a gift card?</button>
+            <div id="giftBox" style="display:none">
+              <div class="authrow giftrow">
+                <input id="giftInput" placeholder="ACAI-XXXX-XXXX-XXXX" autocapitalize="characters" autocomplete="off" spellcheck="false" />
+                <button class="authbtn" id="giftApply">Apply</button>
+              </div>
+              <div class="authmsg" id="giftMsg"></div>
+            </div>
             <div class="totrow"><span>Subtotal</span><span id="coSub">£0.00</span></div>
             <div id="quoteRows"></div>
             <div class="totrow big"><span>Total</span><span id="coTotal">£0.00</span></div>
+            <div id="giftRows"></div>
             <div class="muted" style="text-align:left;margin:6px 0 0">Prices include VAT where applicable.</div>
             <div class="terms"><input type="checkbox" id="termsChk" checked /> I agree to the <a href="/terms">terms &amp; conditions</a></div>
             <!-- Stripe Payment Element mounts here once order-pay returns a clientSecret -->
@@ -406,6 +418,15 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .signedbox{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--off);border-radius:var(--rs);padding:14px 16px;font-size:14px;color:var(--charcoal)}
   #order-app .signedbox .chg{color:var(--acai);font-weight:700;font-size:13px;text-transform:uppercase}
   #order-app .couponrow{margin-bottom:6px}
+  #order-app .giftlink{display:inline-block;color:var(--acai);font-weight:700;font-size:13px;text-decoration:underline;margin:4px 0 10px;padding:2px 0}
+  #order-app .giftrow{margin-bottom:6px}
+  #order-app .giftrow input{border:1.5px solid var(--sand);border-radius:var(--rs);padding:12px 14px;font-size:14px;font-family:inherit;color:var(--charcoal);text-transform:uppercase}
+  #order-app .giftrow input:focus{outline:none;border-color:var(--acai)}
+  #order-app #giftBox{margin-bottom:10px}
+  #order-app .giftrm{color:#b04a4a;font-weight:700;font-size:12px;text-transform:uppercase;margin-left:8px;text-decoration:underline}
+  #order-app .giftpromo{display:block;text-align:center;margin-top:12px;font-size:13px;color:var(--medium);text-decoration:none}
+  #order-app .giftpromo:hover{color:var(--acai)}
+  #order-app .giftpromo b{color:var(--acai)}
   #order-app .couponrow input{border:1.5px solid var(--sand);border-radius:var(--rs);padding:12px 14px;font-size:14px;font-family:inherit;color:var(--charcoal)}
   #order-app .couponrow input:focus{outline:none;border-color:var(--acai)}
   #order-app .redeemcard{display:flex;align-items:center;gap:10px;background:var(--off);border-radius:var(--rs);padding:12px 14px;margin-bottom:10px;font-size:13px;font-weight:600;color:var(--acai);cursor:pointer}
@@ -515,6 +536,27 @@ import Layout from '../../layouts/Layout.astro';
   // rewards_config), NOT a name guess: a berry only on regular bowls (not minis),
   // a cup only on certain drinks. Loaded per store in loadMenu.
   var REST=SUPA.replace('/functions/v1','/rest/v1');
+
+  // Feature flag, the same app_config row the app reads.
+  //
+  // Both gift surfaces start HIDDEN in the markup and are only revealed if the
+  // flag comes back true. That is the same fail-closed rule as the app: a
+  // missing row, an outage or an RLS change reads as OFF, because a flag that
+  // defaults to on when the lookup fails turns a Supabase blip into an
+  // unplanned launch. Until now the web showed these unconditionally while the
+  // app gated them, so one switch would have covered only half the product.
+  function applyGiftFlag(on){
+    if(!on) return;
+    var promo=document.getElementById('giftPromo');
+    var toggle=document.getElementById('giftToggle');
+    if(promo) promo.style.display='';
+    if(toggle) toggle.style.display='';
+  }
+  fetch(REST+'/app_config?key=eq.gift_cards&select=enabled',
+    {headers:{'apikey':ANON,'Authorization':'Bearer '+ANON}})
+    .then(function(r){ return r.ok ? r.json() : []; })
+    .then(function(rows){ applyGiftFlag(rows && rows[0] && rows[0].enabled === true); })
+    .catch(function(){ /* stays hidden */ });
   var RW={bowl:[],drink:[]};
   function loadRewards(locId){
     return fetch(REST+'/rewards_config?location_id=eq.'+locId+'&select=config',{headers:{'apikey':ANON,'Authorization':'Bearer '+ANON}})
@@ -548,7 +590,7 @@ import Layout from '../../layouts/Layout.astro';
   var LOC=[],store=null,sched={},CATS=[],MENU={},activeCat=null,cart=[],modal=null,mGroups=[],mSel={},mq=1;
   var pickupMode='takeaway', scheduled=null; // scheduled = {label, iso} or null (ASAP)
   var tSelDay=0, tSelSlot=null, tSlotsByDay=[];
-  var redeem={freeBowls:0,freeDrinks:0}, couponCode='';
+  var redeem={freeBowls:0,freeDrinks:0}, couponCode='', giftCardCode='';
 
   function api(fn,body,userTok){
     var tok=userTok||ANON;
@@ -939,6 +981,7 @@ import Layout from '../../layouts/Layout.astro';
         if(!cart.some(function(c){return c.cup;}))redeem.freeDrinks=0;
         if(redeem.freeBowls||redeem.freeDrinks)intent.redeem=redeem;
         if(couponCode)intent.couponCode=couponCode;
+        if(giftCardCode)intent.giftCardCode=giftCardCode;
         return api('order-quote',intent,tok);
       });
     }).then(function(q){
@@ -969,6 +1012,19 @@ import Layout from '../../layouts/Layout.astro';
     if(q.couponDiscount>0)rows+='<div class="totrow disc"><span>Discount'+(q.coupon&&q.coupon.code?' ('+esc(q.coupon.code)+')':'')+'</span><span>−'+f(q.couponDiscount)+'</span></div>';
     $('quoteRows').innerHTML=rows;
     if(q.couponDiscount>0)setCouponMsg('Code applied','ok');
+    // gift card preview (order-quote's giftCard block; sits BELOW the total so
+    // the order total stays honest and "Left to pay" is what the card charges)
+    var gc=q.giftCard, giftRows='';
+    if(gc&&gc.valid){
+      giftRows='<div class="totrow disc"><span>Gift card applied</span><span>−'+f(gc.applied)+'</span></div>'
+        +'<div class="totrow big"><span>Left to pay</span><span>'+f(gc.remainderToPay)+'</span></div>';
+      $('payTot').textContent=f(gc.remainderToPay);
+      setGiftMsg(f(gc.applied)+' gift card applied. '+(gc.remainderToPay>0?(f(gc.remainderToPay)+' left to pay.'):'Nothing left to pay.'),'ok',true);
+    } else if(gc){
+      setGiftMsg(GIFT_ERRORS[gc.error]||'This gift card cannot be used','err',false);
+      giftCardCode=''; // don't resend a rejected code on the next quote
+    }
+    $('giftRows').innerHTML=giftRows;
     var bal=q.loyalty&&q.loyalty.balance;
     // redemption offers (signed-in with available rewards, or an active redemption)
     var rb='';
@@ -1183,12 +1239,24 @@ import Layout from '../../layouts/Layout.astro';
     };
     if(redeem.freeBowls||redeem.freeDrinks)body.redeem=redeem;
     if(couponCode)body.couponCode=couponCode;
+    if(giftCardCode)body.giftCardCode=giftCardCode;
     if(g)body.guest=g;
     freshToken().then(function(tok){
       return ensureLinked(tok).then(function(){ return api('order-pay',body,tok); });
     }).then(function(r){
+      // gift card covered everything -> same free path as a loyalty redemption
       if(r&&r.free){ return finishFreeOrder(r.orderToken); }
-      if(r&&r.clientSecret){ return mountPayment(r.clientSecret); }
+      if(r&&r.clientSecret){
+        mountPayment(r.clientSecret);
+        // PI amount is already reduced server-side by the gift hold; show the
+        // real card charge on the confirm button + a line in the pay summary
+        if(r.giftApplied>0&&typeof r.total==='number'){
+          var rem=Math.max(0,r.total-r.giftApplied);
+          $('confirmTot').textContent=f(rem);
+          setPayMsg(f(r.giftApplied)+' gift card applied. Enter your card details to pay '+f(rem)+'.');
+        }
+        return;
+      }
       throw new Error('Unexpected response');
     }).catch(function(e){
       paySubmitting=false; btn.disabled=false;
@@ -1196,6 +1264,13 @@ import Layout from '../../layouts/Layout.astro';
       // EMAIL_REGISTERED handling removed 2026-06-17: order-pay no longer blocks
       // a returning email — it reuses the existing customer (see backend PR #12).
       if(e&&e.code==='AUTH_REQUIRED'){ setPayMsg('Please sign in to redeem rewards.','err'); return; }
+      // gift card rejected at pay time (expired/emptied/held since the quote):
+      // surface the server's message and let them remove the code and retry
+      if(e&&String(e.code||'').indexOf('GIFT_CARD_')===0){
+        setPayMsg(e.message||'This gift card cannot be used.','err');
+        setGiftMsg(e.message||'This gift card cannot be used.','err',true);
+        return;
+      }
       if(e&&e.code==='BAD_PICKUP_TIME'){ setPayMsg('That pickup time is no longer available. Please pick a new time.','err'); return; }
       // show a structured server message; hide raw network errors behind a generic line
       var msg=(e&&e.code&&e.message)?e.message:'Could not start checkout. Please check your connection and try again.';
@@ -1239,6 +1314,26 @@ import Layout from '../../layouts/Layout.astro';
     }).then(function(res){
       if(res.error){
         paySubmitting=false; cb.disabled=false;
+        // Hand the gift card back. The retry mints a NEW order token, so the
+        // hold taken for THIS attempt would otherwise lock the customer out of
+        // their own card for 30 minutes ("being used in another checkout").
+        // Released by code, because paid web orders deliberately never receive
+        // the order token. Best-effort: the hold expires by itself anyway.
+        try{
+          if(giftCardCode) api('gift-card-release',{code:giftCardCode}).catch(function(){});
+          // A WALLET hold cannot be released by code or by token: paid web
+          // orders deliberately never receive the token, and a balance has no
+          // code. It is released by IDENTITY instead, which needs no secret
+          // handed to the browser - so the reason the token is withheld still
+          // holds. Only fires for a signed-in customer, which is the only kind
+          // that can have a wallet hold.
+          // Needs the USER token, not the anon key: the wallet function
+          // verifies the JWT and resolves the customer from it, so an anon
+          // call is a 401 and would have released nothing while looking fine.
+          if(sess) freshToken().then(function(tok){
+            if(tok) api('wallet',{action:'release'},tok).catch(function(){});
+          }).catch(function(){});
+        }catch(_e){}
         mp('Payment Failed',{message:(res.error&&res.error.message)||'',code:(res.error&&res.error.code)||'',decline_code:(res.error&&res.error.decline_code)||''});
         setPayMsg(res.error.message||'Payment was not completed. Please try again.','err');
         return;
@@ -1268,7 +1363,7 @@ import Layout from '../../layouts/Layout.astro';
     var when=($('timeText')&&$('timeText').textContent)||'ASAP';
     var sname=store?shortName(store.name):'';
     var saddr=store?[store.addressLine1,store.postCode].filter(Boolean).join(', '):'';
-    cart=[]; redeem={freeBowls:0,freeDrinks:0}; couponCode='';
+    cart=[]; redeem={freeBowls:0,freeDrinks:0}; couponCode=''; giftCardCode='';
     var rows=items.map(function(c){
       return '<div class="cf-item"><span class="cf-q">'+c.q+'×</span><span class="cf-n">'+esc(c.n)+(c.extras&&c.extras.length?'<span class="cf-ex">'+esc(c.extras.join(', '))+'</span>':'')+'</span><span class="cf-p">'+f(c.unit*c.q)+'</span></div>';
     }).join('');
@@ -1338,6 +1433,35 @@ import Layout from '../../layouts/Layout.astro';
     if(!c){couponCode='';setCouponMsg('');scheduleQuote();return;}
     if(!cart.length){setCouponMsg('Add something to your basket first','err');return;}
     couponCode=c; setCouponMsg('Checking code…'); requestQuote();
+  };
+
+  // ---- gift card redemption (backend PR #28) ----
+  // Apply = re-quote with giftCardCode (read-only preview); the hold + spend
+  // happen in order-pay / process-order server-side.
+  var GIFT_ERRORS={
+    invalid:'That code doesn\'t look right. Check it and try again.',
+    not_found:'Gift card not found. Check the code and try again.',
+    expired:'This gift card has expired.',
+    empty:'This gift card has no balance left.',
+    unusable:'This gift card can no longer be used.',
+  };
+  function setGiftMsg(t,cls,removable){
+    var m=$('giftMsg'); if(!m)return;
+    m.className='authmsg'+(cls?' '+cls:'');
+    m.innerHTML=esc(t||'')+((removable&&giftCardCode)?' <button type="button" class="giftrm" id="giftRemove">Remove</button>':'');
+    var r=$('giftRemove'); if(r)r.onclick=removeGiftCard;
+  }
+  function removeGiftCard(){
+    giftCardCode=''; var i=$('giftInput'); if(i)i.value='';
+    setGiftMsg(''); var gr=$('giftRows'); if(gr)gr.innerHTML='';
+    scheduleQuote();
+  }
+  $('giftToggle').onclick=function(){ this.style.display='none'; $('giftBox').style.display='block'; $('giftInput').focus(); };
+  $('giftApply').onclick=function(){
+    var c=($('giftInput').value||'').trim();
+    if(!c){ removeGiftCard(); return; }
+    if(!cart.length){ setGiftMsg('Add something to your basket first','err'); return; }
+    giftCardCode=c; setGiftMsg('Checking your gift card…'); requestQuote();
   };
 
   loadSess(); renderAuth(); loadAllergens();
