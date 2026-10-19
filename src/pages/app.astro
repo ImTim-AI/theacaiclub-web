@@ -68,44 +68,59 @@ const appSchemas = [
     </div>
   </section>
 
-  <!-- Points earning and reward ladder -->
+  <!-- Points earning and reward ladder (app design language: PointsMark disc, Order-page product cards) -->
   <section class="py-24 bg-dark-surface">
-    <div class="max-w-[1400px] mx-auto px-8">
-      <h2 class="font-heading text-3xl sm:text-4xl font-bold text-light mb-12 text-center">
-        Earn points, <span class="text-charcoal">choose rewards</span>
-      </h2>
+    <div class="max-w-[1400px] mx-auto px-6 sm:px-8">
+      <div class="flex flex-col items-center text-center mb-12">
+        <span class="points-mark w-14 h-14 mb-5" aria-hidden="true"><img src="/images/points-mark.png" alt="" /></span>
+        <h2 class="font-heading text-3xl sm:text-4xl font-bold text-light">
+          Earn points, <span class="text-charcoal">choose rewards</span>
+        </h2>
+        <p class="text-grey mt-3 max-w-xl">Collect points in the app and swap them for your favourites.</p>
+      </div>
 
-      <div class="grid lg:grid-cols-2 gap-6 max-w-3xl mx-auto">
-        <div class="bg-dark-card rounded-2xl p-8 border border-dark-border">
-          <h3 class="font-heading text-xl font-bold text-light mb-3">How you earn</h3>
-          <p class="text-grey text-sm leading-relaxed mb-6">
-            Earn 10 points for every £1 you pay by card on app orders, plus 100 points for every Run Club run.
-          </p>
-          <div class="flex flex-col gap-2">
-            <div class="rounded-full bg-beige/30 px-3 py-2 text-sm text-light">£1 paid by card · 10 points</div>
-            <div class="rounded-full bg-beige/30 px-3 py-2 text-sm text-light">Run Club run · 100 points</div>
+      <div class="max-w-4xl mx-auto">
+        <h3 class="font-heading text-lg font-bold text-light mb-4">How you earn</h3>
+        <div class="grid sm:grid-cols-3 gap-4 mb-12">
+          <div class="bg-dark-card rounded-[15px] border border-dark-border p-5 flex items-center gap-4">
+            <span class="points-mark w-11 h-11 shrink-0" aria-hidden="true"><img src="/images/points-mark.png" alt="" /></span>
+            <div><p class="font-heading text-2xl font-bold text-light leading-none">10 pts</p><p class="text-grey text-sm mt-1">per £1 paid by card</p></div>
           </div>
-          <p class="text-xs text-grey mt-3">100 points on signup.</p>
+          <div class="bg-dark-card rounded-[15px] border border-dark-border p-5 flex items-center gap-4">
+            <span class="points-mark w-11 h-11 shrink-0" aria-hidden="true"><img src="/images/points-mark.png" alt="" /></span>
+            <div><p class="font-heading text-2xl font-bold text-light leading-none">100 pts</p><p class="text-grey text-sm mt-1">per Run Club run</p></div>
+          </div>
+          <div class="bg-dark-card rounded-[15px] border border-dark-border p-5 flex items-center gap-4">
+            <span class="points-mark w-11 h-11 shrink-0" aria-hidden="true"><img src="/images/points-mark.png" alt="" /></span>
+            <div><p class="font-heading text-2xl font-bold text-light leading-none">100 pts</p><p class="text-grey text-sm mt-1">when you sign up</p></div>
+          </div>
         </div>
 
-        <div class="bg-dark-card rounded-2xl p-8 border border-dark-border">
-          <h3 class="font-heading text-xl font-bold text-light mb-3">Spend your points</h3>
-          <p class="text-grey text-sm leading-relaxed mb-6">
-            Use your points at checkout in the app. Rewards are set by each store. At Datchet:
-          </p>
-          <div class="flex flex-col gap-2">
-            <div class="rounded-full bg-beige/30 px-3 py-2 text-sm text-light">Coffee · 300 points</div>
-            <div class="rounded-full bg-beige/30 px-3 py-2 text-sm text-light">Matcha · 450 points</div>
-            <div class="rounded-full bg-beige/30 px-3 py-2 text-sm text-light">Smoothie · 600 points</div>
-            <div class="rounded-full bg-beige/30 px-3 py-2 text-sm text-light">Açai Bowl · 900 points</div>
-          </div>
-          <p class="text-xs text-grey mt-3">Points cover the item itself. Paid extras are charged as usual.</p>
+        <div class="flex items-baseline justify-between gap-4 mb-4">
+          <h3 class="font-heading text-lg font-bold text-light">Spend your points</h3>
+          <p class="text-grey text-xs sm:text-sm">At checkout in the app · Datchet rewards shown</p>
         </div>
-
-
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div class="reward-card"><div class="reward-photo"><img src="/images/rewards/latte.jpg" alt="Latte" loading="lazy" /></div><p class="font-heading font-bold text-light mt-3">Coffee</p><span class="reward-pill">300 pts</span></div>
+          <div class="reward-card"><div class="reward-photo"><img src="/images/rewards/matcha.jpg" alt="Iced Matcha Latte" loading="lazy" /></div><p class="font-heading font-bold text-light mt-3">Matcha</p><span class="reward-pill">450 pts</span></div>
+          <div class="reward-card"><div class="reward-photo"><img src="/images/rewards/smoothie.jpg" alt="Green Goddess smoothie" loading="lazy" /></div><p class="font-heading font-bold text-light mt-3">Smoothie</p><span class="reward-pill">600 pts</span></div>
+          <div class="reward-card"><div class="reward-photo"><img src="/images/rewards/bowl.jpg" alt="The OG açai bowl" loading="lazy" /></div><p class="font-heading font-bold text-light mt-3">Açai Bowl</p><span class="reward-pill">900 pts</span></div>
+        </div>
+        <p class="text-grey text-xs mt-4 text-center">Rewards are set by each store. Points cover the item itself; paid extras are charged as usual.</p>
       </div>
     </div>
   </section>
+
+  <style>
+    /* PointsMark: dark taupe disc, light taupe brand mark at 40% (same as the app) */
+    .points-mark { display:inline-flex; align-items:center; justify-content:center; border-radius:9999px; background:#A3998E; }
+    .points-mark img { width:40%; height:40%; object-fit:contain; }
+    /* Order-page product card: white, grey border, radius 15, 10 padding, photo box radius 10 */
+    .reward-card { background:#fff; border:1px solid #E0E0E0; border-radius:15px; padding:10px 10px 14px; text-align:center; }
+    .reward-photo { aspect-ratio:1/1; background:#EDE8E4; border-radius:10px; overflow:hidden; }
+    .reward-photo img { width:100%; height:100%; object-fit:contain; }
+    .reward-pill { display:inline-block; margin-top:6px; padding:3px 10px; border-radius:9999px; background:#EDE5DE; color:#3A3A38; font-size:12px; font-weight:600; }
+  </style>
 
   <!-- How it works -->
   <section class="py-24 bg-dark">
