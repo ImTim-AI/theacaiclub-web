@@ -9,7 +9,7 @@ const appSchemas = [
     name: 'The Açai Club',
     operatingSystem: 'iOS',
     applicationCategory: 'FoodApplication',
-    description: 'Order ahead, collect berries on every açai bowl, and earn cups on every drink. Nine berries unlock a free bowl. Nine cups unlock a free drink.',
+    description: 'Order ahead and earn 10 points per £1 paid by card, plus 100 points per Run Club run. Get 100 points on signup.',
     downloadUrl: 'https://apps.apple.com/gb/app/the-a%C3%A7ai-club/id6478923734',
     installUrl: 'https://apps.apple.com/gb/app/the-a%C3%A7ai-club/id6478923734',
     publisher: { '@id': 'https://theacaiclub.com/#organization' },
@@ -22,7 +22,7 @@ const appSchemas = [
     name: 'The Açai Club',
     operatingSystem: 'Android',
     applicationCategory: 'FoodApplication',
-    description: 'Order ahead, collect berries on every açai bowl, and earn cups on every drink. Nine berries unlock a free bowl. Nine cups unlock a free drink.',
+    description: 'Order ahead and earn 10 points per £1 paid by card, plus 100 points per Run Club run. Get 100 points on signup.',
     downloadUrl: 'https://play.google.com/store/apps/details?id=com.epostechnologies.theacaiclub',
     installUrl: 'https://play.google.com/store/apps/details?id=com.epostechnologies.theacaiclub',
     publisher: { '@id': 'https://theacaiclub.com/#organization' },
@@ -31,7 +31,7 @@ const appSchemas = [
 ];
 ---
 
-<Layout title="Download the App | The Açai Club" description="Download The Açai Club app for iOS or Android. Order ahead, collect berries on every bowl & earn cups on every drink. First berry on us." schemaJsonLd={appSchemas}>
+<Layout title="Download the App | The Açai Club" description="Download The Açai Club app for iOS or Android. Earn 10 points per £1 paid by card and 100 per Run Club run. Get 100 points on signup." schemaJsonLd={appSchemas}>
 
   <!-- Hero - clean, centered like Joe Juice -->
   <section class="relative pt-32 pb-28 bg-dark overflow-hidden">
@@ -47,7 +47,7 @@ const appSchemas = [
         Earn points, skip the line, <span class="text-charcoal">claim rewards</span>
       </h1>
       <p class="mt-6 text-grey text-lg max-w-lg mx-auto leading-relaxed">
-        Download the app & earn points with every order. Your first berry is on us.
+        Download the app & earn points with every order. Get 100 points on signup.
       </p>
       <div class="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
         <a href="https://apps.apple.com/gb/app/the-a%C3%A7ai-club/id6478923734" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-3 px-8 py-4 bg-taupe text-white rounded-full hover:bg-taupe-dark transition-colors">
@@ -68,42 +68,38 @@ const appSchemas = [
     </div>
   </section>
 
-  <!-- Three ways to earn - compact -->
+  <!-- Points earning and reward ladder -->
   <section class="py-24 bg-dark-surface">
     <div class="max-w-[1400px] mx-auto px-8">
       <h2 class="font-heading text-3xl sm:text-4xl font-bold text-light mb-12 text-center">
-        Two ways to <span class="text-charcoal">earn</span>
+        Earn points, <span class="text-charcoal">choose rewards</span>
       </h2>
 
       <div class="grid lg:grid-cols-2 gap-6 max-w-3xl mx-auto">
         <div class="bg-dark-card rounded-2xl p-8 border border-dark-border">
-          <h3 class="font-heading text-xl font-bold text-light mb-3">Berry Rewards</h3>
+          <h3 class="font-heading text-xl font-bold text-light mb-3">How you earn</h3>
           <p class="text-grey text-sm leading-relaxed mb-6">
-            Earn one berry for every regular-sized açai bowl. Collect nine & your next bowl is completely free.
+            Earn 10 points for every £1 you pay by card on app orders, plus 100 points for every Run Club run.
           </p>
-          <div class="flex gap-1">
-            {[1,2,3,4,5,6,7,8,9].map(() => (
-              <div class="flex-1 h-2 rounded-full bg-beige/30">
-                <div class="w-1.5 h-1.5 rounded-full bg-beige mx-auto mt-[1px]"></div>
-              </div>
-            ))}
+          <div class="flex flex-col gap-2">
+            <div class="rounded-full bg-beige/30 px-3 py-2 text-sm text-light">£1 paid by card · 10 points</div>
+            <div class="rounded-full bg-beige/30 px-3 py-2 text-sm text-light">Run Club run · 100 points</div>
           </div>
-          <p class="text-xs text-grey mt-3">9 berries = 1 free bowl</p>
+          <p class="text-xs text-grey mt-3">100 points on signup.</p>
         </div>
 
         <div class="bg-dark-card rounded-2xl p-8 border border-dark-border">
-          <h3 class="font-heading text-xl font-bold text-light mb-3">Cup Rewards</h3>
+          <h3 class="font-heading text-xl font-bold text-light mb-3">Spend your points</h3>
           <p class="text-grey text-sm leading-relaxed mb-6">
-            Earn one cup for every eligible drink. Collect nine cups to earn a free drink.
+            Use your points at checkout in the app. Rewards are set by each store. At Datchet:
           </p>
-          <div class="flex gap-1">
-            {[1,2,3,4,5,6,7,8,9].map(() => (
-              <div class="flex-1 h-2 rounded-full bg-light/20">
-                <div class="w-1.5 h-1.5 rounded-full bg-light mx-auto mt-[1px]"></div>
-              </div>
-            ))}
+          <div class="flex flex-col gap-2">
+            <div class="rounded-full bg-beige/30 px-3 py-2 text-sm text-light">Coffee · 300 points</div>
+            <div class="rounded-full bg-beige/30 px-3 py-2 text-sm text-light">Matcha · 450 points</div>
+            <div class="rounded-full bg-beige/30 px-3 py-2 text-sm text-light">Smoothie · 600 points</div>
+            <div class="rounded-full bg-beige/30 px-3 py-2 text-sm text-light">Açai Bowl · 900 points</div>
           </div>
-          <p class="text-xs text-grey mt-3">9 cups = 1 free drink</p>
+          <p class="text-xs text-grey mt-3">Points cover the item itself. Paid extras are charged as usual.</p>
         </div>
 
 
@@ -121,7 +117,7 @@ const appSchemas = [
         <div class="text-center">
           <div class="w-14 h-14 rounded-full bg-dark-card border border-dark-border flex items-center justify-center font-heading font-normal text-xl text-charcoal mx-auto mb-5">1</div>
           <h3 class="font-heading font-normal text-light mb-2">Download</h3>
-          <p class="text-grey text-sm">Get the app & create your free account in seconds. First berry is free.</p>
+          <p class="text-grey text-sm">Get the app & create your free account in seconds. Get 100 points on signup.</p>
         </div>
         <div class="text-center">
           <div class="w-14 h-14 rounded-full bg-dark-card border border-dark-border flex items-center justify-center font-heading font-normal text-xl text-charcoal mx-auto mb-5">2</div>
@@ -131,12 +127,12 @@ const appSchemas = [
         <div class="text-center">
           <div class="w-14 h-14 rounded-full bg-dark-card border border-dark-border flex items-center justify-center font-heading font-normal text-xl text-charcoal mx-auto mb-5">3</div>
           <h3 class="font-heading font-normal text-light mb-2">Earn</h3>
-          <p class="text-grey text-sm">Collect berries & cups with every purchase.</p>
+          <p class="text-grey text-sm">Earn 10 points per £1 paid by card and 100 per Run Club run.</p>
         </div>
         <div class="text-center">
           <div class="w-14 h-14 rounded-full bg-dark-card border border-dark-border flex items-center justify-center font-heading font-normal text-xl text-charcoal mx-auto mb-5">4</div>
           <h3 class="font-heading font-normal text-light mb-2">Redeem</h3>
-          <p class="text-grey text-sm">Claim free bowls, drinks & other rewards.</p>
+          <p class="text-grey text-sm">Spend your points on drinks &amp; bowls at checkout.</p>
         </div>
       </div>
     </div>
@@ -146,10 +142,10 @@ const appSchemas = [
   <section class="py-24 bg-dark-surface border-t border-dark-border">
     <div class="max-w-4xl mx-auto px-8 text-center">
       <h2 class="font-heading text-4xl sm:text-5xl font-bold uppercase tracking-tight text-light mb-4">
-        Your first berry <span class="text-charcoal">on us</span>
+        Your first 100 points <span class="text-charcoal">on us</span>
       </h2>
       <p class="text-grey text-lg mb-10">
-        Download the app, sign up & claim your free berry today.
+        Download the app, sign up & claim your 100 signup points.
       </p>
       <a id="download-now" href="https://apps.apple.com/gb/app/the-a%C3%A7ai-club/id6478923734" target="_blank" rel="noopener noreferrer" class="inline-flex px-10 py-4 bg-taupe text-white font-heading font-bold uppercase tracking-wider text-sm rounded-full hover:bg-taupe-dark transition-colors">
         Download Now

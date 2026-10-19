@@ -85,7 +85,7 @@ import Layout from '../../layouts/Layout.astro';
             </div>
             <div class="field">
               <label>Email address</label>
-              <div class="hint">Sign in with a one-time code to earn berries on this order. No password needed.</div>
+              <div class="hint">Sign in with a one-time code for faster checkout. No password needed.</div>
               <div id="authOut">
                 <div class="authrow">
                   <input id="authEmail" type="email" placeholder="you@email.com" />
@@ -96,7 +96,7 @@ import Layout from '../../layouts/Layout.astro';
                   <button class="authbtn" id="verifyCode">Verify</button>
                 </div>
                 <div class="authmsg" id="authMsg"></div>
-                <div class="otp-note">🔒 Passwordless. Your berries are linked to this email.</div>
+                <div class="otp-note">🔒 Passwordless. Linked to this email.</div>
               </div>
               <div id="authIn" style="display:none">
                 <div class="signedbox">
@@ -585,7 +585,7 @@ import Layout from '../../layouts/Layout.astro';
     if(!tok)return Promise.resolve(null);
     if(_linkP)return _linkP;
     _linkP=api('link-profile',{},tok).catch(function(e){ _linkP=null;
-      if(e.code==='AMBIGUOUS_CUSTOMER'){ setAuthMsg('Your account needs a hand. Contact us and your berries will be linked.','err'); }
+      if(e.code==='AMBIGUOUS_CUSTOMER'){ setAuthMsg('Your account needs a hand. Contact us and we will link it.','err'); }
       return null;
     });
     return _linkP;
@@ -644,7 +644,7 @@ import Layout from '../../layouts/Layout.astro';
     if(!CATS.length)return;
     $('menu').innerHTML=CATS.map(function(cat,idx){
       var items=MENU[cat.id]||[];
-      var rwIcon=cat.bowl?'berry_outlined':(cat.cup?'cup-icon':'');
+      var rwIcon=''; // no berry/cup badges: points are app-only (2026-10-19)
       var rw=rwIcon?('<span class="catrw"><img class="rwic" src="/images/'+rwIcon+'.png" alt="" /><span class="rwp">+1</span></span>'):'';
       return '<div class="'+(idx===0?'feat':'section')+'" id="sec-'+cat.id+'"><div class="sechead"><h2>'+esc(cat.name)+'</h2>'+rw+'</div><div class="cards">'+items.map(function(it,i){return card(it,i,cat.id);}).join('')+'</div></div>';
     }).join('');
@@ -822,8 +822,8 @@ import Layout from '../../layouts/Layout.astro';
     $('mName').textContent=it.n;$('mDesc').textContent=it.d||'';
     renderAllergens(it);
     // no reward pill at all for items that earn neither (there's no "points")
-    var rk=it.bowl?'berry':(it.cup?'cup':'');
-    $('mPtsBox').style.display=rk?'':'none';
+    var rk='';
+    $('mPtsBox').style.display='none';
     if(rk){$('mPtsIco').innerHTML=rwImg(rk);$('mPts').textContent=it.bowl?'Earn 1 berry':'Earn 1 cup';}
     $('mOpts').innerHTML='<div class="empty">Loading options…</div>';
     updMPrice();$('scrim').classList.add('open');
@@ -904,7 +904,7 @@ import Layout from '../../layouts/Layout.astro';
     var basket=$('coBasket');if(basket)basket.innerHTML=cart.length?html:'';
     var sub=cart.reduce(function(s,c){return s+c.unit*c.q;},0),n=cart.reduce(function(s,c){return s+c.q;},0),bowls=cart.reduce(function(s,c){return s+(c.bowl?c.q:0);},0);
     $('reviewBtn').className='cta'+(n?'':' disabled');$('reviewBtn').innerHTML=n?('Review order · '+f(sub)):'Review order';
-    $('berryBar').innerHTML=bowls?(rwImg('berry')+' '+(sess?('You will earn '+bowls+' berr'+(bowls>1?'ies':'y')+'. '+Math.max(0,9-bowls)+' more to a free bowl'):('Sign in to earn '+bowls+' berr'+(bowls>1?'ies':'y')+' on this order'))):(rwImg('berry')+' Add a bowl to earn your next berry');
+    $('berryBar').innerHTML='Earn &amp; spend points in The Açai Club app';
     // client math is the INSTANT PREVIEW only; order-quote (server-authoritative)
     // overwrites these as soon as it returns (see applyQuote).
     $('coSub').textContent=f(sub);$('coTotal').textContent=f(sub);$('payTot').textContent=f(sub);syncStepTotals(f(sub));
@@ -937,8 +937,7 @@ import Layout from '../../layouts/Layout.astro';
         // drop a redemption the basket no longer supports, so the quote never errors
         if(!cart.some(function(c){return c.bowl;}))redeem.freeBowls=0;
         if(!cart.some(function(c){return c.cup;}))redeem.freeDrinks=0;
-        if(redeem.freeBowls||redeem.freeDrinks)intent.redeem=redeem;
-        if(couponCode)intent.couponCode=couponCode;
+                if(couponCode)intent.couponCode=couponCode;
         return api('order-quote',intent,tok);
       });
     }).then(function(q){
@@ -972,7 +971,7 @@ import Layout from '../../layouts/Layout.astro';
     var bal=q.loyalty&&q.loyalty.balance;
     // redemption offers (signed-in with available rewards, or an active redemption)
     var rb='';
-    if(bal){
+    if(false){
       // Only offer a free-bowl/-drink redemption when the basket actually has an
       // eligible item to apply it to (a water bottle is neither, so no offer).
       var hasBowl=cart.some(function(i){return i.bowl;});
@@ -986,11 +985,9 @@ import Layout from '../../layouts/Layout.astro';
     // berry bar + signed-in balance note
     var earned=(q.loyalty&&q.loyalty.berriesEarned)||0;
     if(bal){
-      $('berryBar').innerHTML=rwImg('berry')+' '+bal.berriesProgress+'/9 berries · '+rwImg('cup')+' '+bal.cupsProgress+'/9 cups'+(earned?(' · +'+earned+' berr'+(earned>1?'ies':'y')+' on this order'):'');
-      var bn=$('balanceNote'); if(bn)bn.innerHTML=rwImg('berry')+' '+bal.berriesProgress+'/9 berries · '+rwImg('cup')+' '+bal.cupsProgress+'/9 cups'+(bal.freeBowlsAvailable?(' · '+bal.freeBowlsAvailable+' free bowl'+(bal.freeBowlsAvailable>1?'s':'')+' available'):'');
-    } else {
-      $('berryBar').innerHTML=earned?(rwImg('berry')+' '+(sess?('You will earn '+earned+' berr'+(earned>1?'ies':'y')+'. '+Math.max(0,9-earned)+' more to a free bowl'):('Sign in to earn '+earned+' berr'+(earned>1?'ies':'y')+' on this order'))):(rwImg('berry')+' Add a bowl to earn your next berry');
+      var bn=$('balanceNote'); if(bn)bn.innerHTML='Earn &amp; spend points in The Açai Club app';
     }
+    $('berryBar').innerHTML='Earn &amp; spend points in The Açai Club app';
   }
 
   // per-store photo for the status tile (we have one image per store); falls back
@@ -1181,7 +1178,6 @@ import Layout from '../../layouts/Layout.astro';
       notes:(function(){var m=(pickupMode==='in_store')?'In store':'Takeaway';var n=($('orderNotes').value||'').trim();return n?(m+': '+n):m;})(),
       pickup: scheduled?{slotIso:scheduled.iso}:{mode:pickupMode},
     };
-    if(redeem.freeBowls||redeem.freeDrinks)body.redeem=redeem;
     if(couponCode)body.couponCode=couponCode;
     if(g)body.guest=g;
     freshToken().then(function(tok){
@@ -1262,8 +1258,7 @@ import Layout from '../../layouts/Layout.astro';
     // Loyalty is members-only, so only show earned rewards for signed-in members
     // (a guest earns 0 — don't tell them they earned a berry).
     var isMember=!!sess;
-    var berries=isMember?items.reduce(function(s,c){return s+(c.bowl?c.q:0);},0):0;
-    var cups=isMember?items.reduce(function(s,c){return s+(c.cup?c.q:0);},0):0;
+    var berries=0,cups=0; // points are app-only (2026-10-19)
     var pickupName=($('custName').value||'').trim();
     var when=($('timeText')&&$('timeText').textContent)||'ASAP';
     var sname=store?shortName(store.name):'';
@@ -1278,8 +1273,8 @@ import Layout from '../../layouts/Layout.astro';
       if(berries)parts.push(rwImg('berry')+' +'+berries+' berr'+(berries>1?'ies':'y'));
       if(cups)parts.push(rwImg('cup')+' +'+cups+' cup'+(cups>1?'s':''));
       reward='<div class="cf-reward">'+parts.join(' &nbsp;&nbsp; ')+' earned</div>';
-    } else if(!isMember){
-      reward='<div class="cf-reward cf-reward-muted">Sign in next time to earn berries &amp; cups.</div>';
+    } else {
+      reward='<div class="cf-reward cf-reward-muted">Order in The Açai Club app to earn &amp; spend points.</div>';
     }
     var co=$('checkout');
     co.innerHTML='<div class="oa-wrap cf-wrap">'+
