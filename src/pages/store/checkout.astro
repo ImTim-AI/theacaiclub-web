@@ -552,7 +552,8 @@ const products = Object.fromEntries(
     });
     const pe = elements.create('payment', {
       layout: { type: 'accordion', defaultCollapsed: false, radios: false, spacedAccordionItems: true },
-      defaultValues: { billingDetails: { email: currentEmail() ?? undefined } },
+      // No email prefill: a known email makes Stripe Link text the customer a
+      // second code on top of ours. The email still goes on confirmPayment.
       fields: { billingDetails: { email: 'never' } },
       wallets: { applePay: 'auto', googlePay: 'auto' },
     });
@@ -681,7 +682,7 @@ const products = Object.fromEntries(
   }
 </script>
 
-<style>
+<style is:global>
   .co-head { position: sticky; top: 0; z-index: 20; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 60px; padding: 0 16px; background: var(--s-bg); border-bottom: 1px solid var(--s-hairline); }
   .co-back { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; color: var(--s-ink); justify-self: start; }
   .co-logo img { width: 32px; height: 32px; border-radius: 999px; object-fit: cover; }
