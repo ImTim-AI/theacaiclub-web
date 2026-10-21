@@ -3,7 +3,6 @@ import Layout from '../../layouts/Layout.astro';
 import StoreGallery from '../../components/StoreGallery.astro';
 import StoreRail from '../../components/StoreRail.astro';
 import StorePerks from '../../components/StorePerks.astro';
-import StoreAppButtons from '../../components/StoreAppButtons.astro';
 import StoreScripts from '../../components/StoreScripts.astro';
 import store from '../../data/store.json';
 import '../../styles/store.css';
@@ -21,7 +20,7 @@ const dispatch = p.expectedDispatchAt
   ? new Date(p.expectedDispatchAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', timeZone: 'Europe/London' })
   : null;
 const blurb = p.descriptionLines.length ? p.descriptionLines.join('. ') : 'From The Açai Club Store';
-const description = `${p.price}. ${blurb}. Buy in The Açai Club app.`.replace(/\.\./g, '.');
+const description = `${p.price}. ${blurb}. Free collection or UK delivery.`.replace(/\.\./g, '.');
 const subLine = [p.fit, p.colours.length > 1 ? `${p.colours.length} colours` : p.colours[0]?.name].filter(Boolean).join(' · ');
 const isTee = p.categorySlug === 'clothing';
 
@@ -175,8 +174,6 @@ const productSchema = {
                 <summary>How to buy</summary>
                 <div class="store-acc-body">
                   <p>Pick your colour and size, tap Buy now, then choose collection or delivery and pay securely by card.</p>
-                  <p>Prefer to pay with your wallet balance? Buy it in The Açai Club app.</p>
-                  <StoreAppButtons />
                 </div>
               </details>
             </div>
