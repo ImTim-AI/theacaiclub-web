@@ -1,0 +1,23 @@
+<script>
+  // Galleries: keep the pill indicator in step with the scroll position, and
+  // wire the desktop arrows. Arrows and dots never navigate the card link.
+  function wire(gallery: HTMLElement) {
+    const wrap = gallery.parentElement!;
+    const dots = wrap.querySelectorAll<HTMLElement>('.store-dots i');
+    const page = () => Math.round(gallery.scrollLeft / Math.max(gallery.clientWidth, 1));
+    gallery.addEventListener('scroll', () => {
+      const p = page();
+      dots.forEach((d, i) => d.toggleAttribute('data-on', i === p));
+    }, { passive: true });
+    wrap.querySelectorAll<HTMLButtonElement>('.store-arrow').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const n = gallery.children.length;
+        const next = (page() + (btn.dataset.dir === 'next' ? 1 : -1) + n) % n;
+        gallery.scrollTo({ left: next * gallery.clientWidth, behavior: 'smooth' });
+      });
+    });
+  }
+  document.querySelectorAll<HTMLElement>('.store-gallery').forEach(wire);
+</script>

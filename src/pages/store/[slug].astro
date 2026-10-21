@@ -1,0 +1,163 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import StoreGallery from '../../components/StoreGallery.astro';
+import StoreScripts from '../../components/StoreScripts.astro';
+import store from '../../data/store.json';
+import '../../styles/store.css';
+
+export function getStaticPaths() {
+  return store.products.map((product) => ({ params: { slug: product.slug }, props: { product } }));
+}
+
+const { product: p } = Astro.props;
+const def = p.colours.find((c) => c.name === p.defaultColour) ?? p.colours[0];
+const lead = def?.gallery[0] ?? p.colours.flatMap((c) => c.gallery)[0];
+const url = `https://theacaiclub.com/store/${p.slug}`;
+const dispatch = p.expectedDispatchAt
+  ? new Date(p.expectedDispatchAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', timeZone: 'Europe/London' })
+  : null;
+const blurb = p.descriptionLines.length ? p.descriptionLines.join('. ') : `From The Açai Club Store.`;
+const description = `${p.price}. ${blurb}. Buy in The Açai Club app.`.replace(/\.\./g, '.');
+
+const productSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  name: p.name,
+  url,
+  image: p.colours.flatMap((c) => c.gallery).map((g) => new URL(g.src, 'https://theacaiclub.com').href),
+  description: blurb,
+  brand: { '@type': 'Brand', name: 'The Açai Club' },
+  offers: {
+    '@type': 'Offer',
+    priceCurrency: 'GBP',
+    price: (p.pricePence / 100).toFixed(2),
+    availability: p.soldOut ? 'https://schema.org/SoldOut' : p.preorder ? 'https://schema.org/PreOrder' : 'https://schema.org/InStock',
+    url,
+  },
+};
+---
+
+<Layout title={`${p.name} | The Açai Club Store`} description={description} ogImage={lead?.src} ogImageWidth={lead?.width} ogImageHeight={lead?.height} schemaJsonLd={productSchema}>
+  <div class="store min-h-screen">
+    <div class="max-w-[1100px] mx-auto md:px-6 md:pt-8 md:grid md:grid-cols-2 md:gap-10">
+      <div>
+        <a href="/store" class="hidden md:inline-block text-[13px] font-semibold mb-4" style="color:var(--s-muted)">‹ Store</a>
+        <div class="relative aspect-[4/5] md:rounded-[14px] overflow-hidden" style="background:var(--s-placeholder)">
+          {p.colours.map((c) => (
+            <StoreGallery images={c.gallery} colour={c.name} active={c.name === def?.name} eager sizes="(min-width:768px) 50vw, 100vw" />
+          ))}
+          {p.soldOut && <div class="store-soldout">Sold out</div>}
+        </div>
+      </div>
+
+      <div class="px-5 pt-5 pb-6 md:px-0 md:pt-12">
+        <h1 class="text-[24px] md:text-[28px] font-bold leading-[1.15]">{p.name}</h1>
+        <p class="mt-2 text-[17px] font-bold">{p.price}</p>
+
+        {p.preorder && (
+          <p class="mt-3 text-[13px] font-semibold" style="color:var(--s-muted)">
+            Pre-order. {dispatch ? `Expected to dispatch by ${dispatch}.` : 'Dispatch date to be confirmed.'}
+          </p>
+        )}
+
+        {p.descriptionLines.length > 0 && (
+          <ul class="store-bullets mt-5">
+            {p.descriptionLines.map((line) => <li>{line}</li>)}
+          </ul>
+        )}
+
+        <button type="button" class="store-share mt-4" id="share" data-url={url} data-title={p.name}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></svg>
+          <span>Share</span>
+        </button>
+
+        {p.materials && (
+          <>
+            <p class="store-field mt-6">Materials &amp; Care</p>
+            <p class="mt-2 text-[14px] leading-[1.55]" style="color:var(--s-muted)">{p.materials}</p>
+          </>
+        )}
+
+        {p.colours.length > 1 && (
+          <>
+            <p class="store-field mt-6">Colour</p>
+            <div class="mt-2.5 flex flex-wrap gap-2.5">
+              {p.colours.map((c) => (
+                <button type="button" class="store-pill-colour" data-colour={c.name} aria-pressed={c.name === def?.name ? 'true' : 'false'}>
+                  <span style={`background:${c.swatch}`}></span>{c.name}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+
+        <p class="store-field mt-6">Sizes</p>
+        {p.colours.map((c) => (
+          <div class="mt-2.5 flex flex-wrap gap-2.5" data-sizes={c.name} hidden={c.name !== def?.name}>
+            {c.sizes.map((s) => (
+              <span class="store-size" data-soldout={s.soldOut ? '' : undefined}>
+                <b>{s.size}</b>{s.soldOut && <small>Sold out</small>}
+              </span>
+            ))}
+          </div>
+        ))}
+
+        <div class="hidden md:flex items-center gap-4 mt-8">
+          <a href="/get" class="store-cta" data-buy>{p.soldOut ? 'View in the app' : 'Buy in the app'}</a>
+          <p class="text-[12px]" style="color:var(--s-muted)">Collect in store or have it delivered.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="store-bar md:hidden">
+      <div class="px-5 py-3 flex items-center gap-4" style="padding-bottom:max(12px, env(safe-area-inset-bottom))">
+        <div class="flex-1 min-w-0">
+          <p class="text-[17px] font-bold">{p.price}</p>
+          <p class="text-[12px]" style="color:var(--s-muted)">Collect in store or delivery</p>
+        </div>
+        <a href="/get" class="store-cta" data-buy>{p.soldOut ? 'View in the app' : 'Buy in the app'}</a>
+      </div>
+    </div>
+  </div>
+  <StoreScripts />
+</Layout>
+
+<script>
+  // Colour pills swap the gallery and the size row. ?colour= (set by the
+  // Store card's dots) opens on that colour.
+  const pills = document.querySelectorAll<HTMLButtonElement>('.store-pill-colour');
+  function select(colour: string) {
+    if (![...pills].some((p) => p.dataset.colour === colour)) return;
+    pills.forEach((p) => p.setAttribute('aria-pressed', String(p.dataset.colour === colour)));
+    document.querySelectorAll<HTMLElement>('.store-photo-wrap').forEach((w) => { w.hidden = w.dataset.colour !== colour; });
+    document.querySelectorAll<HTMLElement>('[data-sizes]').forEach((s) => { s.hidden = s.dataset.sizes !== colour; });
+  }
+  pills.forEach((p) => p.addEventListener('click', () => {
+    select(p.dataset.colour!);
+    const u = new URL(location.href);
+    u.searchParams.set('colour', p.dataset.colour!);
+    history.replaceState(null, '', u);
+  }));
+  const wanted = new URLSearchParams(location.search).get('colour');
+  if (wanted) select(wanted);
+
+  // Native share sheet where there is one, otherwise copy the link.
+  const share = document.getElementById('share') as HTMLButtonElement;
+  share.addEventListener('click', async () => {
+    const url = share.dataset.url!;
+    const title = share.dataset.title!;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text: `${title} from The Açai Club`, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      share.querySelector('span')!.textContent = 'Link copied';
+      setTimeout(() => { share.querySelector('span')!.textContent = 'Share'; }, 2000);
+    } catch { /* dismissed */ }
+  });
+
+  document.querySelectorAll('[data-buy]').forEach((a) => a.addEventListener('click', () => {
+    try { (window as any).mixpanel?.track('Store Web Buy Tap', { product: location.pathname.split('/').pop() }); } catch {}
+  }));
+</script>

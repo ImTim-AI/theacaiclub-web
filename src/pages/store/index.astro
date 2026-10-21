@@ -1,0 +1,108 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import StoreGallery from '../../components/StoreGallery.astro';
+import StoreScripts from '../../components/StoreScripts.astro';
+import store from '../../data/store.json';
+import '../../styles/store.css';
+
+// Snapshot of the app's published Store (scripts/sync-store.mjs). Browse and
+// share only: buying happens in the app.
+const { categories, products } = store;
+const first = products[0]?.colours.find((c) => c.name === products[0].defaultColour)?.card[0];
+
+const itemList = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'The Açai Club Store',
+  itemListElement: products.map((p, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    url: `https://theacaiclub.com/store/${p.slug}`,
+    name: p.name,
+  })),
+};
+---
+
+<Layout
+  title="Store | The Açai Club"
+  description="T-shirts, totes and more from The Açai Club. Browse here, buy in the app for collection or delivery."
+  ogImage={first?.src} ogImageWidth={first?.width} ogImageHeight={first?.height}
+  schemaJsonLd={itemList}
+>
+  <div class="store min-h-screen">
+    <div class="max-w-[1200px] mx-auto px-4 sm:px-6 pt-8 pb-16">
+      <h1 class="store-title">Store</h1>
+      <p class="text-center text-[13px] mt-2" style="color:var(--s-muted)">Browse here. Buy in the app.</p>
+
+      {categories.length > 1 && (
+        <div class="store-cats mt-6 sm:justify-center" role="toolbar" aria-label="Categories">
+          <button type="button" class="store-cat" data-cat="" aria-pressed="true">All</button>
+          {categories.map((c) => (
+            <button type="button" class="store-cat" data-cat={c.id} aria-pressed="false">{c.name}</button>
+          ))}
+        </div>
+      )}
+
+      <div class="store-grid mt-6">
+        {products.map((p, i) => {
+          const def = p.colours.find((c) => c.name === p.defaultColour) ?? p.colours[0];
+          return (
+            <a class="store-card" href={`/store/${p.slug}`} data-cat={p.categoryId} data-slug={p.slug}>
+              <div class="store-card-photo">
+                {p.colours.map((c) => (
+                  <StoreGallery images={c.card} colour={c.name} active={c.name === def?.name} eager={i < 4} />
+                ))}
+                {p.soldOut && <div class="store-soldout">Sold out</div>}
+              </div>
+              <p class="store-card-name">{p.name}</p>
+              <p class="store-card-colour" data-colour-label>{def?.name}</p>
+              <p class="store-card-price">{p.price}</p>
+              {p.colours.length > 1 && (
+                <div class="store-swatches">
+                  {p.colours.map((c) => (
+                    <button type="button" class="store-swatch" data-colour={c.name}
+                      aria-pressed={c.name === def?.name ? 'true' : 'false'} aria-label={c.name}>
+                      <span style={`background:${c.swatch}`}></span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </a>
+          );
+        })}
+      </div>
+
+      <div class="mt-14 text-center">
+        <a href="/get" class="store-cta">Get the app to buy</a>
+        <p class="text-[12px] mt-3" style="color:var(--s-muted)">Collect in store or have it delivered.</p>
+      </div>
+    </div>
+  </div>
+  <StoreScripts />
+</Layout>
+
+<script>
+  // Category filter (All + server categories).
+  const cats = document.querySelectorAll<HTMLButtonElement>('.store-cat');
+  const cards = document.querySelectorAll<HTMLAnchorElement>('.store-card');
+  cats.forEach((btn) => btn.addEventListener('click', () => {
+    cats.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+    cards.forEach((card) => { card.hidden = !!btn.dataset.cat && card.dataset.cat !== btn.dataset.cat; });
+  }));
+
+  // Colour dots change the card, never navigate. The link then opens the
+  // product on the colour showing, the same as the app.
+  cards.forEach((card) => {
+    card.querySelectorAll<HTMLButtonElement>('.store-swatch').forEach((sw) => {
+      sw.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const colour = sw.dataset.colour!;
+        card.querySelectorAll<HTMLButtonElement>('.store-swatch').forEach((s) => s.setAttribute('aria-pressed', String(s === sw)));
+        card.querySelectorAll<HTMLElement>('.store-photo-wrap').forEach((w) => { w.hidden = w.dataset.colour !== colour; });
+        card.querySelector('[data-colour-label]')!.textContent = colour;
+        card.href = `/store/${card.dataset.slug}?colour=${encodeURIComponent(colour)}`;
+      });
+    });
+  });
+</script>

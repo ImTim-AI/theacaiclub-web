@@ -1,0 +1,804 @@
+{
+  "syncedAt": "2026-10-21T07:07:01.498Z",
+  "categories": [
+    {
+      "id": "ca000000-0000-4000-8000-000000000001",
+      "slug": "clothing",
+      "name": "Clothing"
+    },
+    {
+      "id": "ca000000-0000-4000-8000-000000000002",
+      "slug": "accessories",
+      "name": "Accessories"
+    }
+  ],
+  "products": [
+    {
+      "slug": "arabic",
+      "name": "Dubai Edition T-Shirt",
+      "categoryId": "ca000000-0000-4000-8000-000000000001",
+      "price": "£32.00",
+      "pricePence": 3200,
+      "preorder": false,
+      "expectedDispatchAt": null,
+      "descriptionLines": [
+        "Oversized Fit",
+        "Perfect sports wear or relaxed everyday layer",
+        "Soft, durable and made to last"
+      ],
+      "materials": "100% Cotton",
+      "defaultColour": "Black",
+      "soldOut": false,
+      "colours": [
+        {
+          "name": "Black",
+          "swatch": "#16150E",
+          "card": [
+            {
+              "src": "/images/store/arabic/c31a6d56f3.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Dubai Edition T-Shirt, Black, back"
+            },
+            {
+              "src": "/images/store/arabic/8535ca7b88.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Dubai Edition T-Shirt, Black, back"
+            }
+          ],
+          "gallery": [
+            {
+              "src": "/images/store/arabic/c31a6d56f3.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Dubai Edition T-Shirt, Black, back"
+            },
+            {
+              "src": "/images/store/arabic/8535ca7b88.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Dubai Edition T-Shirt, Black, back"
+            },
+            {
+              "src": "/images/store/arabic/30517a2bd4.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Dubai Edition T-Shirt, Black, front"
+            },
+            {
+              "src": "/images/store/arabic/db756b4fd7.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Dubai Edition T-Shirt, Black, front"
+            }
+          ],
+          "sizes": [
+            {
+              "size": "S",
+              "soldOut": false
+            },
+            {
+              "size": "M",
+              "soldOut": false
+            },
+            {
+              "size": "L",
+              "soldOut": false
+            }
+          ]
+        },
+        {
+          "name": "White",
+          "swatch": "#F4F1EC",
+          "card": [
+            {
+              "src": "/images/store/arabic/d1e8b107cf.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Dubai Edition T-Shirt, White, back"
+            },
+            {
+              "src": "/images/store/arabic/bf0d1573c5.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Dubai Edition T-Shirt, White, front"
+            }
+          ],
+          "gallery": [
+            {
+              "src": "/images/store/arabic/d1e8b107cf.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Dubai Edition T-Shirt, White, back"
+            },
+            {
+              "src": "/images/store/arabic/bf0d1573c5.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Dubai Edition T-Shirt, White, front"
+            },
+            {
+              "src": "/images/store/arabic/c77e2858f9.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Dubai Edition T-Shirt, White, back"
+            },
+            {
+              "src": "/images/store/arabic/6f781de32a.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Dubai Edition T-Shirt, White, front"
+            }
+          ],
+          "sizes": [
+            {
+              "size": "S",
+              "soldOut": false
+            },
+            {
+              "size": "M",
+              "soldOut": false
+            },
+            {
+              "size": "L",
+              "soldOut": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "wellness",
+      "name": "Wellness Graphic T-Shirt",
+      "categoryId": "ca000000-0000-4000-8000-000000000001",
+      "price": "£32.00",
+      "pricePence": 3200,
+      "preorder": false,
+      "expectedDispatchAt": null,
+      "descriptionLines": [
+        "Oversized Fit",
+        "Perfect sports wear or relaxed everyday layer",
+        "Soft, durable and made to last"
+      ],
+      "materials": "100% Cotton",
+      "defaultColour": "White",
+      "soldOut": false,
+      "colours": [
+        {
+          "name": "Black",
+          "swatch": "#16150E",
+          "card": [],
+          "gallery": [],
+          "sizes": [
+            {
+              "size": "S",
+              "soldOut": false
+            },
+            {
+              "size": "M",
+              "soldOut": false
+            },
+            {
+              "size": "L",
+              "soldOut": false
+            }
+          ]
+        },
+        {
+          "name": "White",
+          "swatch": "#F4F1EC",
+          "card": [
+            {
+              "src": "/images/store/wellness/dfe1c96870.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Wellness Graphic T-Shirt, White, back"
+            }
+          ],
+          "gallery": [
+            {
+              "src": "/images/store/wellness/dfe1c96870.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Wellness Graphic T-Shirt, White, back"
+            }
+          ],
+          "sizes": [
+            {
+              "size": "S",
+              "soldOut": false
+            },
+            {
+              "size": "M",
+              "soldOut": false
+            },
+            {
+              "size": "L",
+              "soldOut": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "kiss-my-acai-t-shirt",
+      "name": "Our Signature ‘Kiss My Açai’ T-Shirt",
+      "categoryId": "ca000000-0000-4000-8000-000000000001",
+      "price": "£32.00",
+      "pricePence": 3200,
+      "preorder": false,
+      "expectedDispatchAt": null,
+      "descriptionLines": [
+        "Oversized Fit",
+        "Perfect sports wear or relaxed everyday layer",
+        "Soft, durable and made to last"
+      ],
+      "materials": "100% Cotton",
+      "defaultColour": "White",
+      "soldOut": false,
+      "colours": [
+        {
+          "name": "Black",
+          "swatch": "#16150E",
+          "card": [],
+          "gallery": [],
+          "sizes": [
+            {
+              "size": "S",
+              "soldOut": false
+            },
+            {
+              "size": "M",
+              "soldOut": false
+            },
+            {
+              "size": "L",
+              "soldOut": false
+            }
+          ]
+        },
+        {
+          "name": "White",
+          "swatch": "#F4F1EC",
+          "card": [
+            {
+              "src": "/images/store/kiss-my-acai-t-shirt/27007a5911.jpg",
+              "width": 1128,
+              "height": 1400,
+              "alt": "Our Signature ‘Kiss My Açai’ T-Shirt, White, back"
+            },
+            {
+              "src": "/images/store/kiss-my-acai-t-shirt/4e22301f8a.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Our Signature ‘Kiss My Açai’ T-Shirt, White, front"
+            }
+          ],
+          "gallery": [
+            {
+              "src": "/images/store/kiss-my-acai-t-shirt/27007a5911.jpg",
+              "width": 1128,
+              "height": 1400,
+              "alt": "Our Signature ‘Kiss My Açai’ T-Shirt, White, back"
+            },
+            {
+              "src": "/images/store/kiss-my-acai-t-shirt/4e22301f8a.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Our Signature ‘Kiss My Açai’ T-Shirt, White, front"
+            }
+          ],
+          "sizes": [
+            {
+              "size": "S",
+              "soldOut": false
+            },
+            {
+              "size": "M",
+              "soldOut": false
+            },
+            {
+              "size": "L",
+              "soldOut": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "padel-club-t-shirt",
+      "name": "The Padel Club T-Shirt",
+      "categoryId": "ca000000-0000-4000-8000-000000000001",
+      "price": "£32.00",
+      "pricePence": 3200,
+      "preorder": false,
+      "expectedDispatchAt": null,
+      "descriptionLines": [
+        "Oversized Fit",
+        "Perfect sports wear or relaxed everyday layer",
+        "Soft, durable and made to last"
+      ],
+      "materials": "100% Cotton",
+      "defaultColour": "White",
+      "soldOut": false,
+      "colours": [
+        {
+          "name": "Black",
+          "swatch": "#16150E",
+          "card": [],
+          "gallery": [],
+          "sizes": [
+            {
+              "size": "S",
+              "soldOut": false
+            },
+            {
+              "size": "M",
+              "soldOut": false
+            },
+            {
+              "size": "L",
+              "soldOut": false
+            }
+          ]
+        },
+        {
+          "name": "White",
+          "swatch": "#F4F1EC",
+          "card": [
+            {
+              "src": "/images/store/padel-club-t-shirt/c5b43707a3.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "The Padel Club T-Shirt, White, back"
+            },
+            {
+              "src": "/images/store/padel-club-t-shirt/eaa439eb2e.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "The Padel Club T-Shirt, White, front"
+            }
+          ],
+          "gallery": [
+            {
+              "src": "/images/store/padel-club-t-shirt/c5b43707a3.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "The Padel Club T-Shirt, White, back"
+            },
+            {
+              "src": "/images/store/padel-club-t-shirt/eaa439eb2e.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "The Padel Club T-Shirt, White, front"
+            }
+          ],
+          "sizes": [
+            {
+              "size": "S",
+              "soldOut": false
+            },
+            {
+              "size": "M",
+              "soldOut": false
+            },
+            {
+              "size": "L",
+              "soldOut": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "sunday-running-club-t-shirt",
+      "name": "Sunday Running Club T-Shirt",
+      "categoryId": "ca000000-0000-4000-8000-000000000001",
+      "price": "£32.00",
+      "pricePence": 3200,
+      "preorder": false,
+      "expectedDispatchAt": null,
+      "descriptionLines": [
+        "Oversized Fit",
+        "Perfect sports wear or relaxed everyday layer",
+        "Soft, durable and made to last"
+      ],
+      "materials": "100% Cotton",
+      "defaultColour": "White",
+      "soldOut": false,
+      "colours": [
+        {
+          "name": "Black",
+          "swatch": "#16150E",
+          "card": [],
+          "gallery": [],
+          "sizes": [
+            {
+              "size": "S",
+              "soldOut": false
+            },
+            {
+              "size": "M",
+              "soldOut": false
+            },
+            {
+              "size": "L",
+              "soldOut": false
+            }
+          ]
+        },
+        {
+          "name": "White",
+          "swatch": "#F4F1EC",
+          "card": [
+            {
+              "src": "/images/store/sunday-running-club-t-shirt/51c43b4f76.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Sunday Running Club T-Shirt, White, back"
+            },
+            {
+              "src": "/images/store/sunday-running-club-t-shirt/b950661e27.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Sunday Running Club T-Shirt, White, front"
+            }
+          ],
+          "gallery": [
+            {
+              "src": "/images/store/sunday-running-club-t-shirt/51c43b4f76.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Sunday Running Club T-Shirt, White, back"
+            },
+            {
+              "src": "/images/store/sunday-running-club-t-shirt/b950661e27.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "Sunday Running Club T-Shirt, White, front"
+            }
+          ],
+          "sizes": [
+            {
+              "size": "S",
+              "soldOut": false
+            },
+            {
+              "size": "M",
+              "soldOut": false
+            },
+            {
+              "size": "L",
+              "soldOut": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "run-club-t-shirt",
+      "name": "The Run Club T-Shirt",
+      "categoryId": "ca000000-0000-4000-8000-000000000001",
+      "price": "£32.00",
+      "pricePence": 3200,
+      "preorder": false,
+      "expectedDispatchAt": null,
+      "descriptionLines": [
+        "Oversized Fit",
+        "Perfect sports wear or relaxed everyday layer",
+        "Soft, durable and made to last"
+      ],
+      "materials": "100% Cotton",
+      "defaultColour": "White",
+      "soldOut": false,
+      "colours": [
+        {
+          "name": "Black",
+          "swatch": "#16150E",
+          "card": [],
+          "gallery": [],
+          "sizes": [
+            {
+              "size": "S",
+              "soldOut": false
+            },
+            {
+              "size": "M",
+              "soldOut": false
+            },
+            {
+              "size": "L",
+              "soldOut": false
+            }
+          ]
+        },
+        {
+          "name": "White",
+          "swatch": "#F4F1EC",
+          "card": [
+            {
+              "src": "/images/store/run-club-t-shirt/d3af88b188.jpg",
+              "width": 1122,
+              "height": 1400,
+              "alt": "The Run Club T-Shirt, White, back"
+            },
+            {
+              "src": "/images/store/run-club-t-shirt/4e22301f8a.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "The Run Club T-Shirt, White, front"
+            }
+          ],
+          "gallery": [
+            {
+              "src": "/images/store/run-club-t-shirt/d3af88b188.jpg",
+              "width": 1122,
+              "height": 1400,
+              "alt": "The Run Club T-Shirt, White, back"
+            },
+            {
+              "src": "/images/store/run-club-t-shirt/4e22301f8a.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "The Run Club T-Shirt, White, front"
+            }
+          ],
+          "sizes": [
+            {
+              "size": "S",
+              "soldOut": false
+            },
+            {
+              "size": "M",
+              "soldOut": false
+            },
+            {
+              "size": "L",
+              "soldOut": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "wellness-in-motion-t-shirt",
+      "name": "Wellness In Motion T-Shirt",
+      "categoryId": "ca000000-0000-4000-8000-000000000001",
+      "price": "£32.00",
+      "pricePence": 3200,
+      "preorder": false,
+      "expectedDispatchAt": null,
+      "descriptionLines": [
+        "Oversized Fit",
+        "Perfect sports wear or relaxed everyday layer",
+        "Soft, durable and made to last"
+      ],
+      "materials": "100% Cotton",
+      "defaultColour": "Black",
+      "soldOut": false,
+      "colours": [
+        {
+          "name": "Black",
+          "swatch": "#16150E",
+          "card": [
+            {
+              "src": "/images/store/wellness-in-motion-t-shirt/1313369a12.jpg",
+              "width": 1000,
+              "height": 1400,
+              "alt": "Wellness In Motion T-Shirt, Black, back"
+            },
+            {
+              "src": "/images/store/wellness-in-motion-t-shirt/336a98ca05.jpg",
+              "width": 1000,
+              "height": 1400,
+              "alt": "Wellness In Motion T-Shirt, Black, back"
+            }
+          ],
+          "gallery": [
+            {
+              "src": "/images/store/wellness-in-motion-t-shirt/1313369a12.jpg",
+              "width": 1000,
+              "height": 1400,
+              "alt": "Wellness In Motion T-Shirt, Black, back"
+            },
+            {
+              "src": "/images/store/wellness-in-motion-t-shirt/336a98ca05.jpg",
+              "width": 1000,
+              "height": 1400,
+              "alt": "Wellness In Motion T-Shirt, Black, back"
+            },
+            {
+              "src": "/images/store/wellness-in-motion-t-shirt/0a2e72f46e.jpg",
+              "width": 1000,
+              "height": 1400,
+              "alt": "Wellness In Motion T-Shirt, Black, back"
+            }
+          ],
+          "sizes": [
+            {
+              "size": "S",
+              "soldOut": false
+            },
+            {
+              "size": "M",
+              "soldOut": false
+            },
+            {
+              "size": "L",
+              "soldOut": false
+            }
+          ]
+        },
+        {
+          "name": "White",
+          "swatch": "#F4F1EC",
+          "card": [
+            {
+              "src": "/images/store/wellness-in-motion-t-shirt/d1908a1286.jpg",
+              "width": 1000,
+              "height": 1400,
+              "alt": "Wellness In Motion T-Shirt, White, back"
+            }
+          ],
+          "gallery": [
+            {
+              "src": "/images/store/wellness-in-motion-t-shirt/d1908a1286.jpg",
+              "width": 1000,
+              "height": 1400,
+              "alt": "Wellness In Motion T-Shirt, White, back"
+            }
+          ],
+          "sizes": [
+            {
+              "size": "S",
+              "soldOut": false
+            },
+            {
+              "size": "M",
+              "soldOut": false
+            },
+            {
+              "size": "L",
+              "soldOut": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "the-acai-club-tote-bag-black-logo",
+      "name": "The Açai Club Tote Bag – Black Logo",
+      "categoryId": "ca000000-0000-4000-8000-000000000002",
+      "price": "£15.00",
+      "pricePence": 1500,
+      "preorder": false,
+      "expectedDispatchAt": null,
+      "descriptionLines": [
+        "Canvas tote bag with The Açai Club logo."
+      ],
+      "materials": null,
+      "defaultColour": "Natural",
+      "soldOut": false,
+      "colours": [
+        {
+          "name": "Natural",
+          "swatch": "#8A8A87",
+          "card": [
+            {
+              "src": "/images/store/the-acai-club-tote-bag-black-logo/ed2ce74f07.jpg",
+              "width": 991,
+              "height": 1400,
+              "alt": "The Açai Club Tote Bag – Black Logo, detail"
+            },
+            {
+              "src": "/images/store/the-acai-club-tote-bag-black-logo/44357abf7f.jpg",
+              "width": 1400,
+              "height": 1400,
+              "alt": "The Açai Club Tote Bag – Black Logo, front"
+            }
+          ],
+          "gallery": [
+            {
+              "src": "/images/store/the-acai-club-tote-bag-black-logo/ed2ce74f07.jpg",
+              "width": 991,
+              "height": 1400,
+              "alt": "The Açai Club Tote Bag – Black Logo, detail"
+            },
+            {
+              "src": "/images/store/the-acai-club-tote-bag-black-logo/44357abf7f.jpg",
+              "width": 1400,
+              "height": 1400,
+              "alt": "The Açai Club Tote Bag – Black Logo, front"
+            },
+            {
+              "src": "/images/store/the-acai-club-tote-bag-black-logo/cf074a8a85.jpg",
+              "width": 1400,
+              "height": 1400,
+              "alt": "The Açai Club Tote Bag – Black Logo, back"
+            },
+            {
+              "src": "/images/store/the-acai-club-tote-bag-black-logo/a7bda8cc23.jpg",
+              "width": 1400,
+              "height": 1400,
+              "alt": "The Açai Club Tote Bag – Black Logo, detail"
+            }
+          ],
+          "sizes": [
+            {
+              "size": "One Size",
+              "soldOut": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "the-acai-club-tote-bag-white-logo",
+      "name": "The Açai Club Tote Bag – White Logo",
+      "categoryId": "ca000000-0000-4000-8000-000000000002",
+      "price": "£15.00",
+      "pricePence": 1500,
+      "preorder": false,
+      "expectedDispatchAt": null,
+      "descriptionLines": [
+        "Canvas tote bag with The Açai Club logo."
+      ],
+      "materials": null,
+      "defaultColour": "Natural",
+      "soldOut": false,
+      "colours": [
+        {
+          "name": "Natural",
+          "swatch": "#8A8A87",
+          "card": [
+            {
+              "src": "/images/store/the-acai-club-tote-bag-white-logo/be7c3b1f2d.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "The Açai Club Tote Bag – White Logo, detail"
+            },
+            {
+              "src": "/images/store/the-acai-club-tote-bag-white-logo/775b422492.jpg",
+              "width": 1400,
+              "height": 1400,
+              "alt": "The Açai Club Tote Bag – White Logo, front"
+            }
+          ],
+          "gallery": [
+            {
+              "src": "/images/store/the-acai-club-tote-bag-white-logo/be7c3b1f2d.jpg",
+              "width": 1120,
+              "height": 1400,
+              "alt": "The Açai Club Tote Bag – White Logo, detail"
+            },
+            {
+              "src": "/images/store/the-acai-club-tote-bag-white-logo/775b422492.jpg",
+              "width": 1400,
+              "height": 1400,
+              "alt": "The Açai Club Tote Bag – White Logo, front"
+            },
+            {
+              "src": "/images/store/the-acai-club-tote-bag-white-logo/f25f5ebcc6.jpg",
+              "width": 1400,
+              "height": 1400,
+              "alt": "The Açai Club Tote Bag – White Logo, back"
+            },
+            {
+              "src": "/images/store/the-acai-club-tote-bag-white-logo/b489b5a09b.jpg",
+              "width": 1400,
+              "height": 1400,
+              "alt": "The Açai Club Tote Bag – White Logo, detail"
+            }
+          ],
+          "sizes": [
+            {
+              "size": "One Size",
+              "soldOut": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+/*
+  Store: the app's Shop design language on the web.
+  Tokens mirror app/lib/merch/merch_theme.dart (which points at AppTheme):
+    background  #F2EEEA  accentBackgroundColor
+    surface     #FFFFFF
+    ink         #3A3A38  primaryColor
+    inkMuted    #8A8A87  textBrandLight
+    hairline    #EDE8E4
+    action      #9B9B90  brandTaupe (filled CTA, selected pills)
+    placeholder #CBC8BE  brandSand
+    indicator   #FCD4DF active pill 20x6 / #E4E0D9 dots 6x6 (PageIndicator)
+*/
+.store {
+  --s-bg: #F2EEEA;
+  --s-surface: #fff;
+  --s-ink: #3A3A38;
+  --s-muted: #8A8A87;
+  --s-hairline: #EDE8E4;
+  --s-action: #9B9B90;
+  --s-action-hover: #7E7E73;
+  --s-placeholder: #CBC8BE;
+  --s-dot-on: #FCD4DF;
+  --s-dot-off: #E4E0D9;
+  background: var(--s-bg);
+  color: var(--s-ink);
+  font-family: var(--font-body);
+}
+
+/* Title: centred, like the app's Store header */
+.store-title { font-size: 20px; font-weight: 700; text-align: center; letter-spacing: -0.01em; }
+
+/* Category pills: 44px, radius 14, white + hairline, selected = taupe fill */
+.store-cats { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+.store-cats::-webkit-scrollbar { display: none; }
+.store-cat {
+  flex: none; height: 44px; min-width: 110px; padding: 0 18px; border-radius: 14px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--s-surface); border: 1px solid var(--s-hairline);
+  color: var(--s-ink); font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.store-cat[aria-pressed="true"] { background: var(--s-action); border-color: var(--s-action); color: #fff; }
+
+/* Card grid: the app's default two-up Card layout, wider screens get more columns */
+.store-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 768px) { .store-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; } }
+@media (min-width: 1100px) { .store-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+.store-card {
+  display: flex; flex-direction: column; padding: 12px; border-radius: 14px;
+  background: var(--s-surface); border: 1px solid var(--s-hairline); color: inherit; text-decoration: none;
+}
+.store-card:hover .store-card-name { text-decoration: underline; text-underline-offset: 3px; }
+.store-card-photo { position: relative; aspect-ratio: 4 / 5.2; border-radius: 10px; overflow: hidden; background: var(--s-placeholder); }
+.store-card-name { margin-top: 10px; font-size: 13px; font-weight: 700; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.store-card-colour { margin-top: 3px; font-size: 12px; font-weight: 500; color: var(--s-muted); }
+.store-card-price { margin-top: 4px; font-size: 12px; font-weight: 600; }
+@media (min-width: 768px) {
+  .store-card-name { font-size: 15px; }
+  .store-card-colour, .store-card-price { font-size: 13px; }
+}
+
+/* Swipeable gallery: scroll-snap pages + the app's pink pill indicator */
+.store-gallery { position: absolute; inset: 0; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.store-gallery::-webkit-scrollbar { display: none; }
+.store-gallery img { flex: none; width: 100%; height: 100%; object-fit: cover; scroll-snap-align: start; }
+.store-gallery[data-count="1"] { overflow: hidden; }
+.store-dots { position: absolute; left: 0; right: 0; bottom: 14px; display: flex; justify-content: center; gap: 6px; pointer-events: none; }
+.store-dots i { display: block; width: 6px; height: 6px; border-radius: 3px; background: var(--s-dot-off); transition: width .22s ease-out, background .22s ease-out; }
+.store-dots i[data-on] { width: 20px; background: var(--s-dot-on); }
+.store-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 999px;
+  background: rgba(255,255,255,.85); border: 1px solid var(--s-hairline); color: var(--s-ink);
+  display: none; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; line-height: 1;
+}
+@media (hover: hover) and (min-width: 768px) { .store-photo-wrap:hover .store-arrow { display: flex; } }
+.store-arrow[data-dir="prev"] { left: 12px; }
+.store-arrow[data-dir="next"] { right: 12px; }
+
+.store-soldout { position: absolute; left: 0; right: 0; top: 62%; padding: 8px 0; text-align: center; background: rgba(0,0,0,.8); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; pointer-events: none; }
+
+/* Colour dots (MerchSwatch.dot): 13px, 1px muted ring, 2px ink ring when selected; 6px touch padding */
+.store-swatches { display: flex; margin-left: -6px; }
+.store-swatch { padding: 6px; background: none; border: 0; cursor: pointer; }
+.store-swatch span { display: block; width: 13px; height: 13px; border-radius: 999px; border: 1px solid var(--s-muted); }
+.store-swatch[aria-pressed="true"] span { border: 2px solid var(--s-ink); }
+
+/* Product page */
+.store-field { font-size: 11px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--s-muted); }
+.store-bullets li { position: relative; padding-left: 14px; color: var(--s-muted); font-size: 14px; line-height: 1.55; }
+.store-bullets li + li { margin-top: 8px; }
+.store-bullets li::before { content: ""; position: absolute; left: 0; top: 9px; width: 4px; height: 4px; border-radius: 999px; background: var(--s-muted); }
+.store-pill-colour {
+  display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px 7px 8px; border-radius: 999px;
+  background: var(--s-surface); border: 1px solid var(--s-hairline); color: var(--s-ink); font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.store-pill-colour span { width: 16px; height: 16px; border-radius: 999px; border: 1px solid var(--s-muted); }
+.store-pill-colour[aria-pressed="true"] { border-color: var(--s-ink); }
+.store-pill-colour[aria-pressed="true"] span { border: 2px solid var(--s-ink); }
+.store-size {
+  display: inline-flex; flex-direction: column; align-items: center; min-width: 52px; padding: 10px 16px; border-radius: 10px;
+  background: var(--s-surface); border: 1px solid var(--s-hairline); font-size: 14px; font-weight: 700;
+}
+.store-size[data-soldout] { color: var(--s-muted); }
+.store-size[data-soldout] b { text-decoration: line-through; }
+.store-size small { font-size: 10px; font-weight: 600; margin-top: 2px; }
+.store-share {
+  display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 22px;
+  background: var(--s-surface); border: 1px solid var(--s-hairline); color: var(--s-ink); font-size: 14px; font-weight: 600; cursor: pointer;
+}
+
+/* Sticky action bar: price left, one filled taupe pill right */
+.store-bar { position: sticky; bottom: 0; z-index: 30; background: var(--s-bg); border-top: 1px solid var(--s-hairline); }
+.store-cta {
+  display: inline-flex; align-items: center; justify-content: center; padding: 16px 28px; border-radius: 999px;
+  background: var(--s-action); color: #fff; font-size: 15px; font-weight: 700; text-decoration: none; white-space: nowrap;
+}
+.store-cta:hover { background: var(--s-action-hover); }
