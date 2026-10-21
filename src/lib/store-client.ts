@@ -206,10 +206,14 @@ export interface CheckoutQuote {
 /** Reserve the unit and open a card PaymentIntent. Card only: useWallet is
  * always false from the website, and anything the server would charge to a
  * wallet is refused here rather than shown. */
-export async function startCheckout(intent: CheckoutIntent): Promise<CheckoutQuote> {
-  const token = await freshToken();
-  if (!token) throw new ApiError('Sign in to buy from the shop.', 'MERCH_NOT_SIGNED_IN', 401);
-  const body = {
+/** Guest checkout (no sign-in) when there is no session: the anon key is the
+ * bearer and `guest.email` is where the receipt goes. A signed-in shopper (for
+ * example from /order) checks out as themselves. Card only either way. */
+export async function startCheckout(intent: CheckoutIntent, guestEmail: string | null): Promise<CheckoutQuote> {
+  const token = (await freshToken()) ?? SUPABASE_ANON;
+  const signedIn = token !== SUPABASE_ANON;
+  if (!signedIn && !guestEmail) throw new ApiError('Enter your email address.', 'MERCH_NOT_SIGNED_IN', 401);
+  const body: Record<string, unknown> = {
     checkoutId: intent.checkoutId,
     variantId: intent.variantId,
     useWallet: false,
@@ -221,10 +225,11 @@ export async function startCheckout(intent: CheckoutIntent): Promise<CheckoutQuo
     shipCity: intent.fulfilment === 'delivery' ? intent.shipCity : null,
     shipPostcode: intent.fulfilment === 'delivery' ? intent.shipPostcode : null,
   };
+  if (!signedIn) body.guest = { email: guestEmail };
   const r = await invoke('merch-checkout', body, token);
   if (r.free || !r.clientSecret || r.storedValuePence > 0 || r.cardPence !== r.totalPence) {
     // Never expected with useWallet:false. Release rather than show a split.
-    if (r.orderId) await cancelCheckout(r.orderId).catch(() => {});
+    if (r.orderId) await cancelCheckout(r.orderId, r.clientSecret ?? null).catch(() => {});
     throw new ApiError('We could not start a card payment. Please try again.', 'WEB_NOT_CARD_ONLY', 500);
   }
   return {
@@ -239,10 +244,13 @@ export async function startCheckout(intent: CheckoutIntent): Promise<CheckoutQuo
 }
 
 /** Release the held unit (the customer left or changed their details). */
-export async function cancelCheckout(orderId: string, keepalive = false) {
-  const token = await freshToken();
-  if (!token) return;
-  await invoke('merch-cancel-checkout', { orderId }, token, keepalive);
+/** Release a held item. A guest proves the checkout is theirs with the
+ * PaymentIntent client secret only this browser was given. */
+export async function cancelCheckout(orderId: string, clientSecret: string | null, keepalive = false) {
+  const token = (await freshToken()) ?? SUPABASE_ANON;
+  const body: Record<string, unknown> = { orderId };
+  if (token === SUPABASE_ANON && clientSecret) body.clientSecret = clientSecret;
+  await invoke('merch-cancel-checkout', body, token, keepalive);
 }
 
 export const money = (p: number) => `£${Math.trunc(p / 100)}.${String(Math.abs(p) % 100).padStart(2, '0')}`;

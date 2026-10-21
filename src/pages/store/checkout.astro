@@ -6,7 +6,7 @@
 // Flow, after Baymard's checkout research and Stripe's Payment Element
 // guidance:
 //   one enclosed page (no site nav), linear sections, total visible from the
-//   first screen, email code instead of an account or password, only the
+//   first screen, guest checkout (email for the receipt, no account), only the
 //   fields the server needs, persistent labels, inline errors, an explained
 //   phone field, data kept on error, a descriptive primary button, and a
 //   confirmation that says what happens next.
@@ -94,22 +94,13 @@ const products = Object.fromEntries(
           <section class="co-card" data-step="email">
             <div class="co-step-head">
               <h2 class="co-h2"><span class="co-num">1</span>Email</h2>
-              <button type="button" class="co-link text-[13px]" data-signout hidden>Change</button>
+              <button type="button" class="co-link text-[13px]" data-signout hidden>Not you?</button>
             </div>
             <div data-email-out>
-              <p class="co-muted text-[13px] mt-1">No account or password needed. We email you a 6-digit code to confirm it is you, and send your receipt to the same address.</p>
+              <p class="co-muted text-[13px] mt-1">No account needed. Your receipt and order updates go here.</p>
               <label class="co-label mt-4" for="co-email">Email address</label>
               <input class="co-input" id="co-email" type="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="you@example.com" />
               <p class="co-err" data-err="email" hidden></p>
-              <div data-code-row hidden>
-                <label class="co-label mt-4" for="co-code">6-digit code</label>
-                <input class="co-input co-code" id="co-code" type="text" autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="123456" />
-                <p class="co-err" data-err="code" hidden></p>
-                <p class="co-muted text-[12px] mt-2" data-code-hint></p>
-              </div>
-              <button type="button" class="store-cta co-btn mt-4" data-send-code>Email me a code</button>
-              <button type="button" class="store-cta co-btn mt-4" data-verify-code hidden>Confirm code</button>
-              <button type="button" class="co-link text-[13px] mt-3" data-resend hidden>Send a new code</button>
             </div>
             <p class="co-done" data-email-in hidden>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
@@ -118,7 +109,7 @@ const products = Object.fromEntries(
           </section>
 
           <!-- 2. Collection or delivery -->
-          <section class="co-card" data-step="fulfil" data-locked>
+          <section class="co-card" data-step="fulfil">
             <h2 class="co-h2"><span class="co-num">2</span>Collection or delivery</h2>
             <div class="co-options mt-4" role="radiogroup" aria-label="Collection or delivery">
               <label class="co-option">
@@ -221,7 +212,7 @@ const products = Object.fromEntries(
 <script>
   import {
     ApiError, cancelCheckout, currentEmail, freshToken, liveVariants, loadSession,
-    money, pickupStores, sendCode, signOut, startCheckout, track, uuid, verifyCode,
+    money, pickupStores, signOut, startCheckout, track, uuid,
   } from '../../lib/store-client';
   import { STRIPE_PK } from '../../lib/public-keys';
 
@@ -245,7 +236,7 @@ const products = Object.fromEntries(
   // Persisted form (Baymard: never make people retype after a refresh or error).
   const FORM_KEY = 'acai_store_checkout_form';
   const PENDING_KEY = 'acai_store_checkout_pending';
-  const fields = ['co-name', 'co-line1', 'co-city', 'co-postcode', 'co-phone'];
+  const fields = ['co-email', 'co-name', 'co-line1', 'co-city', 'co-postcode', 'co-phone'];
   function saveForm() {
     const data: Record<string, string> = { fulfilment: fulfilment(), store: pickupId ?? '' };
     fields.forEach((id) => { data[id] = (document.getElementById(id) as HTMLInputElement).value; });
@@ -333,10 +324,14 @@ const products = Object.fromEntries(
     boot();
   }
 
-  // ---------- 1. email code ----------
-  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // ---------- 1. email ----------
+  // Guest checkout (Baymard: forced sign-in is a top abandonment cause). The
+  // email is only where the receipt goes. Someone already signed in on this
+  // site (e.g. from /order) checks out as themselves.
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   const emailInput = () => document.getElementById('co-email') as HTMLInputElement;
-  const codeInput = () => document.getElementById('co-code') as HTMLInputElement;
+  const typedEmail = () => emailInput().value.trim().toLowerCase();
+  const buyerEmail = () => currentEmail() ?? (EMAIL_RE.test(typedEmail()) ? typedEmail() : null);
 
   function renderAuth() {
     const who = currentEmail();
@@ -344,56 +339,16 @@ const products = Object.fromEntries(
     show($('[data-email-in]'), !!who);
     show($('[data-signout]'), !!who && !quote);
     $('[data-who]').textContent = who ?? '';
-    const s = $('[data-step="fulfil"]');
-    if (who) s.removeAttribute('data-locked'); else s.setAttribute('data-locked', '');
   }
 
-  async function doSend() {
-    const email = emailInput().value.trim().toLowerCase();
-    err('email', null);
-    if (!EMAIL_RE.test(email)) { err('email', 'Enter a valid email address, like name@example.com.'); emailInput().focus(); return; }
-    const b = $<HTMLButtonElement>('[data-send-code]');
-    b.disabled = true; b.textContent = 'Sending…';
-    try {
-      await sendCode(email);
-      show($('[data-code-row]'), true);
-      show($('[data-send-code]'), false);
-      show($('[data-verify-code]'), true);
-      show($('[data-resend]'), true);
-      $('[data-code-hint]').textContent = `Sent to ${email}. It can take a minute, and may land in spam.`;
-      codeInput().focus();
-      track('Store Web Code Sent');
-    } catch (e: any) {
-      err('email', e?.status === 429 ? 'Too many codes requested. Try again in a few minutes.' : 'We could not send a code. Check the address and try again.');
-    } finally {
-      b.disabled = false; b.textContent = 'Email me a code';
-    }
+  function checkEmail(): boolean {
+    if (currentEmail()) return true;
+    if (EMAIL_RE.test(typedEmail())) { err('email', null); return true; }
+    err('email', typedEmail() ? 'Enter a valid email address, like name@example.com.' : 'Enter your email address for the receipt.');
+    return false;
   }
-
-  async function doVerify() {
-    const email = emailInput().value.trim().toLowerCase();
-    const code = codeInput().value.replace(/\D/g, '');
-    err('code', null);
-    if (code.length !== 6) { err('code', 'Enter the 6-digit code from the email.'); codeInput().focus(); return; }
-    const b = $<HTMLButtonElement>('[data-verify-code]');
-    b.disabled = true; b.textContent = 'Checking…';
-    try {
-      await verifyCode(email, code);
-      renderAuth();
-      track('Store Web Signed In');
-      (document.getElementById(fulfilment() === 'delivery' ? 'co-name' : 'co-phone') as HTMLInputElement)?.focus();
-    } catch {
-      err('code', 'That code did not work. Check it, or send a new one.');
-    } finally {
-      b.disabled = false; b.textContent = 'Confirm code';
-    }
-  }
-
-  $('[data-send-code]').addEventListener('click', doSend);
-  $('[data-resend]').addEventListener('click', doSend);
-  $('[data-verify-code]').addEventListener('click', doVerify);
-  emailInput().addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doSend(); } });
-  codeInput().addEventListener('input', () => { if (codeInput().value.replace(/\D/g, '').length === 6) doVerify(); });
+  emailInput().addEventListener('blur', () => { if (typedEmail()) checkEmail(); });
+  emailInput().addEventListener('input', () => { if (EMAIL_RE.test(typedEmail())) err('email', null); });
   $('[data-signout]').addEventListener('click', () => { signOut(); renderAuth(); emailInput().focus(); });
 
   // ---------- 2. fulfilment ----------
@@ -465,7 +420,9 @@ const products = Object.fromEntries(
     switch (e.code) {
       case 'MERCH_SOLD_OUT': return 'That size has just sold out. Choose another size.';
       case 'MERCH_ALREADY_OWNED': return 'You already have one of this design. It is one per person.';
-      case 'MERCH_NOT_SIGNED_IN': return 'Your sign-in expired. Confirm your email again.';
+      case 'MERCH_NOT_SIGNED_IN': return 'Your sign-in expired. Enter your email and try again.';
+      case 'MERCH_GUEST_EMAIL_INVALID': return 'Enter a valid email address, like name@example.com.';
+      case 'MERCH_RATE_LIMITED': return 'Too many attempts. Please wait a few minutes and try again. Nothing was charged.';
       case 'MERCH_POSTCODE_NOT_MAINLAND': return 'We only deliver to the UK mainland at the moment. You can collect in store instead.';
       case 'MERCH_PRICE_CHANGED': return 'The price changed while you were checking out. Reload the page to see the new total.';
       case 'MERCH_UNAVAILABLE': case 'HTTP_0': return 'We could not reach the Store. Check your connection and try again. Nothing was charged.';
@@ -480,12 +437,13 @@ const products = Object.fromEntries(
     show($('[data-continue]'), !locked);
     show($('[data-edit-details]'), locked);
     show($('[data-signout]'), !locked && !!currentEmail());
+    const ei = emailInput(); if (ei) ei.disabled = locked;
   }
 
   async function doContinue() {
     err('reserve', null);
-    if (!currentEmail()) { emailInput().focus(); err('email', 'Confirm your email first.'); return; }
-    if (!validate()) return;
+    const emailOk = checkEmail();
+    if (!validate() || !emailOk) { if (!emailOk) emailInput().focus(); return; }
     const b = $<HTMLButtonElement>('[data-continue]');
     b.disabled = true; b.textContent = 'Reserving your item…';
     const f = fulfilment();
@@ -501,16 +459,16 @@ const products = Object.fromEntries(
         shipLine1: v('co-line1'),
         shipCity: v('co-city'),
         shipPostcode: v('co-postcode').toUpperCase(),
-      });
+      }, currentEmail() ? null : typedEmail());
       quote = q;
-      try { sessionStorage.setItem(PENDING_KEY, JSON.stringify({ ...q, product: product.slug, variantId, fulfilment: f, pickupId, email: currentEmail() })); } catch {}
+      try { sessionStorage.setItem(PENDING_KEY, JSON.stringify({ ...q, product: product.slug, variantId, fulfilment: f, pickupId, email: buyerEmail() })); } catch {}
       renderTotals();
       lockDetails(true);
       mountPayment(q.clientSecret);
       track('Store Web Reserved', { product: product.slug, fulfilment: f, total: q.totalPence });
     } catch (e: any) {
       const ae = e instanceof ApiError ? e : new ApiError('', 'HTTP_0', 0);
-      if (ae.code === 'MERCH_NOT_SIGNED_IN') { signOut(); renderAuth(); }
+      if (ae.code === 'MERCH_NOT_SIGNED_IN' && currentEmail()) { signOut(); renderAuth(); }
       // A new checkout id after any refusal: the old one may be spent.
       checkoutId = uuid();
       err('reserve', reserveMessage(ae));
@@ -532,7 +490,7 @@ const products = Object.fromEntries(
     checkoutId = uuid();
     renderTotals();
     try { sessionStorage.removeItem(PENDING_KEY); } catch {}
-    await cancelCheckout(held.orderId).catch(() => {});
+    await cancelCheckout(held.orderId, held.clientSecret).catch(() => {});
   });
 
   // ---------- 3. payment ----------
@@ -590,7 +548,7 @@ const products = Object.fromEntries(
         elements,
         confirmParams: {
           return_url: ret.toString(),
-          payment_method_data: { billing_details: { email: currentEmail() ?? undefined } },
+          payment_method_data: { billing_details: { email: buyerEmail() ?? undefined } },
         },
         redirect: 'if_required',
       });
@@ -640,7 +598,7 @@ const products = Object.fromEntries(
     $('[data-c-next]').textContent = f === 'delivery'
       ? (product.preorder && d ? `We will post it from HQ by ${d}.` : 'We will pack it at HQ and post it to your address.')
       : `We will text you when it is ready to collect${storeName ? ` from ${storeName}` : ''}.${product.preorder && d ? ` Expected by ${d}.` : ''}`;
-    $('[data-c-email]').textContent = pending?.email ?? currentEmail() ?? 'your email';
+    $('[data-c-email]').textContent = pending?.email ?? buyerEmail() ?? 'your email';
     window.scrollTo(0, 0);
     track('Store Web Purchased', { product: product.slug, total: q.totalPence, fulfilment: f });
   }
@@ -649,7 +607,7 @@ const products = Object.fromEntries(
   // anything missed after 20 minutes). Never during confirmPayment: a bank
   // redirect also unloads the page, and that intent must stay alive.
   window.addEventListener('pagehide', () => {
-    if (quote && !confirming && !paid) cancelCheckout(quote.orderId, true).catch(() => {});
+    if (quote && !confirming && !paid) cancelCheckout(quote.orderId, quote.clientSecret, true).catch(() => {});
   });
 
   async function boot() {
@@ -680,7 +638,7 @@ const products = Object.fromEntries(
         stripe ??= S(STRIPE_PK);
         const { paymentIntent } = await stripe.retrievePaymentIntent(returnedSecret);
         if (paymentIntent && (paymentIntent.status === 'succeeded' || paymentIntent.status === 'processing')) {
-          finish(pending ?? { orderCode: '', totalPence: paymentIntent.amount, fulfilment: fulfilment(), pickupId, email: currentEmail() });
+          finish(pending ?? { orderCode: '', totalPence: paymentIntent.amount, fulfilment: fulfilment(), pickupId, email: buyerEmail() });
           return;
         }
         if (pending) {
