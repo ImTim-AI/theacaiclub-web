@@ -16,16 +16,8 @@ import '../../styles/store.css';
 
 // Slim product facts for the client. Prices here are display only; the server
 // prices the order and the page shows the server's total before payment.
-// TEMPORARY: unlisted £1 item for T's live checkout test (2026-10-21). Not in
-// the grid or the app (its category is unpublished). Remove with the DB rows
-// once the test purchase is refunded.
-const testItem = {
-  slug: 'test-1-pound', name: 'Test item (do not buy)', pricePence: 100, preorder: false, expectedDispatchAt: null,
-  categorySlug: 'internal-test',
-  colours: [{ name: 'Standard', card: [], gallery: [], sizes: [{ size: 'One Size', variantId: 'e79aff38-a474-452b-a11b-19432271fb4a' }] }],
-};
 const products = Object.fromEntries(
-  [...store.products, testItem].map((p: any) => [
+  store.products.map((p) => [
     p.slug,
     {
       slug: p.slug,
@@ -312,10 +304,6 @@ const products = Object.fromEntries(
     // for a size that has already gone.
     liveVariants(product.slug).then((live) => {
       const v = live.find((x) => x.id === variantId);
-      // Empty means the anon catalogue cannot see this product (e.g. the
-      // unlisted £1 test item); merch-checkout checks sale state and stock
-      // again at reservation, so only a variant we can see is judged here.
-      if (!live.length) return;
       if (!v || !v.available || !v.onSale) {
         err('reserve', v && !v.onSale ? 'This item is not on sale right now.' : 'That size has just sold out. Choose another size.');
         $<HTMLButtonElement>('[data-continue]').disabled = true;
