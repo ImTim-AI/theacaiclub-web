@@ -1,0 +1,43 @@
+<script>
+  // Galleries: keep the pill indicator in step with the scroll position, and
+  // wire the desktop arrows. Arrows and dots never navigate the card link.
+  function wire(gallery: HTMLElement) {
+    const wrap = gallery.parentElement!;
+    const dots = wrap.querySelectorAll<HTMLElement>('.store-dots i');
+    const page = () => Math.round(gallery.scrollLeft / Math.max(gallery.clientWidth, 1));
+    gallery.addEventListener('scroll', () => {
+      const p = page();
+      dots.forEach((d, i) => d.toggleAttribute('data-on', i === p));
+    }, { passive: true });
+    wrap.querySelectorAll<HTMLButtonElement>('.store-arrow').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const n = gallery.children.length;
+        const next = (page() + (btn.dataset.dir === 'next' ? 1 : -1) + n) % n;
+        gallery.scrollTo({ left: next * gallery.clientWidth, behavior: 'smooth' });
+      });
+    });
+  }
+  document.querySelectorAll<HTMLElement>('.store-gallery').forEach(wire);
+
+  // Card colour dots change the card, never navigate. The link then opens the
+  // product on the colour showing, the same as the app.
+  document.querySelectorAll<HTMLAnchorElement>('.store-card').forEach((card) => {
+    card.querySelectorAll<HTMLButtonElement>('.store-swatch').forEach((sw) => {
+      sw.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const colour = sw.dataset.colour!;
+        card.querySelectorAll<HTMLButtonElement>('.store-swatch').forEach((s) => s.setAttribute('aria-pressed', String(s === sw)));
+        card.querySelectorAll<HTMLElement>('.store-photo-wrap').forEach((w) => { w.hidden = w.dataset.colour !== colour; });
+        card.querySelector('[data-colour-label]')!.textContent = [card.dataset.fit, colour].filter(Boolean).join(' · ');
+        card.href = `/store/${card.dataset.slug}?colour=${encodeURIComponent(colour)}`;
+      });
+    });
+  });
+
+  document.querySelectorAll('[data-buy]').forEach((a) => a.addEventListener('click', () => {
+    try { (window as any).mixpanel?.track('Store Web Buy Tap', { path: location.pathname }); } catch {}
+  }));
+</script>

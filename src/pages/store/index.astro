@@ -1,0 +1,111 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import StoreCard from '../../components/StoreCard.astro';
+import StorePerks from '../../components/StorePerks.astro';
+import StoreAppButtons from '../../components/StoreAppButtons.astro';
+import StoreScripts from '../../components/StoreScripts.astro';
+import store from '../../data/store.json';
+import '../../styles/store.css';
+
+// Snapshot of the app's published Store (scripts/sync-store.mjs). Browse and
+// share only: buying happens in the app.
+const { categories, products } = store;
+
+// Hero: back-print shots, because the prints are what the range is about.
+// Picked from the real catalogue by product + view, never a stock image.
+const backShot = (slug: string, colour: string) =>
+  products.find((p) => p.slug === slug)?.colours.find((c) => c.name === colour)?.gallery.find((g) => g.alt.endsWith('back'));
+const heroShots = [backShot('wellness-in-motion-t-shirt', 'Black'), backShot('arabic', 'White'), backShot('sunday-running-club-t-shirt', 'White')].filter(Boolean) as { src: string; width: number; height: number; alt: string }[];
+const og = heroShots[0];
+
+const itemList = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'The Açai Club Store',
+  itemListElement: products.map((p, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    url: `https://theacaiclub.com/store/${p.slug}`,
+    name: p.name,
+  })),
+};
+---
+
+<Layout
+  title="Store | The Açai Club"
+  description="Oversized tees and totes from The Açai Club. Browse here, buy in the app. Free collection in Reading, Datchet and Beaconsfield, or delivery for £4.99."
+  ogImage={og?.src} ogImageWidth={og?.width} ogImageHeight={og?.height}
+  schemaJsonLd={itemList}
+>
+  <div class="store min-h-screen">
+    <div class="max-w-[1200px] mx-auto md:px-6 md:pt-6 pb-16">
+
+      <!-- Hero -->
+      <section class="store-hero aspect-[4/5] md:aspect-[21/9]">
+        <div class="absolute inset-0 grid grid-cols-1 md:grid-cols-3">
+          {heroShots.map((img, i) => (
+            <img src={img.src} width={img.width} height={img.height} alt={img.alt}
+              class:list={[i > 0 && 'hidden md:block']} loading="eager" fetchpriority={i === 0 ? 'high' : 'auto'} />
+          ))}
+        </div>
+        <div class="store-hero-copy">
+          <p class="store-eyebrow" style="color:rgba(255,255,255,.75)">The Açai Club Store</p>
+          <h1 class="mt-2">Worn on the run.<br />Worn for the bowl.</h1>
+          <p class="mt-2 text-[14px]" style="color:rgba(255,255,255,.85)">Oversized tees and totes. Buy in the app.</p>
+          <a href="#shop" class="store-hero-cta">Shop the range</a>
+        </div>
+      </section>
+
+      <div class="px-4 md:px-0">
+        <div class="mt-5"><StorePerks /></div>
+
+        <!-- Toolbar -->
+        <div id="shop" class="mt-10 flex items-end justify-between gap-4 scroll-mt-20">
+          <h2 class="store-section-title">Shop all</h2>
+          <p class="store-count" data-count>{products.length} products</p>
+        </div>
+        {categories.length > 1 && (
+          <div class="store-cats mt-4" role="toolbar" aria-label="Categories">
+            <button type="button" class="store-cat" data-cat="" data-label="Shop all" aria-pressed="true">All</button>
+            {categories.map((c) => (
+              <button type="button" class="store-cat" data-cat={c.id} data-label={c.name} aria-pressed="false">{c.name}</button>
+            ))}
+          </div>
+        )}
+
+        <div class="store-grid mt-5">
+          {products.map((p, i) => <StoreCard product={p} eager={i < 4} />)}
+        </div>
+
+        <!-- App -->
+        <section class="store-app mt-14">
+          <p class="store-eyebrow">Buying happens in the app</p>
+          <h2 class="store-section-title mt-2">Get The Açai Club app</h2>
+          <p class="mt-2 text-[14px] leading-[1.55]" style="color:var(--s-muted)">
+            Pick your size, choose collection or delivery, and pay with Apple Pay, card or your wallet balance.
+          </p>
+          <StoreAppButtons />
+        </section>
+      </div>
+    </div>
+  </div>
+  <StoreScripts />
+</Layout>
+
+<script>
+  // Category filter (All + server categories) with a live product count.
+  const cats = document.querySelectorAll<HTMLButtonElement>('.store-cat');
+  const cards = document.querySelectorAll<HTMLAnchorElement>('.store-grid .store-card');
+  const count = document.querySelector('[data-count]')!;
+  const title = document.querySelector('#shop .store-section-title')!;
+  cats.forEach((btn) => btn.addEventListener('click', () => {
+    cats.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+    let n = 0;
+    cards.forEach((card) => {
+      card.hidden = !!btn.dataset.cat && card.dataset.cat !== btn.dataset.cat;
+      if (!card.hidden) n++;
+    });
+    count.textContent = `${n} product${n === 1 ? '' : 's'}`;
+    title.textContent = btn.dataset.label!;
+  }));
+</script>
