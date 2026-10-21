@@ -2,13 +2,12 @@
 import Layout from '../../layouts/Layout.astro';
 import StoreCard from '../../components/StoreCard.astro';
 import StorePerks from '../../components/StorePerks.astro';
-import StoreAppButtons from '../../components/StoreAppButtons.astro';
 import StoreScripts from '../../components/StoreScripts.astro';
 import store from '../../data/store.json';
 import '../../styles/store.css';
 
 // Snapshot of the app's published Store (scripts/sync-store.mjs). Browse and
-// share only: buying happens in the app.
+// buy on the web (card only) via /store/checkout.
 const { categories, products } = store;
 
 // Hero: back-print shots, because the prints are what the range is about.
@@ -33,7 +32,7 @@ const itemList = {
 
 <Layout
   title="Store | The Açai Club"
-  description="Oversized tees and totes from The Açai Club. Browse here, buy in the app. Free collection in Reading, Datchet and Beaconsfield, or delivery for £4.99."
+  description="Oversized tees and totes from The Açai Club. Free collection in Reading, Datchet and Beaconsfield, or UK delivery for £4.99."
   ogImage={og?.src} ogImageWidth={og?.width} ogImageHeight={og?.height}
   schemaJsonLd={itemList}
 >
@@ -51,7 +50,7 @@ const itemList = {
         <div class="store-hero-copy">
           <p class="store-eyebrow" style="color:rgba(255,255,255,.75)">The Açai Club Store</p>
           <h1 class="mt-2">Worn on the run.<br />Worn for the bowl.</h1>
-          <p class="mt-2 text-[14px]" style="color:rgba(255,255,255,.85)">Oversized tees and totes. Buy in the app.</p>
+          <p class="mt-2 text-[14px]" style="color:rgba(255,255,255,.85)">Oversized tees and totes.</p>
           <a href="#shop" class="store-hero-cta">Shop the range</a>
         </div>
       </section>
@@ -77,15 +76,6 @@ const itemList = {
           {products.map((p, i) => <StoreCard product={p} eager={i < 4} />)}
         </div>
 
-        <!-- App -->
-        <section class="store-app mt-14">
-          <p class="store-eyebrow">Buying happens in the app</p>
-          <h2 class="store-section-title mt-2">Get The Açai Club app</h2>
-          <p class="mt-2 text-[14px] leading-[1.55]" style="color:var(--s-muted)">
-            Pick your size, choose collection or delivery, and pay with Apple Pay, card or your wallet balance.
-          </p>
-          <StoreAppButtons />
-        </section>
       </div>
     </div>
   </div>

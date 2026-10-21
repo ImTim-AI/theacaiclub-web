@@ -167,12 +167,6 @@
 .store-acc-body { padding: 0 0 18px; font-size: 14px; line-height: 1.55; color: var(--s-muted); }
 .store-acc-body p + p { margin-top: 8px; }
 
-/* App download block */
-.store-app { border-radius: 14px; background: var(--s-surface); border: 1px solid var(--s-hairline); padding: 24px 20px; text-align: center; }
-.store-app-btns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 16px; }
-.store-app-btns a { display: inline-flex; align-items: center; gap: 10px; padding: 11px 20px; border-radius: 999px; background: var(--s-action); color: #fff; font-size: 14px; font-weight: 700; }
-.store-app-btns a:hover { background: var(--s-action-hover); }
-.store-app-btns svg { width: 20px; height: 20px; fill: currentColor; }
 
 /* Sub line under product title */
 .store-sub { font-size: 13px; color: var(--s-muted); font-weight: 500; }
