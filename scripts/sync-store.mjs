@@ -180,6 +180,7 @@ for (const p of raw) {
     });
   }
   const soldOut = m.variants.length > 0 && m.variants.every((v) => !(v.available_qty > 0));
+  const descriptionLines = String(p.description ?? '').split('\n').map((l) => l.trim()).filter(Boolean);
   products.push({
     slug: p.slug,
     name: p.name,
@@ -188,7 +189,10 @@ for (const p of raw) {
     pricePence: p.price_pence,
     preorder: p.sale_mode === 'preorder',
     expectedDispatchAt: p.expected_dispatch_at,
-    descriptionLines: String(p.description ?? '').split('\n').map((l) => l.trim()).filter(Boolean),
+    descriptionLines,
+    // The fit claim, when the copy carries one ("Oversized Fit"), for the
+    // card's "Fit · Colour" line. Never invented.
+    fit: descriptionLines.find((l) => /\bfit\b/i.test(l) && l.length <= 24) ?? null,
     materials: p.materials?.trim() || null,
     defaultColour: m.defaultColour,
     soldOut,
@@ -202,6 +206,11 @@ const categories = categoryRows
   .sort(byOrderThenName)
   .filter((c) => products.some((p) => p.categoryId === c.id))
   .map((c) => ({ id: c.id, slug: c.slug, name: c.name }));
+for (const p of products) {
+  const c = categories.find((x) => x.id === p.categoryId);
+  p.categorySlug = c?.slug ?? null;
+  p.categoryName = c?.name ?? null;
+}
 
 mkdirSync(dirname(OUT_JSON), { recursive: true });
 writeFileSync(OUT_JSON, JSON.stringify({ syncedAt: new Date().toISOString(), categories, products }, null, 2) + '\n');

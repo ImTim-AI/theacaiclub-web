@@ -1,0 +1,32 @@
+---
+// The app's two-up Store card: photo (swipeable, colour-aware), name,
+// "Fit · Colour", price, colour dots. Dots change the card, never navigate.
+import StoreGallery from './StoreGallery.astro';
+
+interface Props { product: any; eager?: boolean; sizes?: string }
+const { product: p, eager = false, sizes } = Astro.props;
+const def = p.colours.find((c: any) => c.name === p.defaultColour) ?? p.colours[0];
+const sub = (colour: string) => [p.fit, colour].filter(Boolean).join(' · ');
+---
+<a class="store-card" href={`/store/${p.slug}`} data-cat={p.categoryId} data-slug={p.slug} data-fit={p.fit ?? ''}>
+  <div class="store-card-photo">
+    {p.colours.map((c: any) => (
+      <StoreGallery images={c.card} colour={c.name} active={c.name === def?.name} eager={eager} sizes={sizes} />
+    ))}
+    {p.soldOut && <div class="store-soldout">Sold out</div>}
+    {p.preorder && !p.soldOut && <span class="store-badge">Pre-order</span>}
+  </div>
+  <p class="store-card-name">{p.name}</p>
+  <p class="store-card-colour" data-colour-label>{sub(def?.name ?? '')}</p>
+  <p class="store-card-price">{p.price}</p>
+  {p.colours.length > 1 && (
+    <div class="store-swatches">
+      {p.colours.map((c: any) => (
+        <button type="button" class="store-swatch" data-colour={c.name}
+          aria-pressed={c.name === def?.name ? 'true' : 'false'} aria-label={c.name}>
+          <span style={`background:${c.swatch}`}></span>
+        </button>
+      ))}
+    </div>
+  )}
+</a>

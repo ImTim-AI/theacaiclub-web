@@ -115,3 +115,75 @@
   background: var(--s-action); color: #fff; font-size: 15px; font-weight: 700; text-decoration: none; white-space: nowrap;
 }
 .store-cta:hover { background: var(--s-action-hover); }
+
+/* ---- v2: richer Store (research pass: Gymshark, Represent, Adanola) ---- */
+.store-badge { position: absolute; top: 10px; left: 10px; padding: 4px 9px; border-radius: 999px; background: var(--s-surface); color: var(--s-ink); font-size: 11px; font-weight: 700; letter-spacing: .4px; pointer-events: none; }
+.store-section-title { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+.store-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: var(--s-muted); }
+
+/* Hero */
+.store-hero { position: relative; overflow: hidden; border-radius: 0; background: var(--s-placeholder); }
+@media (min-width: 768px) { .store-hero { border-radius: 14px; } }
+.store-hero img { width: 100%; height: 100%; object-fit: cover; }
+.store-hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.8)); pointer-events: none; }
+.store-hero-copy { position: absolute; left: 20px; right: 20px; bottom: 22px; z-index: 1; color: #fff; }
+.store-hero-copy h1 { font-size: 28px; font-weight: 700; line-height: 1.1; letter-spacing: -0.01em; }
+@media (min-width: 768px) { .store-hero-copy { left: 40px; bottom: 40px; max-width: 520px; } .store-hero-copy h1 { font-size: 40px; } }
+.store-hero-cta { display: inline-flex; margin-top: 14px; padding: 11px 20px; border-radius: 999px; background: #fff; color: var(--s-ink); font-size: 14px; font-weight: 700; }
+
+/* Perks */
+.store-perks { display: grid; gap: 8px; }
+@media (min-width: 768px) { .store-perks { grid-template-columns: repeat(3, 1fr); gap: 12px; } }
+.store-perks li { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: var(--s-surface); border: 1px solid var(--s-hairline); }
+.store-perks b { display: block; font-size: 13px; font-weight: 700; }
+.store-perks small { display: block; font-size: 12px; color: var(--s-muted); margin-top: 1px; }
+.store-perk-icon { flex: none; width: 36px; height: 36px; border-radius: 999px; background: #FDE9EF; display: flex; align-items: center; justify-content: center; }
+.store-perk-icon svg { width: 18px; height: 18px; fill: none; stroke: #D97295; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Toolbar: category pills + count */
+.store-count { font-size: 12px; font-weight: 600; color: var(--s-muted); }
+
+/* Rails */
+.store-rail { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 0 20px 4px; scrollbar-width: none; }
+.store-rail::-webkit-scrollbar { display: none; }
+@media (min-width: 768px) { .store-rail { padding: 0; gap: 20px; } }
+.store-rail-item { flex: none; width: 46%; scroll-snap-align: start; }
+@media (min-width: 768px) { .store-rail-item { width: 240px; } }
+
+/* Desktop thumbnails under the product gallery */
+.store-thumbs { display: none; }
+@media (min-width: 768px) { .store-thumbs { display: flex; gap: 10px; margin-top: 10px; } }
+.store-thumbs button { width: 72px; aspect-ratio: 4/5; border-radius: 8px; overflow: hidden; border: 1px solid var(--s-hairline); padding: 0; background: var(--s-placeholder); cursor: pointer; }
+.store-thumbs button[aria-current="true"] { border: 2px solid var(--s-ink); }
+.store-thumbs img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Accordions */
+.store-acc { border-top: 1px solid var(--s-hairline); }
+.store-acc:last-of-type { border-bottom: 1px solid var(--s-hairline); }
+.store-acc summary { list-style: none; display: flex; align-items: center; justify-content: space-between; padding: 16px 0; font-size: 14px; font-weight: 700; cursor: pointer; }
+.store-acc summary::-webkit-details-marker { display: none; }
+.store-acc summary::after { content: "+"; font-size: 20px; font-weight: 400; color: var(--s-muted); line-height: 1; }
+.store-acc[open] summary::after { content: "−"; }
+.store-acc-body { padding: 0 0 18px; font-size: 14px; line-height: 1.55; color: var(--s-muted); }
+.store-acc-body p + p { margin-top: 8px; }
+
+/* App download block */
+.store-app { border-radius: 14px; background: var(--s-surface); border: 1px solid var(--s-hairline); padding: 24px 20px; text-align: center; }
+.store-app-btns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 16px; }
+.store-app-btns a { display: inline-flex; align-items: center; gap: 10px; padding: 11px 20px; border-radius: 999px; background: var(--s-action); color: #fff; font-size: 14px; font-weight: 700; }
+.store-app-btns a:hover { background: var(--s-action-hover); }
+.store-app-btns svg { width: 20px; height: 20px; fill: currentColor; }
+
+/* Sub line under product title */
+.store-sub { font-size: 13px; color: var(--s-muted); font-weight: 500; }
+.store-crumbs { font-size: 12px; color: var(--s-muted); font-weight: 600; }
+.store-crumbs a:hover { color: var(--s-ink); }
+
+/* Mobile: perks as one card with dividers, not three stacked cards */
+@media (max-width: 767px) {
+  .store-perks { gap: 0; border-radius: 14px; background: var(--s-surface); border: 1px solid var(--s-hairline); overflow: hidden; }
+  .store-perks li { border: 0; border-radius: 0; background: none; padding: 10px 14px; }
+  .store-perks li + li { border-top: 1px solid var(--s-hairline); }
+  .store-perk-icon { width: 30px; height: 30px; }
+  .store-perk-icon svg { width: 16px; height: 16px; }
+}

@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-10-21T07:07:01.498Z",
+  "syncedAt": "2026-10-21T07:45:34.764Z",
   "categories": [
     {
       "id": "ca000000-0000-4000-8000-000000000001",
@@ -26,6 +26,7 @@
         "Perfect sports wear or relaxed everyday layer",
         "Soft, durable and made to last"
       ],
+      "fit": "Oversized Fit",
       "materials": "100% Cotton",
       "defaultColour": "Black",
       "soldOut": false,
@@ -146,7 +147,9 @@
             }
           ]
         }
-      ]
+      ],
+      "categorySlug": "clothing",
+      "categoryName": "Clothing"
     },
     {
       "slug": "wellness",
@@ -161,6 +164,7 @@
         "Perfect sports wear or relaxed everyday layer",
         "Soft, durable and made to last"
       ],
+      "fit": "Oversized Fit",
       "materials": "100% Cotton",
       "defaultColour": "White",
       "soldOut": false,
@@ -219,7 +223,9 @@
             }
           ]
         }
-      ]
+      ],
+      "categorySlug": "clothing",
+      "categoryName": "Clothing"
     },
     {
       "slug": "kiss-my-acai-t-shirt",
@@ -234,6 +240,7 @@
         "Perfect sports wear or relaxed everyday layer",
         "Soft, durable and made to last"
       ],
+      "fit": "Oversized Fit",
       "materials": "100% Cotton",
       "defaultColour": "White",
       "soldOut": false,
@@ -304,7 +311,9 @@
             }
           ]
         }
-      ]
+      ],
+      "categorySlug": "clothing",
+      "categoryName": "Clothing"
     },
     {
       "slug": "padel-club-t-shirt",
@@ -319,6 +328,7 @@
         "Perfect sports wear or relaxed everyday layer",
         "Soft, durable and made to last"
       ],
+      "fit": "Oversized Fit",
       "materials": "100% Cotton",
       "defaultColour": "White",
       "soldOut": false,
@@ -389,7 +399,9 @@
             }
           ]
         }
-      ]
+      ],
+      "categorySlug": "clothing",
+      "categoryName": "Clothing"
     },
     {
       "slug": "sunday-running-club-t-shirt",
@@ -404,6 +416,7 @@
         "Perfect sports wear or relaxed everyday layer",
         "Soft, durable and made to last"
       ],
+      "fit": "Oversized Fit",
       "materials": "100% Cotton",
       "defaultColour": "White",
       "soldOut": false,
@@ -474,7 +487,9 @@
             }
           ]
         }
-      ]
+      ],
+      "categorySlug": "clothing",
+      "categoryName": "Clothing"
     },
     {
       "slug": "run-club-t-shirt",
@@ -489,6 +504,7 @@
         "Perfect sports wear or relaxed everyday layer",
         "Soft, durable and made to last"
       ],
+      "fit": "Oversized Fit",
       "materials": "100% Cotton",
       "defaultColour": "White",
       "soldOut": false,
@@ -559,7 +575,9 @@
             }
           ]
         }
-      ]
+      ],
+      "categorySlug": "clothing",
+      "categoryName": "Clothing"
     },
     {
       "slug": "wellness-in-motion-t-shirt",
@@ -574,6 +592,7 @@
         "Perfect sports wear or relaxed everyday layer",
         "Soft, durable and made to last"
       ],
+      "fit": "Oversized Fit",
       "materials": "100% Cotton",
       "defaultColour": "Black",
       "soldOut": false,
@@ -664,7 +683,9 @@
             }
           ]
         }
-      ]
+      ],
+      "categorySlug": "clothing",
+      "categoryName": "Clothing"
     },
     {
       "slug": "the-acai-club-tote-bag-black-logo",
@@ -677,6 +698,7 @@
       "descriptionLines": [
         "Canvas tote bag with The Açai Club logo."
       ],
+      "fit": null,
       "materials": null,
       "defaultColour": "Natural",
       "soldOut": false,
@@ -731,7 +753,9 @@
             }
           ]
         }
-      ]
+      ],
+      "categorySlug": "accessories",
+      "categoryName": "Accessories"
     },
     {
       "slug": "the-acai-club-tote-bag-white-logo",
@@ -744,6 +768,7 @@
       "descriptionLines": [
         "Canvas tote bag with The Açai Club logo."
       ],
+      "fit": null,
       "materials": null,
       "defaultColour": "Natural",
       "soldOut": false,
@@ -798,7 +823,9 @@
             }
           ]
         }
-      ]
+      ],
+      "categorySlug": "accessories",
+      "categoryName": "Accessories"
     }
   ]
 }

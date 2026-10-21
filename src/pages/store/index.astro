@@ -1,6 +1,8 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import StoreGallery from '../../components/StoreGallery.astro';
+import StoreCard from '../../components/StoreCard.astro';
+import StorePerks from '../../components/StorePerks.astro';
+import StoreAppButtons from '../../components/StoreAppButtons.astro';
 import StoreScripts from '../../components/StoreScripts.astro';
 import store from '../../data/store.json';
 import '../../styles/store.css';
@@ -8,7 +10,13 @@ import '../../styles/store.css';
 // Snapshot of the app's published Store (scripts/sync-store.mjs). Browse and
 // share only: buying happens in the app.
 const { categories, products } = store;
-const first = products[0]?.colours.find((c) => c.name === products[0].defaultColour)?.card[0];
+
+// Hero: back-print shots, because the prints are what the range is about.
+// Picked from the real catalogue by product + view, never a stock image.
+const backShot = (slug: string, colour: string) =>
+  products.find((p) => p.slug === slug)?.colours.find((c) => c.name === colour)?.gallery.find((g) => g.alt.endsWith('back'));
+const heroShots = [backShot('wellness-in-motion-t-shirt', 'Black'), backShot('arabic', 'White'), backShot('sunday-running-club-t-shirt', 'White')].filter(Boolean) as { src: string; width: number; height: number; alt: string }[];
+const og = heroShots[0];
 
 const itemList = {
   '@context': 'https://schema.org',
@@ -25,56 +33,59 @@ const itemList = {
 
 <Layout
   title="Store | The Açai Club"
-  description="T-shirts, totes and more from The Açai Club. Browse here, buy in the app for collection or delivery."
-  ogImage={first?.src} ogImageWidth={first?.width} ogImageHeight={first?.height}
+  description="Oversized tees and totes from The Açai Club. Browse here, buy in the app. Free collection in Reading, Datchet and Beaconsfield, or delivery for £4.99."
+  ogImage={og?.src} ogImageWidth={og?.width} ogImageHeight={og?.height}
   schemaJsonLd={itemList}
 >
   <div class="store min-h-screen">
-    <div class="max-w-[1200px] mx-auto px-4 sm:px-6 pt-8 pb-16">
-      <h1 class="store-title">Store</h1>
-      <p class="text-center text-[13px] mt-2" style="color:var(--s-muted)">Browse here. Buy in the app.</p>
+    <div class="max-w-[1200px] mx-auto md:px-6 md:pt-6 pb-16">
 
-      {categories.length > 1 && (
-        <div class="store-cats mt-6 sm:justify-center" role="toolbar" aria-label="Categories">
-          <button type="button" class="store-cat" data-cat="" aria-pressed="true">All</button>
-          {categories.map((c) => (
-            <button type="button" class="store-cat" data-cat={c.id} aria-pressed="false">{c.name}</button>
+      <!-- Hero -->
+      <section class="store-hero aspect-[4/5] md:aspect-[21/9]">
+        <div class="absolute inset-0 grid grid-cols-1 md:grid-cols-3">
+          {heroShots.map((img, i) => (
+            <img src={img.src} width={img.width} height={img.height} alt={img.alt}
+              class:list={[i > 0 && 'hidden md:block']} loading="eager" fetchpriority={i === 0 ? 'high' : 'auto'} />
           ))}
         </div>
-      )}
+        <div class="store-hero-copy">
+          <p class="store-eyebrow" style="color:rgba(255,255,255,.75)">The Açai Club Store</p>
+          <h1 class="mt-2">Worn on the run.<br />Worn for the bowl.</h1>
+          <p class="mt-2 text-[14px]" style="color:rgba(255,255,255,.85)">Oversized tees and totes. Buy in the app.</p>
+          <a href="#shop" class="store-hero-cta">Shop the range</a>
+        </div>
+      </section>
 
-      <div class="store-grid mt-6">
-        {products.map((p, i) => {
-          const def = p.colours.find((c) => c.name === p.defaultColour) ?? p.colours[0];
-          return (
-            <a class="store-card" href={`/store/${p.slug}`} data-cat={p.categoryId} data-slug={p.slug}>
-              <div class="store-card-photo">
-                {p.colours.map((c) => (
-                  <StoreGallery images={c.card} colour={c.name} active={c.name === def?.name} eager={i < 4} />
-                ))}
-                {p.soldOut && <div class="store-soldout">Sold out</div>}
-              </div>
-              <p class="store-card-name">{p.name}</p>
-              <p class="store-card-colour" data-colour-label>{def?.name}</p>
-              <p class="store-card-price">{p.price}</p>
-              {p.colours.length > 1 && (
-                <div class="store-swatches">
-                  {p.colours.map((c) => (
-                    <button type="button" class="store-swatch" data-colour={c.name}
-                      aria-pressed={c.name === def?.name ? 'true' : 'false'} aria-label={c.name}>
-                      <span style={`background:${c.swatch}`}></span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </a>
-          );
-        })}
-      </div>
+      <div class="px-4 md:px-0">
+        <div class="mt-5"><StorePerks /></div>
 
-      <div class="mt-14 text-center">
-        <a href="/get" class="store-cta">Get the app to buy</a>
-        <p class="text-[12px] mt-3" style="color:var(--s-muted)">Collect in store or have it delivered.</p>
+        <!-- Toolbar -->
+        <div id="shop" class="mt-10 flex items-end justify-between gap-4 scroll-mt-20">
+          <h2 class="store-section-title">Shop all</h2>
+          <p class="store-count" data-count>{products.length} products</p>
+        </div>
+        {categories.length > 1 && (
+          <div class="store-cats mt-4" role="toolbar" aria-label="Categories">
+            <button type="button" class="store-cat" data-cat="" data-label="Shop all" aria-pressed="true">All</button>
+            {categories.map((c) => (
+              <button type="button" class="store-cat" data-cat={c.id} data-label={c.name} aria-pressed="false">{c.name}</button>
+            ))}
+          </div>
+        )}
+
+        <div class="store-grid mt-5">
+          {products.map((p, i) => <StoreCard product={p} eager={i < 4} />)}
+        </div>
+
+        <!-- App -->
+        <section class="store-app mt-14">
+          <p class="store-eyebrow">Buying happens in the app</p>
+          <h2 class="store-section-title mt-2">Get The Açai Club app</h2>
+          <p class="mt-2 text-[14px] leading-[1.55]" style="color:var(--s-muted)">
+            Pick your size, choose collection or delivery, and pay with Apple Pay, card or your wallet balance.
+          </p>
+          <StoreAppButtons />
+        </section>
       </div>
     </div>
   </div>
@@ -82,27 +93,19 @@ const itemList = {
 </Layout>
 
 <script>
-  // Category filter (All + server categories).
+  // Category filter (All + server categories) with a live product count.
   const cats = document.querySelectorAll<HTMLButtonElement>('.store-cat');
-  const cards = document.querySelectorAll<HTMLAnchorElement>('.store-card');
+  const cards = document.querySelectorAll<HTMLAnchorElement>('.store-grid .store-card');
+  const count = document.querySelector('[data-count]')!;
+  const title = document.querySelector('#shop .store-section-title')!;
   cats.forEach((btn) => btn.addEventListener('click', () => {
     cats.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
-    cards.forEach((card) => { card.hidden = !!btn.dataset.cat && card.dataset.cat !== btn.dataset.cat; });
-  }));
-
-  // Colour dots change the card, never navigate. The link then opens the
-  // product on the colour showing, the same as the app.
-  cards.forEach((card) => {
-    card.querySelectorAll<HTMLButtonElement>('.store-swatch').forEach((sw) => {
-      sw.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const colour = sw.dataset.colour!;
-        card.querySelectorAll<HTMLButtonElement>('.store-swatch').forEach((s) => s.setAttribute('aria-pressed', String(s === sw)));
-        card.querySelectorAll<HTMLElement>('.store-photo-wrap').forEach((w) => { w.hidden = w.dataset.colour !== colour; });
-        card.querySelector('[data-colour-label]')!.textContent = colour;
-        card.href = `/store/${card.dataset.slug}?colour=${encodeURIComponent(colour)}`;
-      });
+    let n = 0;
+    cards.forEach((card) => {
+      card.hidden = !!btn.dataset.cat && card.dataset.cat !== btn.dataset.cat;
+      if (!card.hidden) n++;
     });
-  });
+    count.textContent = `${n} product${n === 1 ? '' : 's'}`;
+    title.textContent = btn.dataset.label!;
+  }));
 </script>

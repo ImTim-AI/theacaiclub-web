@@ -1,0 +1,24 @@
+---
+// Facts the app's checkout actually enforces (merch_checkout_page.dart,
+// _shared/merch.ts): free collection, £4.99 delivery, Apple Pay / card /
+// wallet, 14-day returns on unused T-shirts.
+interface Props { compact?: boolean }
+const { compact = false } = Astro.props;
+const perks = [
+  { icon: 'store', title: 'Free collection', text: 'Reading, Datchet or Beaconsfield' },
+  { icon: 'truck', title: 'UK delivery £4.99', text: 'Or collect in store for free' },
+  { icon: 'phone', title: 'Pay in the app', text: 'Apple Pay, card or wallet' },
+];
+---
+<ul class:list={['store-perks', compact && 'store-perks-compact']}>
+  {perks.map((p) => (
+    <li>
+      <span class="store-perk-icon" aria-hidden="true">
+        {p.icon === 'store' && <svg viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9M3 9h18M3 9v1a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0V9M5 13v7h14v-7M10 20v-4h4v4"/></svg>}
+        {p.icon === 'truck' && <svg viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 10h4l3 3v3h-7M7.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM17.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>}
+        {p.icon === 'phone' && <svg viewBox="0 0 24 24"><path d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM11 18h2"/></svg>}
+      </span>
+      <span><b>{p.title}</b><small>{p.text}</small></span>
+    </li>
+  ))}
+</ul>

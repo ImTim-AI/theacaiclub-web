@@ -1,0 +1,21 @@
+---
+// Horizontal row of Store cards ("Complete the look", "More in Clothing").
+import StoreCard from './StoreCard.astro';
+interface Props { title: string; products: any[]; href?: string; linkLabel?: string }
+const { title, products, href, linkLabel = 'View all' } = Astro.props;
+---
+{products.length > 0 && (
+  <section class="mt-12">
+    <div class="flex items-baseline justify-between px-5 md:px-0">
+      <h2 class="store-section-title">{title}</h2>
+      {href && <a href={href} class="text-[13px] font-semibold" style="color:var(--s-muted)">{linkLabel}</a>}
+    </div>
+    <div class="store-rail mt-4">
+      {products.map((p) => (
+        <div class="store-rail-item">
+          <StoreCard product={p} sizes="(min-width:768px) 260px, 45vw" />
+        </div>
+      ))}
+    </div>
+  </section>
+)}
