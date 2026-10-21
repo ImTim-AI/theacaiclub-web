@@ -512,7 +512,9 @@ const products = Object.fromEntries(
       // No email prefill: a known email makes Stripe Link text the customer a
       // second code on top of ours. The email still goes on confirmPayment.
       fields: { billingDetails: { email: 'never' } },
-      wallets: { applePay: 'auto', googlePay: 'auto' },
+      // No Stripe Link: its optional "Save my information" box asks for the
+      // email and mobile the customer has just typed (T, 2026-10-21).
+      wallets: { applePay: 'auto', googlePay: 'auto', link: 'never' },
     });
     pe.mount($('[data-payment-element]'));
     $('[data-step="pay"]').removeAttribute('data-locked');
