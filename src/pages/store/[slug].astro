@@ -109,19 +109,23 @@ const productSchema = {
               </>
             )}
 
-            <p class="store-field mt-6">{p.colours[0]?.sizes.length === 1 ? 'Size' : 'Sizes available'}</p>
+            <div class="mt-6 flex items-baseline justify-between">
+              <p class="store-field" id="size-label">Size</p>
+              <p class="text-[12px] font-semibold" style="color:var(--s-muted)" data-size-picked></p>
+            </div>
             {p.colours.map((c) => (
-              <div class="mt-2.5 flex flex-wrap gap-2.5" data-sizes={c.name} hidden={c.name !== def?.name}>
+              <div class="mt-2.5 flex flex-wrap gap-2.5" role="radiogroup" aria-labelledby="size-label" data-sizes={c.name} hidden={c.name !== def?.name}>
                 {c.sizes.map((s) => (
-                  <span class="store-size" data-soldout={s.soldOut ? '' : undefined}>
+                  <button type="button" role="radio" aria-checked="false" class="store-size-pick" data-variant={s.variantId} data-size={s.size} disabled={s.soldOut} data-soldout={s.soldOut ? '' : undefined}>
                     <b>{s.size}</b>{s.soldOut && <small>Sold out</small>}
-                  </span>
+                  </button>
                 ))}
               </div>
             ))}
+            <p class="store-size-err mt-2" role="alert" data-size-err hidden>Choose a size to continue.</p>
 
             <div class="hidden md:flex items-center gap-3 mt-7">
-              <a href="/get" class="store-cta flex-1" data-buy>{p.soldOut ? 'View in the app' : p.preorder ? 'Pre-order in the app' : 'Buy in the app'}</a>
+              <a href={p.soldOut ? undefined : `/store/checkout/?product=${p.slug}`} aria-disabled={p.soldOut ? "true" : undefined} data-soldout-cta={p.soldOut ? "" : undefined} class="store-cta flex-1" data-buy data-buy-label>{p.soldOut ? 'Sold out' : p.preorder ? 'Pre-order' : 'Buy now'}</a>
               <button type="button" class="store-share" data-share data-url={url} data-title={p.name} aria-label="Share">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v13"/></svg>
                 <span>Share</span>
@@ -156,7 +160,7 @@ const productSchema = {
                 <summary>Collection &amp; Delivery</summary>
                 <div class="store-acc-body">
                   <p><b style="color:var(--s-ink)">Collect in store, free.</b> Choose Reading, Datchet or Beaconsfield at checkout. We text you when your order is ready.</p>
-                  <p><b style="color:var(--s-ink)">Delivery, £4.99.</b> Add your address in the app at checkout.</p>
+                  <p><b style="color:var(--s-ink)">Delivery, £4.99.</b> UK mainland. Add your address at checkout.</p>
                 </div>
               </details>
               {isTee && (
@@ -170,7 +174,8 @@ const productSchema = {
               <details class="store-acc">
                 <summary>How to buy</summary>
                 <div class="store-acc-body">
-                  <p>Open the Store tab in The Açai Club app, pick your colour and size, then choose collection or delivery. Pay with Apple Pay, card, or your wallet balance.</p>
+                  <p>Pick your colour and size, tap Buy now, then choose collection or delivery and pay securely by card.</p>
+                  <p>Prefer to pay with your wallet balance? Buy it in The Açai Club app.</p>
                   <StoreAppButtons />
                 </div>
               </details>
@@ -191,7 +196,7 @@ const productSchema = {
           <p class="text-[17px] font-bold">{p.price}</p>
           <p class="text-[12px]" style="color:var(--s-muted)">Collect free or £4.99 delivery</p>
         </div>
-        <a href="/get" class="store-cta" data-buy>{p.soldOut ? 'View in the app' : p.preorder ? 'Pre-order in app' : 'Buy in the app'}</a>
+        <a href={p.soldOut ? undefined : `/store/checkout/?product=${p.slug}`} aria-disabled={p.soldOut ? "true" : undefined} data-soldout-cta={p.soldOut ? "" : undefined} class="store-cta" data-buy data-buy-label>{p.soldOut ? 'Sold out' : p.preorder ? 'Pre-order' : 'Buy now'}</a>
       </div>
     </div>
   </div>
@@ -220,6 +225,41 @@ const productSchema = {
   }));
   const wanted = new URLSearchParams(location.search).get('colour');
   if (wanted) select(wanted);
+
+  // Size choice drives the Buy links. Nothing is pre-chosen when there is a
+  // real choice (a silent default sends people the wrong size); a single
+  // in-stock size is chosen for them.
+  const buyLinks = document.querySelectorAll<HTMLAnchorElement>('[data-buy-label]');
+  const productSlug = location.pathname.split('/').filter(Boolean)[1] ?? '';
+  let picked: HTMLButtonElement | null = null;
+  function currentRow() {
+    return [...document.querySelectorAll<HTMLElement>('[data-sizes]')].find((r) => !r.hidden) ?? null;
+  }
+  function setPicked(btn: HTMLButtonElement | null) {
+    picked = btn;
+    document.querySelectorAll<HTMLButtonElement>('.store-size-pick').forEach((b) => b.setAttribute('aria-checked', String(b === btn)));
+    const label = document.querySelector('[data-size-picked]');
+    if (label) label.textContent = btn ? `Size ${btn.dataset.size}` : '';
+    if (btn) document.querySelector<HTMLElement>('[data-size-err]')!.hidden = true;
+    buyLinks.forEach((a) => {
+      a.href = btn ? `/store/checkout/?product=${productSlug}&variant=${btn.dataset.variant}` : `/store/checkout/?product=${productSlug}`;
+    });
+  }
+  function autoPick() {
+    const open = [...(currentRow()?.querySelectorAll<HTMLButtonElement>('.store-size-pick:not([disabled])') ?? [])];
+    setPicked(open.length === 1 ? open[0] : null);
+  }
+  document.querySelectorAll<HTMLButtonElement>('.store-size-pick').forEach((b) => b.addEventListener('click', () => setPicked(b)));
+  pills.forEach((p) => p.addEventListener('click', autoPick));
+  autoPick();
+  buyLinks.forEach((a) => a.addEventListener('click', (e) => {
+    if (a.hasAttribute("data-soldout-cta")) { e.preventDefault(); return; }
+    if (picked) return;
+    e.preventDefault();
+    const err = document.querySelector<HTMLElement>('[data-size-err]')!;
+    err.hidden = false;
+    document.getElementById('size-label')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }));
 
   // Desktop thumbnails drive the visible gallery.
   document.querySelectorAll<HTMLElement>('[data-thumbs]').forEach((strip) => {

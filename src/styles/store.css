@@ -198,5 +198,16 @@
 .store-perks-list { grid-template-columns: 1fr !important; gap: 0 !important; border-radius: 14px; background: var(--s-surface); border: 1px solid var(--s-hairline); overflow: hidden; }
 .store-perks-list li { border: 0 !important; border-radius: 0 !important; background: none !important; padding: 10px 14px !important; }
 .store-perks-list li + li { border-top: 1px solid var(--s-hairline) !important; }
+/* Size picker (web checkout): selectable chips, app-style ink ring when chosen */
+.store-size-pick {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; min-width: 56px; min-height: 48px; padding: 8px 14px;
+  border-radius: 12px; background: var(--s-surface); border: 1px solid #E4DED8; color: var(--s-ink); font-size: 14px; font-weight: 700; cursor: pointer;
+}
+.store-size-pick:hover:not([disabled]) { border-color: var(--s-ink); }
+.store-size-pick[aria-checked="true"] { border: 2px solid var(--s-ink); padding: 7px 13px; }
+.store-size-pick[disabled] { color: var(--s-muted); background: transparent; cursor: not-allowed; }
+.store-size-pick[disabled] b { text-decoration: line-through; }
+.store-size-pick small { font-size: 10px; font-weight: 600; margin-top: 2px; }
+.store-size-err { font-size: 13px; font-weight: 600; color: #B3261E; }
 /* Hero copy needs its own contrast over pale shots */
 .store-hero::after { background: linear-gradient(180deg, transparent 30%, rgba(0,0,0,.85)); }
