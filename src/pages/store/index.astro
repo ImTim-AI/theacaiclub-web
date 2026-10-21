@@ -14,7 +14,11 @@ const { categories, products } = store;
 // Picked from the real catalogue by product + view, never a stock image.
 const backShot = (slug: string, colour: string) =>
   products.find((p) => p.slug === slug)?.colours.find((c) => c.name === colour)?.gallery.find((g) => g.alt.endsWith('back'));
-const heroShots = [backShot('wellness-in-motion-t-shirt', 'Black'), backShot('arabic', 'White'), backShot('sunday-running-club-t-shirt', 'White')].filter(Boolean) as { src: string; width: number; height: number; alt: string }[];
+// Lead (the only one on mobile) is a man, T 2026-10-21: Wellness In Motion,
+// Black, male back. Picked by file, not by first back shot (that is the woman).
+const maleWellness = products.find((p) => p.slug === 'wellness-in-motion-t-shirt')?.colours
+  .find((c) => c.name === 'Black')?.gallery.find((g) => g.src.endsWith('/336a98ca05.jpg'));
+const heroShots = [maleWellness ?? backShot('wellness-in-motion-t-shirt', 'Black'), backShot('arabic', 'White'), backShot('sunday-running-club-t-shirt', 'White')].filter(Boolean) as { src: string; width: number; height: number; alt: string }[];
 const og = heroShots[0];
 
 const itemList = {
