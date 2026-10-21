@@ -7,11 +7,12 @@ interface Props { product: any; eager?: boolean; sizes?: string }
 const { product: p, eager = false, sizes } = Astro.props;
 const def = p.colours.find((c: any) => c.name === p.defaultColour) ?? p.colours[0];
 const sub = (colour: string) => [p.fit, colour].filter(Boolean).join(' · ');
+const shown = (c: any) => (c.shownIn ? `Shown in ${c.shownIn}` : '');
 ---
 <a class="store-card" href={`/store/${p.slug}`} data-cat={p.categoryId} data-slug={p.slug} data-fit={p.fit ?? ''}>
   <div class="store-card-photo">
     {p.colours.map((c: any) => (
-      <StoreGallery images={c.card} colour={c.name} active={c.name === def?.name} eager={eager} sizes={sizes} />
+      <StoreGallery images={c.card} colour={c.name} active={c.name === def?.name} eager={eager} sizes={sizes} note={shown(c)} />
     ))}
     {p.soldOut && <div class="store-soldout">Sold out</div>}
     {p.preorder && !p.soldOut && <span class="store-badge">Pre-order</span>}

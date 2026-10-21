@@ -66,7 +66,7 @@ const productSchema = {
         <div>
           <div class="relative aspect-[4/5] md:rounded-[14px] overflow-hidden" style="background:var(--s-placeholder)" id="main-gallery">
             {p.colours.map((c) => (
-              <StoreGallery images={c.gallery} colour={c.name} active={c.name === def?.name} eager sizes="(min-width:768px) 55vw, 100vw" />
+              <StoreGallery images={c.gallery} colour={c.name} active={c.name === def?.name} eager sizes="(min-width:768px) 55vw, 100vw" note={c.shownIn ? `Shown in ${c.shownIn}` : ''} />
             ))}
             {p.soldOut && <div class="store-soldout">Sold out</div>}
             {p.preorder && !p.soldOut && <span class="store-badge">Pre-order</span>}
@@ -109,7 +109,7 @@ const productSchema = {
               </>
             )}
 
-            <p class="store-field mt-6">{p.colours[0]?.sizes.length === 1 ? 'Size' : 'Sizes'}</p>
+            <p class="store-field mt-6">{p.colours[0]?.sizes.length === 1 ? 'Size' : 'Sizes available'}</p>
             {p.colours.map((c) => (
               <div class="mt-2.5 flex flex-wrap gap-2.5" data-sizes={c.name} hidden={c.name !== def?.name}>
                 {c.sizes.map((s) => (
@@ -134,7 +134,7 @@ const productSchema = {
             </button>
             </div>
 
-            <div class="mt-6"><StorePerks compact /></div>
+            <div class="mt-6"><StorePerks list /></div>
 
             <!-- Accordions -->
             <div class="mt-6">

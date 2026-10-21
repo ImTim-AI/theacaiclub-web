@@ -2,15 +2,15 @@
 // Facts the app's checkout actually enforces (merch_checkout_page.dart,
 // _shared/merch.ts): free collection, £4.99 delivery, Apple Pay / card /
 // wallet, 14-day returns on unused T-shirts.
-interface Props { compact?: boolean }
-const { compact = false } = Astro.props;
+interface Props { list?: boolean }
+const { list = false } = Astro.props;
 const perks = [
   { icon: 'store', title: 'Free collection', text: 'Reading, Datchet or Beaconsfield' },
   { icon: 'truck', title: 'UK delivery £4.99', text: 'Or collect in store for free' },
   { icon: 'phone', title: 'Pay in the app', text: 'Apple Pay, card or wallet' },
 ];
 ---
-<ul class:list={['store-perks', compact && 'store-perks-compact']}>
+<ul class:list={['store-perks', list && 'store-perks-list']}>
   {perks.map((p) => (
     <li>
       <span class="store-perk-icon" aria-hidden="true">

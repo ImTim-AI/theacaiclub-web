@@ -187,3 +187,16 @@
   .store-perk-icon { width: 30px; height: 30px; }
   .store-perk-icon svg { width: 16px; height: 16px; }
 }
+
+/* ---- design review fixes ---- */
+.store-note { position: absolute; top: 10px; right: 10px; padding: 4px 9px; border-radius: 999px; background: rgba(255,255,255,.92); color: var(--s-ink); font-size: 11px; font-weight: 600; pointer-events: none; }
+/* Card names reserve two lines so price and swatch rows line up across a row */
+.store-card-name { min-height: 2.4em; }
+/* Size chips are information, not controls: no button affordance */
+.store-size { background: transparent; cursor: default; padding: 8px 14px; }
+/* Product-page perks: one stacked card at every width (three columns crushed the copy) */
+.store-perks-list { grid-template-columns: 1fr !important; gap: 0 !important; border-radius: 14px; background: var(--s-surface); border: 1px solid var(--s-hairline); overflow: hidden; }
+.store-perks-list li { border: 0 !important; border-radius: 0 !important; background: none !important; padding: 10px 14px !important; }
+.store-perks-list li + li { border-top: 1px solid var(--s-hairline) !important; }
+/* Hero copy needs its own contrast over pale shots */
+.store-hero::after { background: linear-gradient(180deg, transparent 30%, rgba(0,0,0,.85)); }

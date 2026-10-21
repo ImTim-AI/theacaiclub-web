@@ -2,8 +2,8 @@
 // One swipeable gallery: scroll-snap pages, the app's pink pill indicator,
 // and hover arrows on desktop. Behaviour lives in StoreScripts.astro.
 interface Img { src: string; width: number; height: number; alt: string }
-interface Props { images: Img[]; colour: string; active: boolean; eager?: boolean; sizes?: string }
-const { images, colour, active, eager = false, sizes = '(min-width:1100px) 25vw, (min-width:768px) 33vw, 50vw' } = Astro.props;
+interface Props { images: Img[]; colour: string; active: boolean; eager?: boolean; sizes?: string; note?: string }
+const { images, colour, active, note = '', eager = false, sizes = '(min-width:1100px) 25vw, (min-width:768px) 33vw, 50vw' } = Astro.props;
 ---
 <div class="store-photo-wrap absolute inset-0" data-colour={colour} hidden={!active}>
   <div class="store-gallery" data-count={images.length}>
@@ -12,6 +12,7 @@ const { images, colour, active, eager = false, sizes = '(min-width:1100px) 25vw,
         loading={eager && i === 0 ? 'eager' : 'lazy'} decoding="async" draggable="false" />
     ))}
   </div>
+  {note && <span class="store-note">{note}</span>}
   {images.length > 1 && (
     <>
       <button type="button" class="store-arrow" data-dir="prev" aria-label="Previous photo">‹</button>

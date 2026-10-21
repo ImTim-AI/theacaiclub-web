@@ -179,6 +179,16 @@ for (const p of raw) {
       sizes: m.forColour(c).map((v) => ({ size: v.size, soldOut: !(v.available_qty > 0) })),
     });
   }
+  // A colour with no photography of its own borrows the default colour's
+  // shots and says so ("Shown in White"), rather than drawing an empty frame.
+  const lead = colours.find((c) => c.name === m.defaultColour && c.gallery.length) ?? colours.find((c) => c.gallery.length);
+  for (const c of colours) {
+    if (!c.gallery.length && lead) {
+      c.card = lead.card;
+      c.gallery = lead.gallery;
+      c.shownIn = lead.name;
+    }
+  }
   const soldOut = m.variants.length > 0 && m.variants.every((v) => !(v.available_qty > 0));
   const descriptionLines = String(p.description ?? '').split('\n').map((l) => l.trim()).filter(Boolean);
   products.push({
