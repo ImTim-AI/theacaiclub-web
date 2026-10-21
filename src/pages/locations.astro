@@ -79,9 +79,9 @@ const stores = [
 const restaurantSchemas = stores.map((s) => ({
   '@context': 'https://schema.org',
   '@type': 'Restaurant',
-  '@id': `https://theacaiclub.com/stores/#${s.slug}`,
+  '@id': `https://theacaiclub.com/locations/#${s.slug}`,
   name: s.name,
-  url: `https://theacaiclub.com/stores/`,
+  url: `https://theacaiclub.com/locations/`,
   image: 'https://theacaiclub.com/icon-512.png',
   servesCuisine: ['Açaí', 'Smoothies', 'Healthy', 'Breakfast'],
   priceRange: '££',
@@ -117,7 +117,7 @@ const restaurantSchemas = stores.map((s) => ({
 }));
 ---
 
-<Layout title="Stores | The Açai Club" description="Find your nearest Açai Club. Three UK stores in Reading, Beaconsfield, and Datchet. Addresses, opening hours, phone numbers, and online ordering." schemaJsonLd={restaurantSchemas}>
+<Layout title="Locations | The Açai Club" description="Find your nearest Açai Club. Three UK locations in Reading, Beaconsfield, and Datchet. Addresses, opening hours, phone numbers, and online ordering." schemaJsonLd={restaurantSchemas}>
 
   <!-- Hero -->
   <section class="pt-28 pb-16 bg-dark">
@@ -131,7 +131,7 @@ const restaurantSchemas = stores.map((s) => ({
     </div>
   </section>
 
-  <!-- Store listings -->
+  <!-- Location listings -->
   <section>
     {stores.map((store, idx) => (
       <div class={idx % 2 === 0 ? "bg-dark-surface py-20" : "bg-dark py-20"}>

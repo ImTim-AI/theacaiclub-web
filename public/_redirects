@@ -7,6 +7,10 @@
 # Specific slugs first; the /qr/* fallback below catches any unmapped/future slug
 # so a code can never 404 (it still downloads the app).
 
+# Stores page renamed to Locations (T, 2026-10-21). Permanent, keeps SEO.
+/stores    /locations/  301
+/stores/   /locations/  301
+
 /qr/app           /get                      302
 /qr/run-club      /get?target=run-club      302
 /qr/beaconsfield  /get?target=beaconsfield  302
