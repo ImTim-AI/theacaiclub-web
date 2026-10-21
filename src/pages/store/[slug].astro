@@ -57,7 +57,7 @@ const returnPolicy = isTee
   : null;
 // Only a colour's own photos: a Black variant must not carry the White
 // stand-in shots (shownIn). Variants without photos inherit the group image.
-const galleryFor = (c: (typeof p.colours)[number]) => uniq(c.gallery.map((g) => abs(g.src)));
+const galleryFor = (c: (typeof p.colours)[number]) => (c.shownIn ? [] : uniq(c.gallery.map((g) => abs(g.src))));
 const oneSize = p.colours.every((c) => c.sizes.length <= 1);
 const variants = p.colours.flatMap((c) =>
   c.sizes.map((s) => ({
