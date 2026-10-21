@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-10-21T08:00:38.286Z",
+  "syncedAt": "2026-10-21T12:31:51.593Z",
   "categories": [
     {
       "id": "ca000000-0000-4000-8000-000000000001",
@@ -77,14 +77,17 @@
           "sizes": [
             {
               "size": "S",
+              "variantId": "954132bd-f723-4c04-a867-4408db54f340",
               "soldOut": false
             },
             {
               "size": "M",
+              "variantId": "ac3c32ef-b120-4052-9ce6-3339509faa1e",
               "soldOut": false
             },
             {
               "size": "L",
+              "variantId": "f352ec82-7152-4253-9f3f-b0efe0fa55ec",
               "soldOut": false
             }
           ]
@@ -135,14 +138,17 @@
           "sizes": [
             {
               "size": "S",
+              "variantId": "ba0ef3c0-7c13-42f4-9b36-62e6703cc341",
               "soldOut": false
             },
             {
               "size": "M",
+              "variantId": "6a9eb146-4eaf-4197-80b4-72b4ec97deef",
               "soldOut": false
             },
             {
               "size": "L",
+              "variantId": "325b8ba5-5e6f-4b41-b06a-3eadc73b94d2",
               "soldOut": false
             }
           ]
@@ -191,14 +197,17 @@
           "sizes": [
             {
               "size": "S",
+              "variantId": "06226ad8-58d5-4e85-9104-b2c51bf1646d",
               "soldOut": false
             },
             {
               "size": "M",
+              "variantId": "e028b324-1685-44e9-bb8a-b1da78996399",
               "soldOut": false
             },
             {
               "size": "L",
+              "variantId": "07c9a32c-7e5e-4809-becc-a3bb3bf6c3ea",
               "soldOut": false
             }
           ],
@@ -226,14 +235,17 @@
           "sizes": [
             {
               "size": "S",
+              "variantId": "a49a9d38-23d7-47bc-b1a8-2a614936e7c0",
               "soldOut": false
             },
             {
               "size": "M",
+              "variantId": "ade9bade-346b-43b9-aa2b-e52f501746a2",
               "soldOut": false
             },
             {
               "size": "L",
+              "variantId": "d7c4db99-12f9-4284-bd74-6e52540241d1",
               "soldOut": false
             }
           ]
@@ -294,14 +306,17 @@
           "sizes": [
             {
               "size": "S",
+              "variantId": "a414eb69-232b-4863-a98e-ff12aeb610cc",
               "soldOut": false
             },
             {
               "size": "M",
+              "variantId": "0981c297-a981-4a86-953f-9d33d4cdbba0",
               "soldOut": false
             },
             {
               "size": "L",
+              "variantId": "9a36b8a4-afd2-4406-9743-581fb1dd4304",
               "soldOut": false
             }
           ],
@@ -341,14 +356,17 @@
           "sizes": [
             {
               "size": "S",
+              "variantId": "245648f8-03ae-42ed-a972-5468348837ac",
               "soldOut": false
             },
             {
               "size": "M",
+              "variantId": "365d521a-7548-40fb-8056-d5f60d487b71",
               "soldOut": false
             },
             {
               "size": "L",
+              "variantId": "bf0340de-5e59-464f-ae97-744efcab85bb",
               "soldOut": false
             }
           ]
@@ -409,14 +427,17 @@
           "sizes": [
             {
               "size": "S",
+              "variantId": "401cec3a-8660-4b30-be1f-1cbfaebe4404",
               "soldOut": false
             },
             {
               "size": "M",
+              "variantId": "3cece831-ec81-421a-8e4b-9957d00ff8b4",
               "soldOut": false
             },
             {
               "size": "L",
+              "variantId": "7fbe99f1-ed62-40ed-8935-b41f801f391a",
               "soldOut": false
             }
           ],
@@ -456,14 +477,17 @@
           "sizes": [
             {
               "size": "S",
+              "variantId": "084ca5f4-309a-4350-ad3e-673dab933b2e",
               "soldOut": false
             },
             {
               "size": "M",
+              "variantId": "71acc3a3-a6cd-4d9c-9398-1bdefd087dd9",
               "soldOut": false
             },
             {
               "size": "L",
+              "variantId": "0727f3af-af20-4b65-93ef-2f0917c74c3b",
               "soldOut": false
             }
           ]
@@ -524,14 +548,17 @@
           "sizes": [
             {
               "size": "S",
+              "variantId": "60b3a59b-f7d7-4aef-bf74-9404962d01b4",
               "soldOut": false
             },
             {
               "size": "M",
+              "variantId": "a448212f-c0b8-40b8-a6ee-16ac7ec3c459",
               "soldOut": false
             },
             {
               "size": "L",
+              "variantId": "d9ef0749-e073-4e78-8f92-84ebe05872b3",
               "soldOut": false
             }
           ],
@@ -571,14 +598,17 @@
           "sizes": [
             {
               "size": "S",
+              "variantId": "17c76fcc-223a-4461-b182-6dbccfbd6331",
               "soldOut": false
             },
             {
               "size": "M",
+              "variantId": "a1931431-5229-43a3-94ae-cc163c9787b4",
               "soldOut": false
             },
             {
               "size": "L",
+              "variantId": "b5425fb9-e9fd-4f66-9566-5b3298d33765",
               "soldOut": false
             }
           ]
@@ -639,14 +669,17 @@
           "sizes": [
             {
               "size": "S",
+              "variantId": "330314f9-1eda-464f-8abc-eb3d099f1ba7",
               "soldOut": false
             },
             {
               "size": "M",
+              "variantId": "e457c946-8a3e-42e4-99c9-6b7b9a41a12b",
               "soldOut": false
             },
             {
               "size": "L",
+              "variantId": "a5d87b68-fcab-4769-807e-cdc426dc2f62",
               "soldOut": false
             }
           ],
@@ -686,14 +719,17 @@
           "sizes": [
             {
               "size": "S",
+              "variantId": "2356750b-a908-4d4b-9814-a5a4ed9cb60d",
               "soldOut": false
             },
             {
               "size": "M",
+              "variantId": "544d4f1a-fef2-439e-9784-a6352276f6b6",
               "soldOut": false
             },
             {
               "size": "L",
+              "variantId": "497dbd8f-8345-48aa-8998-a75764e8fbbe",
               "soldOut": false
             }
           ]
@@ -760,14 +796,17 @@
           "sizes": [
             {
               "size": "S",
+              "variantId": "785fbe0f-691f-45b7-80d9-b6378a59ffde",
               "soldOut": false
             },
             {
               "size": "M",
+              "variantId": "fbc06fd3-ed85-4747-bba4-e07b5cdf7111",
               "soldOut": false
             },
             {
               "size": "L",
+              "variantId": "c17dcfbe-3262-4484-857a-34c0ffbc9c06",
               "soldOut": false
             }
           ]
@@ -794,14 +833,17 @@
           "sizes": [
             {
               "size": "S",
+              "variantId": "720380f1-ccd5-46aa-9dba-f13d2f7c847c",
               "soldOut": false
             },
             {
               "size": "M",
+              "variantId": "302f25c0-9d85-4495-ab67-b25c6e5bc158",
               "soldOut": false
             },
             {
               "size": "L",
+              "variantId": "b5d0a01f-965c-42af-9ca1-5237dfb55cbc",
               "soldOut": false
             }
           ]
@@ -872,6 +914,7 @@
           "sizes": [
             {
               "size": "One Size",
+              "variantId": "c8d6ea38-fc78-4c09-b617-d27f440ba7d7",
               "soldOut": false
             }
           ]
@@ -942,6 +985,7 @@
           "sizes": [
             {
               "size": "One Size",
+              "variantId": "2d02bc7f-1a3f-452e-b1b8-d6659402df0c",
               "soldOut": false
             }
           ]

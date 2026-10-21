@@ -176,7 +176,10 @@ for (const p of raw) {
       swatch: swatch(c),
       card: await Promise.all(m.cardGalleryFor(c).map(img)),
       gallery: await Promise.all(m.initialGalleryFor(c).map(img)),
-      sizes: m.forColour(c).map((v) => ({ size: v.size, soldOut: !(v.available_qty > 0) })),
+      // variantId is what web checkout sends to merch-checkout. The page
+      // re-reads live stock for it before anyone pays; this snapshot is only
+      // the starting picture.
+      sizes: m.forColour(c).map((v) => ({ size: v.size, variantId: v.id, soldOut: !(v.available_qty > 0) })),
     });
   }
   // A colour with no photography of its own borrows the default colour's

@@ -12,6 +12,9 @@ interface Props {
   ogType?: 'website' | 'article';
   schemaJsonLd?: object | object[];
   noindex?: boolean;
+  /** Enclosed checkout: no site nav, footer or app banner (Baymard: strip
+   * navigation from checkout so shoppers do not pogo-stick away). */
+  bare?: boolean;
 }
 
 const {
@@ -23,6 +26,7 @@ const {
   ogType = 'website',
   schemaJsonLd,
   noindex = false,
+  bare = false,
 } = Astro.props;
 
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site).href;
@@ -159,11 +163,11 @@ const allSchemas = schemaJsonLd
     </script>
   </head>
   <body class="antialiased bg-dark">
-    <Navbar />
-    <main class="pt-[60px]">
+    {!bare && <Navbar />}
+    <main class={bare ? '' : 'pt-[60px]'}>
       <slot />
     </main>
-    <Footer />
+    {!bare && <Footer />}
 
     <!-- Android app-install banner. iOS uses the native Apple Smart App Banner;
          Android has no OS equivalent, so this small dismissible bar covers it.
@@ -186,7 +190,7 @@ const allSchemas = schemaJsonLd
           var dismissed=false; try{dismissed=localStorage.getItem(KEY)==='1';}catch(e){}
           var isAndroid=/Android/i.test(navigator.userAgent||'');
           var consent=true; try{consent=!!localStorage.getItem('acai_cookie_consent');}catch(e){}
-          var onOrder=/^\/order/.test(location.pathname);
+          var onOrder=/^\/order|^\/store\/checkout/.test(location.pathname);
           if(isAndroid && !dismissed && consent && !onOrder){ b.style.display='flex'; }
         }
         window.acaiShowAppBanner=show;
