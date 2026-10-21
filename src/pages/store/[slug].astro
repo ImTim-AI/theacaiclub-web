@@ -15,7 +15,7 @@ const { product: p } = Astro.props;
 const all = store.products;
 const def = p.colours.find((c) => c.name === p.defaultColour) ?? p.colours[0];
 const lead = def?.gallery[0] ?? p.colours.flatMap((c) => c.gallery)[0];
-const url = `https://theacaiclub.com/store/${p.slug}`;
+const url = `https://theacaiclub.com/store/${p.slug}/`;
 const dispatch = p.expectedDispatchAt
   ? new Date(p.expectedDispatchAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', timeZone: 'Europe/London' })
   : null;
@@ -31,27 +31,72 @@ const more = all.filter((x) => x.categoryId === p.categoryId && x.slug !== p.slu
 // to say that truthfully.
 const pair = all.filter((x) => x.categoryId !== p.categoryId).slice(0, 4);
 
+// Google merchant listing structured data: one ProductGroup, a Product per
+// colour x size with its own stock, plus delivery and returns so Google can
+// show "£4.99 delivery" and "14-day returns". Facts match the backend
+// (_shared/merch.ts) and the app checkout copy; customer pays return postage
+// (T, 2026-10-21). Returns are stated for T-shirts only, as in the app.
+const abs = (src: string) => new URL(src, 'https://theacaiclub.com').href;
+const uniq = (xs: string[]) => [...new Set(xs)];
+const shippingDetails = [
+  {
+    '@type': 'OfferShippingDetails',
+    shippingRate: { '@type': 'MonetaryAmount', value: '4.99', currency: 'GBP' },
+    shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'GB' },
+  },
+];
+const returnPolicy = isTee
+  ? {
+      '@type': 'MerchantReturnPolicy',
+      applicableCountry: 'GB',
+      returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+      merchantReturnDays: 14,
+      returnMethod: 'https://schema.org/ReturnByMail',
+      returnFees: 'https://schema.org/ReturnFeesCustomerResponsibility',
+    }
+  : null;
+// Only a colour's own photos: a Black variant must not carry the White
+// stand-in shots (shownIn). Variants without photos inherit the group image.
+const galleryFor = (c: (typeof p.colours)[number]) => uniq(c.gallery.map((g) => abs(g.src)));
+const oneSize = p.colours.every((c) => c.sizes.length <= 1);
+const variants = p.colours.flatMap((c) =>
+  c.sizes.map((s) => ({
+    '@type': 'Product',
+    sku: s.variantId,
+    name: oneSize ? `${p.name}` : `${p.name} – ${c.name}, ${s.size}`,
+    ...(galleryFor(c).length ? { image: galleryFor(c) } : {}),
+    color: c.name,
+    ...(oneSize ? {} : { size: s.size }),
+    offers: {
+      '@type': 'Offer',
+      url,
+      priceCurrency: 'GBP',
+      price: (p.pricePence / 100).toFixed(2),
+      itemCondition: 'https://schema.org/NewCondition',
+      availability: s.soldOut || p.soldOut
+        ? 'https://schema.org/OutOfStock'
+        : p.preorder ? 'https://schema.org/PreOrder' : 'https://schema.org/InStock',
+      shippingDetails,
+      ...(returnPolicy ? { hasMerchantReturnPolicy: returnPolicy } : {}),
+    },
+  })),
+);
 const productSchema = {
   '@context': 'https://schema.org',
-  '@type': 'Product',
+  '@type': 'ProductGroup',
   name: p.name,
   url,
-  image: p.colours.flatMap((c) => c.gallery).map((g) => new URL(g.src, 'https://theacaiclub.com').href),
+  productGroupID: p.slug,
+  image: uniq(p.colours.flatMap((c) => c.gallery).map((g) => abs(g.src))),
   description: blurb,
   ...(p.materials ? { material: p.materials } : {}),
-  ...(p.colours.length ? { color: p.colours.map((c) => c.name).join(', ') } : {}),
   brand: { '@type': 'Brand', name: 'The Açai Club' },
-  offers: {
-    '@type': 'Offer',
-    priceCurrency: 'GBP',
-    price: (p.pricePence / 100).toFixed(2),
-    availability: p.soldOut ? 'https://schema.org/SoldOut' : p.preorder ? 'https://schema.org/PreOrder' : 'https://schema.org/InStock',
-    url,
-  },
+  variesBy: oneSize ? ['https://schema.org/color'] : ['https://schema.org/size', 'https://schema.org/color'],
+  hasVariant: variants,
 };
 ---
 
-<Layout title={`${p.name} | The Açai Club Store`} description={description} ogImage={lead?.src} ogImageWidth={lead?.width} ogImageHeight={lead?.height} schemaJsonLd={productSchema}>
+<Layout title={`${p.name} | The Açai Club Store`} description={description} ogImage={lead?.src} ogImageWidth={lead?.width} ogImageHeight={lead?.height} schemaJsonLd={productSchema} crumbName={p.name}>
   <div class="store min-h-screen">
     <div class="max-w-[1200px] mx-auto md:px-6 md:pt-6">
       <nav class="store-crumbs hidden md:block mb-4" aria-label="Breadcrumb">
@@ -166,7 +211,7 @@ const productSchema = {
                 <details class="store-acc">
                   <summary>Returns</summary>
                   <div class="store-acc-body">
-                    <p>Unused T-shirts may be returned within 14 days. Email <a href="mailto:hello@theacaiclub.com" style="color:var(--s-ink);text-decoration:underline">hello@theacaiclub.com</a> with your order number.</p>
+                    <p>Unused T-shirts may be returned within 14 days; return postage is paid by you. Email <a href="mailto:hello@theacaiclub.com" style="color:var(--s-ink);text-decoration:underline">hello@theacaiclub.com</a> with your order number.</p>
                   </div>
                 </details>
               )}

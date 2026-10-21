@@ -7,7 +7,8 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://theacaiclub.com',
   output: 'static',
-  integrations: [sitemap()],
+  // Checkout is noindex, so keep it out of the sitemap too.
+  integrations: [sitemap({ filter: (page) => !page.includes('/store/checkout') })],
   vite: {
     plugins: [tailwindcss()]
   },
