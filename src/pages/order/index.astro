@@ -1264,6 +1264,8 @@ import Layout from '../../layouts/Layout.astro';
     var sname=store?shortName(store.name):'';
     var saddr=store?[store.addressLine1,store.postCode].filter(Boolean).join(', '):'';
     cart=[]; redeem={freeBowls:0,freeDrinks:0}; couponCode='';
+    // persist the empty basket so a refresh/back never restores a paid order
+    saveCart();
     var rows=items.map(function(c){
       return '<div class="cf-item"><span class="cf-q">'+c.q+'×</span><span class="cf-n">'+esc(c.n)+(c.extras&&c.extras.length?'<span class="cf-ex">'+esc(c.extras.join(', '))+'</span>':'')+'</span><span class="cf-p">'+f(c.unit*c.q)+'</span></div>';
     }).join('');
