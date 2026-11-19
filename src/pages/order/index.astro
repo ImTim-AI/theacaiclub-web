@@ -1131,7 +1131,7 @@ import Layout from '../../layouts/Layout.astro';
   //                  "Pay" -> stripe.confirmPayment (redirect:'if_required').
   // checkoutId is the order-pay idempotency key: one per checkout session, so a
   // retried "Order & pay" reuses the same PaymentIntent (never double-charges).
-  var checkoutId=null, stripe=null, elements=null, paySubmitting=false;
+  var checkoutId=null, stripe=null, elements=null, paySubmitting=false, payPi=null;
   function uuid(){ return (crypto.randomUUID?crypto.randomUUID():(Date.now()+'-'+Math.random().toString(16).slice(2))); }
   function newCheckoutId(){ checkoutId=uuid(); }
   function setPayMsg(t,cls){ var m=$('payMsg'); if(m){m.textContent=t||'';m.className='authmsg'+(cls?' '+cls:'');} }
@@ -1214,6 +1214,7 @@ import Layout from '../../layouts/Layout.astro';
     var S=stripeJs();
     if(!S){ paySubmitting=false; $('payBtn').disabled=false; mp('Checkout Error',{step:'payment_load'}); setPayMsg('Payment failed to load. Please reload the page.','err'); return; }
     stripe=stripe||S(STRIPE_PK);
+    payPi=String(clientSecret).split('_secret_')[0];
     elements=stripe.elements({clientSecret:clientSecret, appearance:{theme:'flat', variables:{colorPrimary:'#5B2C6F', borderRadius:'12px'}}});
     var pe=elements.create('payment',{layout:'tabs'});
     var box=$('payElement'); box.innerHTML=''; box.style.display='block'; pe.mount(box);
@@ -1228,6 +1229,9 @@ import Layout from '../../layouts/Layout.astro';
   $('confirmPayBtn').onclick=function(){
     if(!elements||!stripe||paySubmitting)return;
     paySubmitting=true; var cb=this; cb.disabled=true; setPayMsg('Confirming payment…');
+    // Redirect methods (Klarna, some 3DS/bank flows) leave the page; save what the
+    // confirmation needs so the return to /order can show it (see handlePayReturn).
+    saveSnap(liveSnap());
     stripe.confirmPayment({
       elements:elements,
       confirmParams:{ return_url: location.origin+'/order?paid=1' },
@@ -1236,6 +1240,7 @@ import Layout from '../../layouts/Layout.astro';
       if(res.error){
         paySubmitting=false; cb.disabled=false;
         mp('Payment Failed',{message:(res.error&&res.error.message)||'',code:(res.error&&res.error.code)||'',decline_code:(res.error&&res.error.decline_code)||''});
+        clearSnap();
         setPayMsg(res.error.message||'Payment was not completed. Please try again.','err');
         return;
       }
@@ -1245,27 +1250,54 @@ import Layout from '../../layouts/Layout.astro';
     }).catch(function(){
       paySubmitting=false; cb.disabled=false;
       mp('Payment Failed',{message:'confirm exception'});
+      clearSnap();
       setPayMsg('Something went wrong confirming payment. Please try again.','err');
     });
   };
 
-  function orderPlaced(){
+  // Confirmation snapshot: everything orderPlaced needs to render, taken from live
+  // state. Saved to localStorage just before confirmPayment so a redirect return
+  // can still show the confirmation after the page reloads.
+  function liveSnap(){
+    var items=cart.slice();
+    return {
+      pi:payPi,
+      items:items,
+      total:(lastQuote&&typeof lastQuote.total==='number')?lastQuote.total:items.reduce(function(s,c){return s+c.unit*c.q;},0),
+      storeId:store&&store.id,
+      storeName:store?shortName(store.name):'',
+      storeAddr:store?[store.addressLine1,store.postCode].filter(Boolean).join(', '):'',
+      pickupName:($('custName').value||'').trim(),
+      when:($('timeText')&&$('timeText').textContent)||'ASAP',
+      member:!!sess
+    };
+  }
+  function saveSnap(o){ try{ localStorage.setItem('acai_paysnap',JSON.stringify(o)); }catch(_e){} }
+  function loadSnap(){ try{ return JSON.parse(localStorage.getItem('acai_paysnap')||'null'); }catch(_e){ return null; } }
+  function clearSnap(){ try{ localStorage.removeItem('acai_paysnap'); }catch(_e){} }
+
+  // snap: optional saved snapshot (redirect return); default = live state.
+  // opts.processing: payment still confirming (only the sub line changes).
+  // opts.generic: no snapshot available, short confirmation (store name if known).
+  function orderPlaced(snap,opts){
+    opts=opts||{};
     // snapshot the order BEFORE clearing, so the confirmation can show it
     // (screenshot-friendly: store, items, pick-up time, total, rewards earned)
-    var items=cart.slice();
-    var total=(lastQuote&&typeof lastQuote.total==='number')?lastQuote.total:items.reduce(function(s,c){return s+c.unit*c.q;},0);
-    mp('Placed Order',{order_value:total,item_count:items.length,store_id:store&&store.id,member:!!sess});
+    snap=snap||liveSnap();
+    var items=snap.items||[];
+    var total=snap.total||0;
+    mp('Placed Order',opts.redirect?{order_value:total,item_count:items.length,store_id:snap.storeId,member:!!snap.member,redirect:true}:{order_value:total,item_count:items.length,store_id:snap.storeId,member:!!snap.member});
     // Loyalty is members-only, so only show earned rewards for signed-in members
     // (a guest earns 0 — don't tell them they earned a berry).
-    var isMember=!!sess;
+    var isMember=!!snap.member;
     var berries=0,cups=0; // points are app-only (2026-10-19)
-    var pickupName=($('custName').value||'').trim();
-    var when=($('timeText')&&$('timeText').textContent)||'ASAP';
-    var sname=store?shortName(store.name):'';
-    var saddr=store?[store.addressLine1,store.postCode].filter(Boolean).join(', '):'';
+    var pickupName=snap.pickupName||'';
+    var when=snap.when||'ASAP';
+    var sname=snap.storeName||'';
+    var saddr=snap.storeAddr||'';
     cart=[]; redeem={freeBowls:0,freeDrinks:0}; couponCode='';
     // persist the empty basket so a refresh/back never restores a paid order
-    saveCart();
+    saveCart(); clearSnap();
     var rows=items.map(function(c){
       return '<div class="cf-item"><span class="cf-q">'+c.q+'×</span><span class="cf-n">'+esc(c.n)+(c.extras&&c.extras.length?'<span class="cf-ex">'+esc(c.extras.join(', '))+'</span>':'')+'</span><span class="cf-p">'+f(c.unit*c.q)+'</span></div>';
     }).join('');
@@ -1278,12 +1310,12 @@ import Layout from '../../layouts/Layout.astro';
     } else {
       reward='<div class="cf-reward cf-reward-muted">Order in The Açai Club app to earn &amp; spend points.</div>';
     }
-    var co=$('checkout');
-    co.innerHTML='<div class="oa-wrap cf-wrap">'+
-      '<div class="cf-emoji">🥥</div>'+
-      '<h2 class="cf-h">Order placed</h2>'+
-      '<p class="cf-sub2">Your order is with the store and will be ready at your pick-up time. Show this screen when you collect.</p>'+
-      '<div class="cf-card">'+
+    var sub=opts.processing
+      ?'Your payment is being confirmed. Your order will go to the store as soon as it is. Show this screen when you collect.'
+      :'Your order is with the store and will be ready at your pick-up time. Show this screen when you collect.';
+    var card=opts.generic
+      ?(sname?'<div class="cf-card"><div class="cf-line"><span class="cf-lbl">Collect from</span><span class="cf-val">'+esc(sname)+'</span></div>'+(saddr?'<div class="cf-addr">'+esc(saddr)+'</div>':'')+'</div>':'')
+      :'<div class="cf-card">'+
         '<div class="cf-line"><span class="cf-lbl">Collect from</span><span class="cf-val">'+esc(sname)+'</span></div>'+
         (saddr?'<div class="cf-addr">'+esc(saddr)+'</div>':'')+
         '<div class="cf-line" style="margin-top:10px"><span class="cf-lbl">Pick-up</span><span class="cf-val">'+esc(when)+'</span></div>'+
@@ -1293,10 +1325,78 @@ import Layout from '../../layouts/Layout.astro';
         '<div class="cf-div"></div>'+
         '<div class="cf-line cf-tot"><span class="cf-lbl">Total paid</span><span class="cf-val">'+f(total)+'</span></div>'+
         reward+
-      '</div>'+
+      '</div>';
+    var co=$('checkout');
+    co.innerHTML='<div class="oa-wrap cf-wrap">'+
+      '<div class="cf-emoji">🥥</div>'+
+      '<h2 class="cf-h">Order placed</h2>'+
+      '<p class="cf-sub2">'+sub+'</p>'+
+      card+
       '<a href="/order" class="cta cf-cta">Start a new order</a>'+
     '</div>';
     window.scrollTo(0,0);
+  }
+
+  // ---- redirect-payment return (Klarna, some 3DS/bank flows) ----
+  // Stripe sends the customer back to /order?paid=1&payment_intent=…&
+  // payment_intent_client_secret=…&redirect_status=…. Resolve the PaymentIntent's
+  // real status and either confirm the order or explain that nothing was charged.
+  // Never calls order-pay / process-order: stripe-webhook sends paid orders to the store.
+  var payReturn=null; // {secret, p: Promise<PaymentIntent>}
+  function retrievePI(secret){
+    var S=stripeJs();
+    if(!S)return Promise.reject(new Error('stripe.js missing'));
+    stripe=stripe||S(STRIPE_PK);
+    return stripe.retrievePaymentIntent(secret).then(function(r){
+      if(!r||r.error||!r.paymentIntent)throw (r&&r.error)||new Error('no paymentIntent');
+      return r.paymentIntent;
+    });
+  }
+  function startPayReturn(){
+    var secret=null;
+    try{ secret=new URLSearchParams(location.search).get('payment_intent_client_secret'); }catch(_e){}
+    if(!secret)return;
+    // strip the query at once so a refresh never re-runs this
+    try{ history.replaceState({},'',location.pathname); }catch(_e){}
+    payReturn={secret:secret};
+    try{ payReturn.p=retrievePI(secret); }catch(e){ payReturn.p=Promise.reject(e); }
+    payReturn.p.catch(function(){}); // handled in handlePayReturn
+    // hold the basket out of sight until we know whether they paid
+    $('shop').style.display='none'; $('mobileBar').style.display='none';
+    var n=document.createElement('div'); n.id='payReturnNote'; n.className='oa-wrap cf-wrap';
+    n.innerHTML='<h2 class="cf-h">Checking your payment…</h2>';
+    $('order-app').insertBefore(n,$('shop'));
+  }
+  function handlePayReturn(){
+    var pr=payReturn; if(!pr)return; payReturn=null;
+    function done(){ var n=$('payReturnNote'); if(n)n.parentNode.removeChild(n); $('mobileBar').style.display=''; }
+    function reopen(msg){
+      done();
+      closePicker();
+      if(cart.length){ toCheckout(); goStep('pay'); setPayMsg(msg,'err'); }
+      else { $('shop').style.display='block'; toast(msg); }
+    }
+    pr.p.then(function(pi){
+      var st=pi&&pi.status;
+      if(st==='succeeded'||st==='processing'){
+        var snap=loadSnap();
+        if(snap&&snap.pi&&pi.id&&snap.pi!==pi.id)snap=null; // a different, older payment
+        var generic=!snap||!snap.items||!snap.items.length;
+        if(generic)snap={storeId:store&&store.id,storeName:store?shortName(store.name):'',storeAddr:store?[store.addressLine1,store.postCode].filter(Boolean).join(', '):'',member:!!sess,items:[],total:(pi.amount||0)/100};
+        done(); closePicker();
+        orderPlaced(snap,{processing:st==='processing',generic:generic,redirect:true});
+        scheduleQuote(); // cart is empty now: cancels the boot-time quote
+        $('shop').style.display='none'; $('checkout').style.display='block'; $('mobileBar').className='mbar'; setFooter(false);
+        return;
+      }
+      clearSnap();
+      mp('Payment Failed',{message:'redirect return',status:st||''});
+      reopen('Your payment wasn\'t completed and you haven\'t been charged. Please try again.');
+    }).catch(function(){
+      clearSnap();
+      mp('Checkout Error',{step:'payment_return'});
+      reopen('We couldn\'t check your last payment. Please check your email for a receipt before paying again. If you have one, your order is already with the store.');
+    });
   }
 
   // ---- auth handlers ----
@@ -1337,7 +1437,7 @@ import Layout from '../../layouts/Layout.astro';
     couponCode=c; setCouponMsg('Checking code…'); requestQuote();
   };
 
-  loadSess(); renderAuth(); loadAllergens();
+  loadSess(); renderAuth(); loadAllergens(); startPayReturn();
   api('get-locations').then(function(l){LOC=l.filter(function(x){return x&&x.onlineOrderingActive!==false;});})
    .catch(function(){LOC=[{id:1,name:'The Acai Club - Reading'},{id:3,name:'The Acai Club - Beaconsfield'},{id:4,name:'The Acai Club - Datchet'}];})
    .then(function(){
@@ -1372,6 +1472,8 @@ import Layout from '../../layouts/Layout.astro';
        $('menu').innerHTML='<div class="section"><div class="empty">Choose your store above to see the menu.</div></div>';
        openPicker();
      }
-   });
+   })
+   .catch(function(e){ console.warn('order boot failed',e); })
+   .then(handlePayReturn);
 })();
 </script>
