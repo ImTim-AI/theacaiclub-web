@@ -280,7 +280,7 @@ import Layout from '../../layouts/Layout.astro';
   #order-app .ico{display:inline-block;height:1.05em;width:auto;vertical-align:-0.16em;filter:brightness(0);opacity:.82}
   /* order confirmation screen */
   #order-app .cf-wrap{max-width:480px;margin:0 auto;padding:48px 20px 90px;text-align:center}
-  #order-app .cf-emoji{font-size:46px}
+  #order-app .cf-logo{display:block;width:72px;height:72px;margin:0 auto;border-radius:18px;object-fit:cover}
   #order-app .cf-h{font-size:26px;font-weight:800;color:var(--charcoal);margin-top:8px}
   #order-app .cf-sub2{color:var(--medium);font-size:14px;margin:8px auto 24px;max-width:380px;line-height:1.5}
   #order-app .cf-card{background:#fff;border:1px solid #E0E0E0;border-radius:15px;padding:20px;text-align:left}
@@ -1328,7 +1328,7 @@ import Layout from '../../layouts/Layout.astro';
       '</div>';
     var co=$('checkout');
     co.innerHTML='<div class="oa-wrap cf-wrap">'+
-      '<div class="cf-emoji">🥥</div>'+
+      '<img class="cf-logo" src="/images/logo.jpg" alt="The Açai Club" width="72" height="72">'+
       '<h2 class="cf-h">Order placed</h2>'+
       '<p class="cf-sub2">'+sub+'</p>'+
       card+
